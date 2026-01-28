@@ -1,0 +1,11 @@
+schema_version: "1.0"
+created_at: "2026-01-28T10:15:00Z"
+updated_at: "2026-01-28T10:15:00Z"
+task_id: "TASK-20260128-201"
+status: "done"
+summary: "AC met: Hello World, /api/dashboard, /api/queue, traceability"
+changes:
+  - "AC checklist validated"
+artifacts:
+  - "queue/reports/TASK-20260128-201.yaml"
+issues: []

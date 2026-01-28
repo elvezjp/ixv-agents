@@ -1,0 +1,13 @@
+schema_version: "1.0"
+created_at: "2026-01-28T09:00:00Z"
+updated_at: "2026-01-28T09:00:00Z"
+spec_ref: specs/current_spec.md
+request_id: "REQ-20260128-001"
+priority: "P0"
+summary: "Pilot: Hello World Web App"
+acceptance_criteria:
+  - "Hello World が UI に表示される"
+  - "dashboard/queue API が読める"
+constraints:
+  - "ローカルのみ"
+notes: "Phase 5 verification"

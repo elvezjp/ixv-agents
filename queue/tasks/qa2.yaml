@@ -1,0 +1,13 @@
+schema_version: "1.0"
+created_at: "YYYY-MM-DDTHH:MM:SSZ"
+updated_at: "YYYY-MM-DDTHH:MM:SSZ"
+task_id: "TASK-YYYYMMDD-001"
+spec_ref: specs/current_spec.md
+request_id: "REQ-YYYYMMDD-001"
+assignee: "qa2"
+type: "qa"
+summary: ""
+definition_of_done: []
+inputs: []
+outputs: []
+dependencies: []

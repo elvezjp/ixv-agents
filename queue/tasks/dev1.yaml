@@ -1,0 +1,17 @@
+schema_version: "1.0"
+created_at: "2026-01-28T09:10:00Z"
+updated_at: "2026-01-28T09:10:00Z"
+task_id: "TASK-20260128-101"
+spec_ref: specs/current_spec.md
+request_id: "REQ-20260128-001"
+assignee: "dev1"
+type: "dev"
+summary: "Frontend: show Hello World and fetch dashboard"
+definition_of_done:
+  - "UI に Hello World が表示される"
+  - "dashboard API を fetch する"
+inputs:
+  - "frontend/"
+outputs:
+  - "frontend/src/App.jsx"
+dependencies: []
