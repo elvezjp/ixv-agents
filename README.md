@@ -7,7 +7,7 @@ organizes multiple AI agents into a fixed, role-based team. It
 integrates agile roles and events with specification-driven development
 to ensure governance, traceability, and practical enterprise usage.
 
-Based on the architecture of [multi-agent-shogun](https://github.com/hdkworks/multi-agent-shogun) (tmux + Claude Code CLI + event-driven communication).
+
 
 ------------------------------------------------------------------------
 
