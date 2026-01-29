@@ -30,7 +30,7 @@ This project explicitly references `multi-agent-shogun-main/` in this workspace 
 |------|--------|
 | Specification (Spec.md) | Draft v0.1.0 |
 | Implementation Plan (Plan.md) | Draft v0.1.0 |
-| Implementation | Not Started |
+| Implementation | In Progress (Web UI + SSE demo) |
 
 **Next Step**: Phase 1 - Environment Setup
 
@@ -40,6 +40,23 @@ This project explicitly references `multi-agent-shogun-main/` in this workspace 
 
 The system will provide a local Web UI for viewing dashboard and queue status. The Markdown files remain the source of truth, and the UI mirrors them.
 Frontend uses **React + Tailwind**, and backend is a **read-only** local service.
+
+### Demo mode (no backend required)
+
+You can run the UI with built-in demo data:
+
+- Start: `cd frontend && VITE_DEMO=1 npm run dev`
+- Toggle: **Demo Mode / Live Mode** button in the header
+
+### Real-time agent events (SSE)
+
+The UI shows a live stream of agent events:
+
+- **Demo mode**: frontend generates simulated events
+- **Live mode**: connects to backend `/api/events` (SSE)
+
+Backend start:
+`cd backend && npm run dev`
 
 ------------------------------------------------------------------------
 

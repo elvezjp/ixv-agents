@@ -5,3 +5,46 @@
 body {
   font-family: "Space Grotesk", system-ui, sans-serif;
 }
+
+.ixv-flash {
+  animation: ixvFlash 1.2s ease-out;
+}
+
+.ixv-ping {
+  position: relative;
+}
+
+.ixv-ping::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  border: 1px solid rgba(16, 185, 129, 0.6);
+  animation: ixvPing 1.2s ease-out infinite;
+}
+
+@keyframes ixvFlash {
+  0% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0.8);
+    transform: translateY(0);
+  }
+  40% {
+    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    transform: translateY(-2px);
+  }
+  100% {
+    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+    transform: translateY(0);
+  }
+}
+
+@keyframes ixvPing {
+  0% {
+    opacity: 0.6;
+    transform: scale(1);
+  }
+  100% {
+    opacity: 0;
+    transform: scale(1.6);
+  }
+}

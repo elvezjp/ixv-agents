@@ -1,4 +1,5 @@
 import express from "express";
+import { execSync } from "child_process";
 import fs from "fs";
 import path from "path";
 import yaml from "js-yaml";
@@ -62,6 +63,149 @@ app.get("/api/queue", (_req, res) => {
   } catch (err) {
     res.status(500).json({ error: "Failed to read queue" });
   }
+});
+
+// Server-Sent Events (SSE) for agent events (demo/live stream)
+app.get('/api/events', (req, res) => {
+  res.set({
+    'Cache-Control': 'no-cache',
+    'Content-Type': 'text/event-stream',
+    Connection: 'keep-alive'
+  });
+  res.flushHeaders();
+
+  let id = 0;
+  const agents = ['PO', 'SM', 'Dev1', 'Dev2', 'Dev3', 'QA1', 'QA2'];
+  const messages = [
+    'Planning update',
+    'Started task',
+    'Pushed PR',
+    'Unit tests failing',
+    'Working on fix',
+    'Review requested',
+    'Merged',
+    'Deployed to staging',
+    'Investigating issue'
+  ];
+
+  const send = (payload) => {
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  };
+
+  // emit demo events; clients can pass ?demo=1 to request demo stream
+  const interval = setInterval(() => {
+    const ev = {
+      id: ++id,
+      agent: agents[Math.floor(Math.random() * agents.length)],
+      message: messages[Math.floor(Math.random() * messages.length)],
+      ts: new Date().toISOString()
+    };
+    send(ev);
+  }, 1500);
+
+  req.on('close', () => clearInterval(interval));
+});
+
+const safeExec = (cmd) => {
+  try {
+    return execSync(cmd, { stdio: ["ignore", "pipe", "pipe"] })
+      .toString()
+      .trim();
+  } catch (err) {
+    return "";
+  }
+};
+
+const getTmuxPanes = () => {
+  const output = safeExec("tmux list-panes -a -F '#{pane_id}:::#{pane_title}'");
+  if (!output) return [];
+  return output
+    .split("\n")
+    .map((line) => line.split(":::"))
+    .filter((parts) => parts.length >= 2)
+    .map(([paneId, title]) => ({ paneId, title: title || paneId }));
+};
+
+const capturePane = (paneId) => {
+  const output = safeExec(`tmux capture-pane -p -t ${paneId} -S -30`);
+  return output || "";
+};
+
+// Server-Sent Events (SSE) for terminal output stream
+app.get("/api/terminals", (req, res) => {
+  const demo = req.query.demo === "1" || req.query.demo === "true";
+
+  res.set({
+    "Cache-Control": "no-cache",
+    "Content-Type": "text/event-stream",
+    Connection: "keep-alive"
+  });
+  res.flushHeaders();
+
+  const send = (payload) => {
+    res.write(`data: ${JSON.stringify(payload)}\n\n`);
+  };
+
+  let id = 0;
+  let lastByPane = {};
+
+  if (demo) {
+    const demoPanes = ["PO", "SM", "開発1", "開発2", "QA1"];
+    const demoLines = [
+      "考え中...",
+      "spec_ref を解析中...",
+      "タスクYAMLを書き込み中",
+      "テスト実行中",
+      "ダッシュボード更新中",
+      "レポート確認中",
+      "次のタスクをキュー中"
+    ];
+    const interval = setInterval(() => {
+      const pane = demoPanes[Math.floor(Math.random() * demoPanes.length)];
+      const line = demoLines[Math.floor(Math.random() * demoLines.length)];
+      send({
+        id: ++id,
+        pane,
+        lines: [`${new Date().toLocaleTimeString()} ${line}`],
+        ts: new Date().toISOString(),
+        demo: true
+      });
+    }, 1200);
+
+    req.on("close", () => clearInterval(interval));
+    return;
+  }
+
+  const interval = setInterval(() => {
+    const panes = getTmuxPanes();
+    if (panes.length === 0) {
+      send({
+        id: ++id,
+        pane: "system",
+        lines: ["tmux panes not found. Start ixv_boot.sh first."],
+        ts: new Date().toISOString(),
+        warning: true
+      });
+      return;
+    }
+
+    panes.forEach(({ paneId, title }) => {
+      const text = capturePane(paneId);
+      if (!text) return;
+      if (lastByPane[paneId] === text) return;
+      lastByPane[paneId] = text;
+      const lines = text.split("\n").slice(-10);
+      send({
+        id: ++id,
+        paneId,
+        pane: title || paneId,
+        lines,
+        ts: new Date().toISOString()
+      });
+    });
+  }, 1000);
+
+  req.on("close", () => clearInterval(interval));
 });
 
 app.listen(PORT, () => {
