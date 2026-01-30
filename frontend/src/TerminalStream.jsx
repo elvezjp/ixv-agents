@@ -115,7 +115,7 @@ export default function TerminalStream({ apiBase = "", demoMode = false }) {
                   {pane.ts ? new Date(pane.ts).toLocaleTimeString() : "-"}
                 </div>
               </div>
-              <pre className="text-xs text-text-secondary whitespace-pre-wrap">
+              <pre className="text-xs text-text-secondary whitespace-pre-wrap overflow-x-auto">
                 {(pane.lines || []).map(localizeLine).join("\n")}
               </pre>
             </div>
