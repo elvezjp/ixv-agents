@@ -1,228 +1,794 @@
-import React, { useEffect, useState, useCallback } from "react";
-import Events from "./Events.jsx";
-import TerminalStream from "./TerminalStream.jsx";
+import React, { useEffect, useRef, useState } from "react";
 
-const API_BASE = import.meta.env.VITE_API_BASE || "";
-const BUILD_DEMO = import.meta.env.VITE_DEMO === "1" || import.meta.env.VITE_DEMO === "true";
+const BUILD_DEMO =
+  import.meta.env.VITE_DEMO === "1" || import.meta.env.VITE_DEMO === "true";
 
-/* Demo data used when demo mode is enabled */
-const demoDashboard = `# IXV-Agents（デモ）
-これはデモ用のダッシュボードです。
+const demoRequests = [
+  "新規ユーザー向けオンボーディングを短くして離脱を減らしたい。",
+  "検索結果に保存済みフィルタを表示して再利用できるようにしたい。",
+  "請求書のダウンロードにフィルタと並び替え機能を追加してほしい。"
+];
 
-- デモモードでは疑似データが表示されます。`;
+const demoPoReplies = [
+  "承知いたしました。要件を整理のうえ、対応方針を改めてご報告いたします。",
+  "ご依頼を受領しました。影響範囲と優先度を確認し、進め方をご提案いたします。",
+  "内容を確認いたします。実現案とスケジュールを取りまとめ次第ご連絡いたします。"
+];
 
-const demoQueue = {
-  po_to_sm: {
-    file: "po_to_sm.yaml",
-    mtime: new Date().toISOString(),
-    data: { summary: "デモ: PO → SM 要約" }
+const demoPlanSteps = [
+  "要望を整理し、目的指標と優先度を確認",
+  "体験フローを分解してSMがタスク化",
+  "Devが実装し、QAで品質と回帰を確認"
+];
+
+const demoDirectories = [
+  "po-inbox",
+  "sm-inbox",
+  "dev-inbox",
+  "qa-inbox",
+  "reports"
+];
+
+const demoAgents = [
+  { id: "po", name: "PO Agent", role: "要件整理", status: "idle", recent: "-" },
+  { id: "sm", name: "SM Agent", role: "タスク分解", status: "idle", recent: "-" },
+  { id: "qa1", name: "QA Agent 1", role: "品質検証", status: "idle", recent: "-" },
+  { id: "qa2", name: "QA Agent 2", role: "回帰検証", status: "idle", recent: "-" },
+  { id: "dev1", name: "Dev Agent 1", role: "実装", status: "idle", recent: "-" },
+  { id: "dev2", name: "Dev Agent 2", role: "実装", status: "idle", recent: "-" },
+  { id: "dev3", name: "Dev Agent 3", role: "実装", status: "idle", recent: "-" },
+  { id: "dev4", name: "Dev Agent 4", role: "実装", status: "idle", recent: "-" },
+  { id: "dev5", name: "Dev Agent 5", role: "実装", status: "idle", recent: "-" },
+  { id: "dev6", name: "Dev Agent 6", role: "実装", status: "idle", recent: "-" },
+  { id: "dev7", name: "Dev Agent 7", role: "実装", status: "idle", recent: "-" },
+  { id: "dev8", name: "Dev Agent 8", role: "実装", status: "idle", recent: "-" }
+];
+
+const demoFlowTemplates = [
+  { from: "PO", to: "SM", summary: "要件を要約し、狙いを明確化" },
+  { from: "SM", to: "Dev", summary: "タスクを分割して優先度を付与" },
+  { from: "Dev", to: "SM", summary: "実装方針と見積りを返信" },
+  { from: "SM", to: "PO", summary: "スコープとリリース案を共有" }
+];
+
+const demoPoInboxTemplates = [
+  { title: "要件整理メモ", detail: "オンボーディング短縮で初回体験を改善" },
+  { title: "KPI整理", detail: "登録完了率 +8% を目標に設定" },
+  { title: "スコープ提案", detail: "主要3画面に限定して検証" }
+];
+
+const demoPoToHumanTemplates = [
+  {
+    title: "PO報告: 方針と目標",
+    detail:
+      "オンボーディングの初回体験を短縮し、登録完了率を +8% 改善することを目標とします。"
   },
-  tasks: [
-    {
-      file: "dev1.yaml",
-      mtime: new Date().toISOString(),
-      data: {
-        task_id: "TASK-DEMO-001",
-        assignee: "開発1",
-        summary: "デモタスク（一覧表示）",
-        type: "dev",
-        definition_of_done: ["実装する", "テストを追加する"]
-      }
-    }
-  ],
-  reports: []
-};
+  {
+    title: "PO報告: スコープ提案",
+    detail:
+      "主要3画面に範囲を限定したうえでA/B検証を実施し、効果検証の精度を高めます。"
+  },
+  {
+    title: "PO報告: リスクと対応",
+    detail:
+      "既存トラッキングの改修が必要となるため、計測設計を前倒しで進めます。"
+  }
+];
+
+const demoWorkStatusTemplates = [
+  { label: "作業中", tone: "active" },
+  { label: "完了", tone: "done" }
+];
+
+const demoCompletionNotes = [
+  "本件の実装およびQAが完了いたしました。リリース判断をご確認ください。",
+  "受け入れ基準の確認まで完了しております。運用チームへの引き継ぎを進めます。",
+  "全タスクが完了し、回帰テストも問題ございませんでした。"
+];
+
+const demoSmInboxTemplates = [
+  { title: "タスク分解", detail: "UI調整 / API連携 / 追跡計測" },
+  { title: "スプリント計画", detail: "Story 5件を優先順位順で配置" },
+  { title: "技術検討", detail: "既存フローの再利用可否を確認" }
+];
+
+const demoQaTemplates = [
+  { label: "QA 待機中", detail: "準備完了。テストケース 12 件" },
+  { label: "QA 実行中", detail: "回帰テスト 4 件、手動確認中" },
+  { label: "QA 完了", detail: "重大バグなし、軽微 1 件" }
+];
+
+const createFlowEvent = (template) => ({
+  id: `flow-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+  from: template.from,
+  to: template.to,
+  summary: template.summary,
+  time: new Date().toLocaleTimeString()
+});
+
+const createInboxItem = (template) => ({
+  id: `inbox-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+  title: template.title,
+  detail: template.detail,
+  time: new Date().toLocaleTimeString()
+});
+
+const createChatMessage = (role, text) => ({
+  id: `chat-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+  role,
+  text,
+  time: new Date().toLocaleTimeString()
+});
 
 export default function App() {
-  const [dashboard, setDashboard] = useState("Loading...");
-  const [queue, setQueue] = useState(null);
-  const [selectedTaskId, setSelectedTaskId] = useState("");
-  const [lastUpdated, setLastUpdated] = useState(null);
   const [demoMode, setDemoMode] = useState(BUILD_DEMO);
+  const [humanRequest, setHumanRequest] = useState("");
+  const [chatMessages, setChatMessages] = useState([]);
+  const [poReport, setPoReport] = useState({ title: "-", detail: "-" });
+  const [workStatus, setWorkStatus] = useState({
+    label: "作業中",
+    tone: "active"
+  });
+  const [completionNote, setCompletionNote] = useState("");
+  const [planSteps, setPlanSteps] = useState([]);
+  const [agentInventory, setAgentInventory] = useState([]);
+  const [flowEvents, setFlowEvents] = useState([]);
+  const [poSmMessages, setPoSmMessages] = useState([]);
+  const [poInbox, setPoInbox] = useState([]);
+  const [smInbox, setSmInbox] = useState([]);
+  const [qaStatus, setQaStatus] = useState({ label: "-", detail: "-" });
+  const [lastUpdated, setLastUpdated] = useState(null);
+  const [flashIds, setFlashIds] = useState({
+    flow: null,
+    po: null,
+    sm: null,
+    agent: null
+  });
 
-  const loadData = useCallback(() => {
+  const flowIndex = useRef(0);
+  const poIndex = useRef(0);
+  const poReportIndex = useRef(0);
+  const statusIndex = useRef(0);
+  const smIndex = useRef(0);
+  const requestIndex = useRef(0);
+  const qaIndex = useRef(0);
+  const devAgentIndex = useRef(0);
+  const qaAgentIndex = useRef(0);
+  const chatScrollRef = useRef(null);
+
+  const poSmEvents = poSmMessages;
+
+  useEffect(() => {
     if (demoMode) {
-      setDashboard(demoDashboard);
-      setQueue(demoQueue);
+      flowIndex.current = 0;
+      poIndex.current = 0;
+      poReportIndex.current = 0;
+      statusIndex.current = 0;
+      smIndex.current = 0;
+      requestIndex.current = 0;
+      qaIndex.current = 0;
+      devAgentIndex.current = 0;
+      qaAgentIndex.current = 0;
+
+      setHumanRequest(demoRequests[0]);
+      setChatMessages([
+        createChatMessage("human", demoRequests[0]),
+        createChatMessage("po", demoPoReplies[0])
+      ]);
+      setPoReport(demoPoToHumanTemplates[0]);
+      setWorkStatus(demoWorkStatusTemplates[0]);
+      setCompletionNote("");
+      setPlanSteps(demoPlanSteps);
+      setAgentInventory(demoAgents);
+      setFlowEvents([createFlowEvent(demoFlowTemplates[0])]);
+      setPoSmMessages([
+        createFlowEvent({ from: "PO", to: "SM", summary: "要件を受領し、タスク化を依頼" })
+      ]);
+      setPoInbox([createInboxItem(demoPoInboxTemplates[0])]);
+      setSmInbox([createInboxItem(demoSmInboxTemplates[0])]);
+      setQaStatus(demoQaTemplates[0]);
       setLastUpdated(new Date());
-      return;
+      setFlashIds({ flow: null, po: null, sm: null, agent: null });
+    } else {
+      setHumanRequest("");
+      setChatMessages([]);
+      setPoReport({ title: "PO報告待ち", detail: "ライブデータ待機中" });
+      setWorkStatus({ label: "作業中", tone: "active" });
+      setCompletionNote("");
+      setPlanSteps(["要件整理を待機", "タスク化を待機", "実装を待機"]);
+      setAgentInventory(
+        demoAgents.map((agent) => ({
+          ...agent,
+          status: "idle",
+          recent: "ライブデータ待機中"
+        }))
+      );
+      setFlowEvents([]);
+      setPoSmMessages([]);
+      setPoInbox([]);
+      setSmInbox([]);
+      setQaStatus({ label: "QA 未開始", detail: "入力待機中" });
+      setLastUpdated(null);
+      setFlashIds({ flow: null, po: null, sm: null, agent: null });
     }
-
-    fetch(`${API_BASE}/api/dashboard`)
-      .then((r) => r.text())
-      .then(setDashboard)
-      .catch(() => setDashboard("Failed to load dashboard.md"));
-
-    fetch(`${API_BASE}/api/queue`)
-      .then((r) => r.json())
-      .then(setQueue)
-      .catch(() => setQueue({ error: "Failed to load queue" }));
-
-    setLastUpdated(new Date());
-  }, [demoMode, API_BASE]);
+  }, [demoMode]);
 
   useEffect(() => {
-    loadData();
-    const id = setInterval(loadData, 15000);
+    if (!demoMode) return;
+
+    const id = setInterval(() => {
+      const flowTemplate =
+        demoFlowTemplates[flowIndex.current % demoFlowTemplates.length];
+      const nextFlow = createFlowEvent(flowTemplate);
+      flowIndex.current += 1;
+
+      setFlowEvents((prev) => [nextFlow, ...prev].slice(0, 6));
+      if (
+        (nextFlow.from === "PO" && nextFlow.to === "SM") ||
+        (nextFlow.from === "SM" && nextFlow.to === "PO")
+      ) {
+        setPoSmMessages((prev) => [...prev, nextFlow].slice(-8));
+      }
+
+      const nextRequest = demoRequests[requestIndex.current % demoRequests.length];
+      const nextReply = demoPoReplies[requestIndex.current % demoPoReplies.length];
+      requestIndex.current += 1;
+      setHumanRequest(nextRequest);
+      setChatMessages((prev) =>
+        [
+          ...prev,
+          createChatMessage("human", nextRequest),
+          createChatMessage("po", nextReply)
+        ].slice(-10)
+      );
+
+      const nextPo =
+        demoPoInboxTemplates[poIndex.current % demoPoInboxTemplates.length];
+      const nextSm =
+        demoSmInboxTemplates[smIndex.current % demoSmInboxTemplates.length];
+      const nextPoReport =
+        demoPoToHumanTemplates[
+          poReportIndex.current % demoPoToHumanTemplates.length
+        ];
+      const nextStatus =
+        demoWorkStatusTemplates[
+          statusIndex.current % demoWorkStatusTemplates.length
+        ];
+      const poItem = createInboxItem(nextPo);
+      const smItem = createInboxItem(nextSm);
+      poIndex.current += 1;
+      poReportIndex.current += 1;
+      statusIndex.current += 1;
+      smIndex.current += 1;
+
+      setPoInbox((prev) => [poItem, ...prev].slice(0, 4));
+      setSmInbox((prev) => [smItem, ...prev].slice(0, 4));
+      setPoReport(nextPoReport);
+      setWorkStatus(nextStatus);
+      setCompletionNote(
+        nextStatus.tone === "done"
+          ? demoCompletionNotes[
+              statusIndex.current % demoCompletionNotes.length
+            ]
+          : ""
+      );
+
+      const nextQa = demoQaTemplates[qaIndex.current % demoQaTemplates.length];
+      qaIndex.current += 1;
+      setQaStatus(nextQa);
+
+      const pickDevAgentId = () => {
+        const id = `dev${(devAgentIndex.current % 8) + 1}`;
+        devAgentIndex.current += 1;
+        return id;
+      };
+      const pickQaAgentId = () => {
+        const id = `qa${(qaAgentIndex.current % 2) + 1}`;
+        qaAgentIndex.current += 1;
+        return id;
+      };
+      const activeAgentId =
+        nextFlow.to === "SM"
+          ? "sm"
+          : nextFlow.to === "PO"
+            ? "po"
+            : nextFlow.to === "Dev"
+              ? pickDevAgentId()
+              : "po";
+      setAgentInventory((prev) =>
+        prev.map((agent) => ({
+          ...agent,
+          status: agent.id === activeAgentId ? "active" : "idle",
+          recent:
+            agent.id === activeAgentId ? nextFlow.summary : agent.recent
+        }))
+      );
+
+      setFlashIds({
+        flow: nextFlow.id,
+        po: poItem.id,
+        sm: smItem.id,
+        agent: activeAgentId
+      });
+      setLastUpdated(new Date());
+
+      if (nextQa.label !== "QA 待機中") {
+        const qaId = pickQaAgentId();
+        setAgentInventory((prev) =>
+          prev.map((agent) => ({
+            ...agent,
+            status: agent.id === qaId ? "active" : agent.status,
+            recent: agent.id === qaId ? nextQa.detail : agent.recent
+          }))
+        );
+        setFlashIds((prev) => ({ ...prev, agent: qaId }));
+      }
+    }, 4000);
+
     return () => clearInterval(id);
-  }, [loadData]);
+  }, [demoMode]);
 
   useEffect(() => {
-    if (!queue?.tasks?.length) return;
-    if (!selectedTaskId) {
-      setSelectedTaskId(queue.tasks[0]?.data?.task_id || "");
-    }
-  }, [queue, selectedTaskId]);
+    if (!chatScrollRef.current) return;
+    chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
+  }, [chatMessages]);
 
-  const tasks = queue?.tasks || [];
-  const reports = queue?.reports || [];
-  const selectedTask = tasks.find((t) => t.data?.task_id === selectedTaskId);
-  const matchedReport = reports.find(
-    (r) => r.data?.task_id === selectedTaskId
-  );
+  const handleHumanSend = () => {
+    const value = humanRequest.trim();
+    if (!value) return;
+    setChatMessages((prev) =>
+      [...prev, createChatMessage("human", value)].slice(-10)
+    );
+    setHumanRequest("");
+    setLastUpdated(new Date());
+    setWorkStatus({ label: "作業中", tone: "active" });
+    setFlashIds((prev) => ({ ...prev, agent: "po" }));
+    setAgentInventory((prev) =>
+      prev.map((agent) => ({
+        ...agent,
+        status: agent.id === "po" ? "active" : "idle",
+        recent: agent.id === "po" ? value : agent.recent
+      }))
+    );
+    setPoSmMessages((prev) =>
+      [
+        ...prev,
+        createFlowEvent({
+          from: "PO",
+          to: "SM",
+          summary: "新規リクエストを受領。要件整理を開始します。"
+        })
+      ].slice(-8)
+    );
+    if (!demoMode) {
+      const reply = "了解しました。内容を確認し、対応方針をご報告します。";
+      setTimeout(() => {
+        setChatMessages((prev) =>
+          [...prev, createChatMessage("po", reply)].slice(-10)
+        );
+        setFlashIds((prev) => ({ ...prev, agent: "po" }));
+        setAgentInventory((prev) =>
+          prev.map((agent) => ({
+            ...agent,
+            status: agent.id === "po" ? "active" : "idle",
+            recent: agent.id === "po" ? reply : agent.recent
+          }))
+        );
+      }, 600);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-bg-base">
       <header className="px-6 py-5 border-b border-border-default bg-bg-surface">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-wrap items-center justify-between gap-3">
           <div>
-            <h1 className="text-2xl font-semibold text-primary">IXV-Agents Dashboard</h1>
-            <p className="text-text-muted text-sm">Read-only status view</p>
+            <h1 className="text-2xl font-semibold text-primary">IXV-Agents</h1>
+            <p className="text-text-muted text-sm">
+              エージェント連携の流れを可視化するステータス画面
+            </p>
           </div>
           <div className="flex items-center gap-3">
             <button
               className="text-xs px-2 py-1 rounded border border-primary bg-primary text-white hover:bg-primary-dark"
-              onClick={() => setDemoMode((d) => !d)}
+              onClick={() => setDemoMode((prev) => !prev)}
               title="デモモード切替"
             >
               {demoMode ? "デモモード" : "ライブモード"}
             </button>
-            {demoMode && (
-              <div className="text-xs text-text-muted">デモデータ表示中</div>
-            )}
+            <div className="text-xs text-text-muted">
+              最終更新: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
+            </div>
           </div>
         </div>
-      </header> 
-      <main className="grid gap-6 p-6 lg:grid-cols-3 xl:grid-cols-4">
-        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h2 className="text-lg font-semibold mb-3">Dashboard</h2>
-          <pre className="whitespace-pre-wrap text-sm text-text-base">
-            {dashboard}
-          </pre>
-        </section>
-        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
-          <div className="flex items-center justify-between mb-3">
-            <h2 className="text-lg font-semibold">Queue Overview</h2>
-            <button
-              className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
-              onClick={loadData}
-            >
-              Refresh
-            </button>
-          </div>
-          <div className="text-xs text-text-muted mb-4">
-            Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
-          </div>
-          <div className="space-y-4 text-sm">
-            <div>
-              <div className="font-semibold">PO → SM</div>
-              <div className="text-text-secondary">
-                {queue?.po_to_sm?.data?.summary || "No summary"}
+      </header>
+      <main className="flex flex-col gap-6 p-6 lg:flex-row">
+        <section className="flex-none w-full space-y-6 lg:w-80 xl:w-96">
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+              Human → PO チャット
+            </h2>
+            <div className="mt-3 flex flex-col gap-3">
+              <div
+                ref={chatScrollRef}
+                className="flex max-h-64 flex-col gap-3 overflow-y-auto rounded-lg border border-border-muted bg-bg-muted p-3"
+              >
+                {chatMessages.length === 0 && (
+                  <div className="text-xs text-text-muted">
+                    まだ指示は送信されていません。
+                  </div>
+                )}
+                {chatMessages.map((message) => {
+                  const isHuman = message.role === "human";
+                  return (
+                    <div
+                      key={message.id}
+                      className={`flex ${isHuman ? "justify-end" : "justify-start"}`}
+                    >
+                      <div
+                        className={`max-w-[85%] rounded-2xl px-3 py-2 text-sm ${
+                          isHuman
+                            ? "bg-primary text-white"
+                            : "bg-white text-text-base border border-border-default"
+                        }`}
+                      >
+                        <div
+                          className={`text-[11px] ${
+                            isHuman ? "text-primary-light" : "text-text-muted"
+                          }`}
+                        >
+                          {isHuman ? "Human → PO" : "PO → Human"} · {message.time}
+                        </div>
+                        <div className="mt-1 whitespace-pre-wrap">
+                          {message.text}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </div>
-              <div className="text-xs text-text-muted">
-                {queue?.po_to_sm?.file} · {queue?.po_to_sm?.mtime || "-"}
+              <div className="flex items-end gap-2 rounded-2xl border border-border-default bg-white px-3 py-2">
+                <textarea
+                  className="min-h-[36px] flex-1 resize-none bg-transparent text-sm text-text-base focus:outline-none"
+                  value={humanRequest}
+                  onChange={(event) => setHumanRequest(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      if (event.shiftKey) return;
+                      event.preventDefault();
+                      handleHumanSend();
+                    }
+                  }}
+                  placeholder="メッセージを入力"
+                  rows={2}
+                />
+                <button
+                  className="flex h-8 w-8 items-center justify-center rounded-full border border-primary bg-primary text-white hover:bg-primary-dark disabled:cursor-not-allowed disabled:opacity-40"
+                  onClick={handleHumanSend}
+                  title="送信"
+                  aria-label="送信"
+                  disabled={!humanRequest.trim()}
+                >
+                  ↑
+                </button>
+              </div>
+              <div className="text-[11px] text-text-muted">
+                Enterで送信 / Shift+Enterで改行
               </div>
             </div>
-            <div>
-              <div className="font-semibold">Tasks</div>
-              <div className="grid gap-2">
-                {tasks.length === 0 && (
-                  <div className="text-text-muted">No tasks</div>
-                )}
-                {tasks.map((t) => (
-                  <button
-                    key={t.file}
-                    onClick={() => setSelectedTaskId(t.data?.task_id || "")}
-                    className={`text-left rounded border px-2 py-2 ${
-                      t.data?.task_id === selectedTaskId
-                        ? "border-primary bg-primary-light"
-                        : "border-border-default hover:bg-bg-hover"
+            <p className="mt-2 text-xs text-text-muted">
+              人間の要望がここに集約されます
+            </p>
+          </div>
+
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                PO ↔ SM チャット
+              </h2>
+              <span className="text-xs text-text-muted">
+                {poSmEvents.length} messages
+              </span>
+            </div>
+            <div className="mt-4 max-h-56 space-y-3 overflow-y-auto pr-1 text-sm">
+              {poSmEvents.length === 0 && (
+                <div className="text-sm text-text-muted">
+                  まだやり取りはありません。
+                </div>
+              )}
+              {poSmEvents.map((event) => {
+                const isPo = event.from === "PO";
+                return (
+                  <div
+                    key={`posm-${event.id}`}
+                    className={`flex ${isPo ? "justify-start" : "justify-end"}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-3 py-2 text-sm ${
+                        isPo
+                          ? "bg-white text-text-base border border-border-default"
+                          : "bg-primary text-white"
+                      }`}
+                    >
+                      <div
+                        className={`text-[11px] ${
+                          isPo ? "text-text-muted" : "text-primary-light"
+                        }`}
+                      >
+                        {event.from} → {event.to} · {event.time}
+                      </div>
+                      <div className="mt-1 whitespace-pre-wrap">
+                        {event.summary}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+              PO → Human report
+            </h2>
+            <div className="mt-3 rounded-lg border-2 border-primary bg-primary-light px-4 py-3 text-sm shadow-sm">
+              <div className="flex items-center gap-2 text-primary">
+                <span className="text-base">●</span>
+                <span className="font-semibold">重要報告</span>
+              </div>
+              <div className="mt-3 flex flex-wrap items-center justify-between gap-2">
+                <div className="text-base font-semibold text-text-base">
+                  {poReport.title}
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[11px] text-text-muted">作業ステータス</span>
+                  <span
+                    className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                      workStatus.tone === "done"
+                        ? "bg-success-light text-success"
+                        : "bg-warning-light text-warning"
                     }`}
                   >
-                    <div className="font-medium">
-                      {t.data?.task_id || t.file}
+                    {workStatus.label}
+                  </span>
+                </div>
+              </div>
+              <div className="mt-2 text-sm text-text-default leading-relaxed">
+                {poReport.detail}
+              </div>
+              {completionNote && (
+                <div className="mt-3 rounded-lg border border-success-light bg-success-light/60 px-3 py-2 text-xs text-success">
+                  完了報告: {completionNote}
+                </div>
+              )}
+              <div className="mt-4 text-xs text-text-muted">
+                最終更新: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
+              </div>
+            </div>
+          </div>
+
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+              High-level plan
+            </h2>
+            <ol className="mt-3 space-y-2 text-sm text-text-base">
+              {planSteps.map((step, index) => (
+                <li key={`${step}-${index}`} className="flex gap-2">
+                  <span className="font-semibold text-primary">
+                    {index + 1}.
+                  </span>
+                  <span>{step}</span>
+                </li>
+              ))}
+            </ol>
+          </div>
+
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+              Agent directories
+            </h2>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {demoDirectories.map((dir) => (
+                <span
+                  key={dir}
+                  className="rounded-full border border-border-default bg-bg-muted px-3 py-1 text-xs text-text-secondary"
+                >
+                  {dir}/
+                </span>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="flex-1 space-y-6">
+          <div className="grid gap-6 xl:grid-cols-3">
+            <div className="rounded-lg border border-border-default bg-bg-surface p-4 xl:col-span-1">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                  Agent inventory
+                </h2>
+                <span className="text-xs text-text-muted">
+                  active{" "}
+                  {agentInventory.filter((agent) => agent.status === "active").length}
+                </span>
+              </div>
+              <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 text-sm">
+                {agentInventory.map((agent) => (
+                  <div
+                    key={agent.id}
+                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
+                      flashIds.agent === agent.id ? "ixv-flash" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-text-base">
+                        {agent.name}
+                      </div>
+                      <span
+                        className={`text-xs ${
+                          agent.status === "active"
+                            ? "text-success"
+                            : "text-text-muted"
+                        }`}
+                      >
+                        {agent.status === "active" ? "active" : "idle"}
+                      </span>
                     </div>
-                    <div className="text-xs text-text-muted">
-                      {t.data?.assignee || "-"} · {t.mtime}
+                    <div className="text-xs text-text-secondary">{agent.role}</div>
+                    <div className="mt-2 text-xs text-text-muted">
+                      最新: {agent.recent}
                     </div>
-                    <div className="text-text-secondary text-xs">
-                      {t.data?.summary || "-"}
-                    </div>
-                  </button>
+                  </div>
                 ))}
               </div>
             </div>
-            <div>
-              <div className="font-semibold">Reports</div>
-              <div className="text-xs text-text-muted">
-                {reports.length} files
+
+            <div className="rounded-lg border border-border-default bg-bg-surface p-4 xl:col-span-2">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                  Flow
+                </h2>
+                <span className="text-xs text-text-muted">
+                  PO → SM → Dev
+                </span>
+              </div>
+
+              <div className="mt-4 grid gap-4 lg:grid-cols-3">
+                <div className="space-y-4 lg:col-span-2">
+                  <div className="flex items-center gap-3 text-xs text-text-secondary">
+                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                      PO
+                    </span>
+                    <span className="text-text-muted">→</span>
+                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                      SM
+                    </span>
+                    <span className="text-text-muted">→</span>
+                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                      Dev
+                    </span>
+                  </div>
+
+                  <div className="space-y-3">
+                    {flowEvents.length === 0 && (
+                      <div className="text-sm text-text-muted">
+                        まだイベントはありません。
+                      </div>
+                    )}
+                    {flowEvents.map((event) => (
+                      <div
+                        key={event.id}
+                        className={`rounded-lg border border-border-default bg-bg-muted px-3 py-2 text-sm ${
+                          flashIds.flow === event.id ? "ixv-flash" : ""
+                        }`}
+                      >
+                        <div className="flex items-center justify-between">
+                          <div className="font-semibold text-text-base">
+                            {event.from} → {event.to}
+                          </div>
+                          <div className="text-xs text-text-muted">
+                            {event.time}
+                          </div>
+                        </div>
+                        <div className="text-xs text-text-secondary">
+                          {event.summary}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="rounded-lg border border-border-muted bg-bg-muted p-3">
+                  <div className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+                    QA
+                  </div>
+                  <div className="mt-3 text-sm font-semibold text-text-base">
+                    {qaStatus.label}
+                  </div>
+                  <div className="mt-2 text-xs text-text-secondary">
+                    {qaStatus.detail}
+                  </div>
+                  <div className="mt-4 text-xs text-text-muted">
+                    最終更新: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
+                  </div>
+                </div>
               </div>
             </div>
           </div>
-        </section>
-        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
-          <h2 className="text-lg font-semibold mb-3">Task Detail</h2>
-          {!selectedTask && (
-            <div className="text-sm text-text-muted">No task selected</div>
-          )}
-          {selectedTask && (
-            <div className="space-y-3 text-sm">
-              <div>
-                <div className="text-text-muted text-xs">Task ID</div>
-                <div>{selectedTask.data?.task_id || "-"}</div>
+
+          <div className="grid gap-6 lg:grid-cols-2">
+            <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                  PO inbox
+                </h2>
+                <span className="text-xs text-text-muted">
+                  {poInbox.length} items
+                </span>
               </div>
-              <div>
-                <div className="text-text-muted text-xs">Assignee</div>
-                <div>{selectedTask.data?.assignee || "-"}</div>
-              </div>
-              <div>
-                <div className="text-text-muted text-xs">Type</div>
-                <div>{selectedTask.data?.type || "-"}</div>
-              </div>
-              <div>
-                <div className="text-text-muted text-xs">Summary</div>
-                <div>{selectedTask.data?.summary || "-"}</div>
-              </div>
-              <div>
-                <div className="text-text-muted text-xs">Definition of Done</div>
-                <ul className="list-disc list-inside text-text-secondary">
-                  {(selectedTask.data?.definition_of_done || []).map(
-                    (item, idx) => (
-                      <li key={idx}>{item}</li>
-                    )
-                  )}
-                </ul>
-              </div>
-              <div>
-                <div className="text-text-muted text-xs">Report Status</div>
-                <div>{matchedReport?.data?.status || "-"}</div>
-              </div>
-              <div>
-                <div className="text-text-muted text-xs">Artifacts</div>
-                <ul className="list-disc list-inside text-text-secondary">
-                  {(matchedReport?.data?.artifacts || []).map((item, idx) => (
-                    <li key={idx}>{item}</li>
-                  ))}
-                </ul>
+              <div className="mt-4 space-y-3 text-sm">
+                {poInbox.length === 0 && (
+                  <div className="text-text-muted text-sm">
+                    まだメッセージはありません。
+                  </div>
+                )}
+                {poInbox.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
+                      flashIds.po === item.id ? "ixv-flash" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-text-base">
+                        {item.title}
+                      </div>
+                      <div className="text-xs text-text-muted">{item.time}</div>
+                    </div>
+                    <div className="text-xs text-text-secondary">
+                      {item.detail}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
-          )}
-        </section>
-        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
-          <Events apiBase={API_BASE} demoMode={demoMode} />
-        </section>
-        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
-          <TerminalStream apiBase={API_BASE} demoMode={demoMode} />
+
+            <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                  SM inbox
+                </h2>
+                <span className="text-xs text-text-muted">
+                  {smInbox.length} items
+                </span>
+              </div>
+              <div className="mt-4 space-y-3 text-sm">
+                {smInbox.length === 0 && (
+                  <div className="text-text-muted text-sm">
+                    まだメッセージはありません。
+                  </div>
+                )}
+                {smInbox.map((item) => (
+                  <div
+                    key={item.id}
+                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
+                      flashIds.sm === item.id ? "ixv-flash" : ""
+                    }`}
+                  >
+                    <div className="flex items-center justify-between">
+                      <div className="font-semibold text-text-base">
+                        {item.title}
+                      </div>
+                      <div className="text-xs text-text-muted">{item.time}</div>
+                    </div>
+                    <div className="text-xs text-text-secondary">
+                      {item.detail}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
         </section>
       </main>
     </div>
