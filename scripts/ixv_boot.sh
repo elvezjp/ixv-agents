@@ -39,7 +39,7 @@ tmux kill-session -t ixv-dev 2>/dev/null || true
 tmux kill-session -t ixv-qa 2>/dev/null || true
 
 log "Creating ixv-management session (PO/SM)..."
-tmux new-session -d -s ixv-management -n "management"
+tmux new-session -d -s ixv-management -n "management" -x 200 -y 50
 tmux split-window -v -t "ixv-management:0"
 tmux select-pane -t "ixv-management:0.0" -T "PO"
 tmux select-pane -t "ixv-management:0.1" -T "SM"
@@ -47,7 +47,7 @@ tmux send-keys -t "ixv-management:0.0" "cd $ROOT_DIR && export PS1='(PO) \\w\\$ 
 tmux send-keys -t "ixv-management:0.1" "cd $ROOT_DIR && export PS1='(SM) \\w\\$ ' && clear" Enter
 
 log "Creating ixv-dev session (Dev1-Dev8)..."
-tmux new-session -d -s ixv-dev -n "dev"
+tmux new-session -d -s ixv-dev -n "dev" -x 200 -y 50
 tmux split-window -h -t "ixv-dev:0"
 tmux split-window -h -t "ixv-dev:0"
 tmux split-window -h -t "ixv-dev:0"
@@ -64,7 +64,7 @@ for i in {0..7}; do
 done
 
 log "Creating ixv-qa session (QA1-QA2)..."
-tmux new-session -d -s ixv-qa -n "qa"
+tmux new-session -d -s ixv-qa -n "qa" -x 200 -y 50
 tmux split-window -v -t "ixv-qa:0"
 tmux select-pane -t "ixv-qa:0.0" -T "QA1"
 tmux select-pane -t "ixv-qa:0.1" -T "QA2"
@@ -82,6 +82,21 @@ if [ "$SETUP_ONLY" = false ]; then
   tmux send-keys -t "ixv-qa:0.1" "claude --dangerously-skip-permissions" Enter
 
   sleep 8
+
+  # Claude Code起動時にターミナルタイトルが「Claude Code」に上書きされる。
+  # フロントエンドはペインタイトルをキーとして表示するため、
+  # 全ペインが同じタイトルだと1件に集約されてしまう。
+  # そのため、Claude Code起動完了後にタイトルを再設定する。
+  # FIXME: ターミナルタイトルに依存しない方式に変更する
+  log "Re-setting pane titles (after Claude Code overwrites them)..."
+  tmux select-pane -t "ixv-management:0.0" -T "PO"
+  tmux select-pane -t "ixv-management:0.1" -T "SM"
+  for i in {0..7}; do
+    tmux select-pane -t "ixv-dev:0.$i" -T "Dev$((i+1))"
+  done
+  tmux select-pane -t "ixv-qa:0.0" -T "QA1"
+  tmux select-pane -t "ixv-qa:0.1" -T "QA2"
+
   log "Sending role instructions..."
   tmux send-keys -t "ixv-management:0.0" "instructions/po.md を読んで役割を理解せよ。" Enter
   tmux send-keys -t "ixv-management:0.1" "instructions/sm.md を読んで役割を理解せよ。" Enter
