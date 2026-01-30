@@ -86,7 +86,7 @@ export default function App() {
       <header className="px-6 py-5 border-b border-border-default bg-bg-surface">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-semibold">IXV-Agents Dashboard</h1>
+            <h1 className="text-2xl font-semibold text-primary">IXV-Agents Dashboard</h1>
             <p className="text-text-muted text-sm">Read-only status view</p>
           </div>
           <div className="flex items-center gap-3">
