@@ -91,7 +91,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              className={`text-xs px-2 py-1 rounded border ${demoMode ? "border-primary bg-primary-light" : "border-border-default hover:bg-bg-hover"}`}
+              className="text-xs px-2 py-1 rounded border border-primary bg-primary text-white hover:bg-primary-dark"
               onClick={() => setDemoMode((d) => !d)}
               title="デモモード切替"
             >

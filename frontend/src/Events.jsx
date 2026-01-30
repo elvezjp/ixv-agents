@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 export default function Events({ apiBase = "", demoMode = false }) {
   const [events, setEvents] = useState([]);
   const [agentStatus, setAgentStatus] = useState({});
+  const [isRunning, setIsRunning] = useState(true);
   const runningRef = useRef(true);
   const esRef = useRef(null);
 
@@ -82,15 +83,31 @@ export default function Events({ apiBase = "", demoMode = false }) {
         <h2 className="text-lg font-semibold">Agent Events (real-time)</h2>
         <div className="flex items-center gap-2">
           <button
-            className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
-            onClick={() => (runningRef.current = true)}
+            className={`text-xs px-2 py-1 rounded border ${
+              isRunning
+                ? "border-border-default text-text-muted cursor-not-allowed"
+                : "border-accent bg-accent text-black hover:bg-accent-dark"
+            }`}
+            onClick={() => {
+              runningRef.current = true;
+              setIsRunning(true);
+            }}
+            disabled={isRunning}
             title="Resume events"
           >
             Resume
           </button>
           <button
-            className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
-            onClick={() => (runningRef.current = false)}
+            className={`text-xs px-2 py-1 rounded border ${
+              !isRunning
+                ? "border-border-default text-text-muted cursor-not-allowed"
+                : "border-accent bg-accent text-black hover:bg-accent-dark"
+            }`}
+            onClick={() => {
+              runningRef.current = false;
+              setIsRunning(false);
+            }}
+            disabled={!isRunning}
             title="Pause events"
           >
             Pause
