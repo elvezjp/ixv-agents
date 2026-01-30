@@ -121,6 +121,7 @@ capability. Events define rhythm.
 
 -   `Spec.md`: System architecture, roles, workflow, and constraints.
 -   `Plan.md`: Implementation phases and tasks (execution plan).
+-   `docs/skill-guide.md`: Skill design guide for ixv-agents.
 
 ------------------------------------------------------------------------
 

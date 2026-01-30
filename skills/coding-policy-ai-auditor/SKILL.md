@@ -1,69 +1,59 @@
----
-name: coding-policy-ai-auditor
-description: Audit source code against semantic and judgment-based coding policies (e.g. naming, architecture, intent) using the rule-by-rule evaluation method.
----
+# Coding Policy AI Auditor
 
-# Coding Policy AI Auditor Skill
+## Purpose
 
-This skill provides a structured workflow for auditing source code against subjective or semantic coding standards (judgment-based rules) that are difficult for traditional linting tools to detect.
+ソースコードをセマンティック・判断ベースのコーディングポリシー（命名規則、アーキテクチャ意図、可読性など）に対して監査する。
 
-## What This Skill Is / Is Not
+## Scope / Non-Goals
 
-- **Best for**: naming clarity, architectural intent, layering rules, readability policies, “no magic numbers”, “service must not call DB directly”, etc.
-- **Not for**: formatting-only rules (use formatter), purely structural static checks (use linter), or fully-automated large-scale batch audits (use dedicated pipeline).
+- Scope: 命名の明瞭さ、アーキテクチャ意図、レイヤールール、可読性ポリシー、マジックナンバー禁止、「サービスはDBを直接呼ばない」等
+- Non-Goals: フォーマットのみのルール（formatter使用）、純粋な静的チェック（linter使用）、大規模バッチ監査（専用パイプライン使用）
 
-## Inputs (Required)
+## Inputs
 
-- **Coding policies / standards** (Markdown recommended)
-  - Each rule should be **one checkable statement**.
-  - If the rules are subjective, include examples of OK/NG to reduce “要確認”.
-- **Source code with line numbers (1-indexed)**  
-  Reporting must cite line ranges (e.g., `L45-L50`).
+- **コーディングポリシー/標準**（Markdown推奨）
+  - 各ルールは **1つのチェック可能な文** にする
+  - 主観的なルールには OK/NG 例を含めて「要確認」を減らす
+- **行番号付きソースコード**（1-indexed）
+  - 報告は行範囲を引用する（例: `L45-L50`）
 
-## Output (Required)
+## Outputs
 
-Per policy, output exactly one of:
+各ポリシーに対して以下のいずれかを出力：
 
-- **OK**: no issues for that policy
-- **NG**: clear violation (must include evidence and a concrete fix)
-- **要確認**: ambiguous / context missing (must state what context is needed)
+- **OK**: そのポリシーに問題なし
+- **NG**: 明確な違反（証拠と具体的な修正案を含める）
+- **要確認**: 曖昧/コンテキスト不足（必要なコンテキストを明記）
 
-Use the table format defined in `assets/audit_prompt.md`.
+`assets/audit_prompt.md` で定義されたテーブル形式を使用する。
 
-## Core Concepts
+## Steps
 
-1.  **Judgment-based Auditing**: Focuses on rules requiring contextual understanding (e.g., naming conventions, architectural alignment, logic clarity).
-2.  **Rule-by-Rule Evaluation**: To ensure high precision, each coding policy is evaluated individually against the code.
-3.  **Human-in-the-Loop**: Flagging ambiguous cases with "Requires Review" (要確認) to focus human effort where it's most needed.
+1. **入力の収集**: コーディングポリシーとソースコードを取得
+2. **行番号の付与**: `nl -ba path/to/file` で行番号を付ける
+3. **大きなファイルの分割**: 300行を超える場合、論理的なチャンク（クラス/関数/モジュール単位）に分割。チャンク間で10-20行のオーバーラップを維持
+4. **反復監査**: 各ポリシーに対して `audit_prompt.md` を適用し、違反を特定
+5. **結果の分類**: NG / 要確認 / OK に分類
+6. **レポート生成**: 違反、根拠、修正案を含むレポートを作成
 
-## Instructions
+## Guardrails
 
-1.  **Gather Inputs**:
-    - Obtain the coding policies/standards (Markdown or Excel/CSV converted to Markdown).
-    - Obtain the source code files to be audited.
-2.  **Add Line Numbers**: Ensure the source code has line numbers (1-indexed) to allow precise reporting of violations.
-    - Example (macOS/Linux): `nl -ba path/to/file` or `nl -ba path/to/file | sed -n '1,200p'`
-3.  **Handle Large Files (Chunking Strategy)**:
-    - For files exceeding 300 lines, split into logical chunks (e.g., by class, function, or module).
-    - Use `sed -n 'START,ENDp'` to extract specific line ranges: `nl -ba file.java | sed -n '1,300p'`
-    - Audit each chunk separately, then consolidate findings.
-    - Maintain overlap (10-20 lines) between chunks to avoid missing violations at boundaries.
-4.  **Iterative Audit**: For each policy in the coding standards:
-    - Apply the `audit_prompt.md` to evaluate the code specifically against that single policy.
-    - Identify violations, citing the specific line numbers and providing the rationale.
-5.  **Categorize Findings**:
-    - **Violated (NG)**: Clear violation of the policy.
-    - **Requires Review (要確認)**: Ambiguous implementation or context-dependent logic that requires human judgment.
-    - **OK**: Compliant with the policy.
-6.  **Generate Report**: Compile the findings into a consolidated report including violations, rationales, and suggested fixes.
+- 各ポリシーは **個別に** 評価する（ルールごとの評価）
+- 曖昧なケースは「要確認」として人間の判断に委ねる
+- 行番号の引用を必ず含める
+- 役割外ファイルの更新禁止
+
+## Validation
+
+- 全ポリシーに対して OK/NG/要確認 のいずれかが付与されている
+- NG には証拠と修正案が含まれている
+- 要確認 には必要なコンテキストが明記されている
 
 ## References
 
-For detailed information on judgment criteria, see:
 - [judgement_criteria.md](./references/judgement_criteria.md)
 - [comparison_report_ja.md](./references/comparison_report_ja.md)
 
 ## Execution
 
-Use the following templates to perform the analysis:
 - [audit_prompt.md](./assets/audit_prompt.md)

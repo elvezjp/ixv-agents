@@ -1,67 +1,61 @@
----
-name: spec-code-reviewer-skill
-description: Verify semantic consistency and identify logic gaps between design specifications (Markdown) and source code implementation.
----
+# Spec-to-Code Semantic Review
 
-# Spec-to-Code Semantic Review Skill
+## Purpose
 
-This skill provides a structured workflow for comparing software specifications with their corresponding source code to identify inconsistencies, missing features, or logic errors.
+設計仕様（Markdown）とソースコード実装の間のセマンティックな整合性を検証し、ロジックのギャップを特定する。
 
-## What This Skill Is / Is Not
+## Scope / Non-Goals
 
-- **Best for**: Feature-level or module-level reviews where you can provide the relevant spec sections and the implementing code.
-- **Not for**: Pure formatting/style checks (use linters/formatters), or fully-automated batch processing of hundreds of files (use dedicated tooling).
+- Scope: 機能レベル/モジュールレベルのレビュー（仕様セクションと実装コードを比較）
+- Non-Goals: フォーマット/スタイルチェック（linter/formatter使用）、大規模バッチ処理（専用ツール使用）
 
-## Inputs (Recommended Format)
+## Inputs
 
-- **Specification (Markdown)**:
-  - Requirement statements should be explicit (e.g., *Must/Shall/Should*).
-  - Prefer stable identifiers such as **Requirement IDs** (`AUTH-001`) or at least **section headers**.
-- **Source Code**:
-  - Provide the most relevant files (or modules) that implement the spec.
-  - If the code is large, provide **scoped excerpts** and include file paths.
+- **仕様書**（Markdown）
+  - 要件は明示的に記述（Must/Shall/Should）
+  - **要件ID**（`AUTH-001`）またはセクションヘッダーで識別
+- **ソースコード**
+  - 仕様を実装する関連ファイル/モジュール
+  - 大きい場合はスコープを絞った抜粋とファイルパスを含める
 
-## Output (Required)
-
-Use this structure so findings are easy to track:
+## Outputs
 
 - **Summary**: `Highly Consistent / Partially Consistent / Inconsistent`
-- **Findings table** (each row must cite evidence):
+- **Findings table**（各行に証拠を引用）:
   - `Requirement ID / Section`
-  - `Status` (`OK / NG / 要確認`)
-  - `Observation` (what is missing/divergent/ambiguous, and *where* in code)
-- **Suggested Improvements**: actionable next steps (implementation and/or spec clarification)
+  - `Status`（OK / NG / 要確認）
+  - `Observation`（何が欠落/乖離/曖昧か、コードのどこか）
+- **Suggested Improvements**: 次のアクション（実装または仕様の明確化）
 
-## Instructions
+## Steps
 
-1.  **Gather Inputs**: Obtain the project specification (in Markdown) and the relevant source code files.
-    - **Excel to Markdown Conversion**: If the spec is in Excel, convert it first using:
-      - `xlsx2csv spec.xlsx | csvtomd` (requires xlsx2csv and csvtomd)
-      - Pandoc: `pandoc spec.xlsx -o spec.md`
-      - Online tools: TableConvert, Excel2Markdown
-2.  **Contextualize**: Read the specification to understand the intended behavior, data structures, and edge cases.
-3.  **Assign Requirement IDs** (if not present):
-    - Use section headers as identifiers: `[AUTH-001]`, `[API-002]`
-    - Or use line references: `Spec L45-L52`
-    - Document the mapping in a traceability matrix for future reference.
-4.  **Cross-Reference**: Systematically map each requirement in the specification to the corresponding implementation in the code.
-5.  **Analyze**: Look for the following:
-    - **Missing Logic**: Requirements that are not implemented.
-    - **Divergent Logic**: Implementation that differs from the specification.
-    - **Ambiguity**: Vague specifications that lead to questionable implementation.
-6.  **Report**: Generate a detailed report highlighting identified gaps and suggesting improvements.
+1. **入力の収集**: 仕様書とソースコードを取得
+   - Excel仕様の場合: `xlsx2csv spec.xlsx | csvtomd` または Pandoc で変換
+2. **コンテキスト把握**: 仕様を読み、意図、データ構造、エッジケースを理解
+3. **要件IDの付与**（未付与の場合）: セクションヘッダーを識別子として使用（`[AUTH-001]`, `[API-002]`）
+4. **クロスリファレンス**: 仕様の各要件を実装にマッピング
+5. **分析**: 以下を検出
+   - **Missing Logic**: 未実装の要件
+   - **Divergent Logic**: 仕様と異なる実装
+   - **Ambiguity**: 曖昧な仕様による疑わしい実装
+6. **レポート生成**: ギャップと改善案を含むレポートを作成
 
-## Handling Large Inputs (Chunking Strategy)
+## Guardrails
 
-- **Spec**: focus on the section(s) relevant to the target feature; include cross-referenced sections (data models, error handling, API contracts).
-- **Code**:
-  - Prefer chunking by **module/class/function boundaries**.
-  - Keep **10–20 lines overlap** between chunks to avoid boundary misses.
-  - Maintain a stable mapping: `Requirement → file path → symbol (function/class)`.
+- **チャンキング戦略**（大きな入力の場合）:
+  - 仕様: 対象機能に関連するセクションに絞る
+  - コード: モジュール/クラス/関数境界で分割、10-20行のオーバーラップを維持
+- 要件 → ファイルパス → シンボル（関数/クラス）のマッピングを安定させる
+- 役割外ファイルの更新禁止
+
+## Validation
+
+- 全要件に対して OK/NG/要確認 のいずれかが付与されている
+- Summary が適切に判定されている
+- Suggested Improvements が具体的なアクションを示している
 
 ## References
 
-For review criteria and case studies, see:
 - [review-criteria.md](./references/review-criteria.md)
 - [case-study.md](./references/case-study.md)
 - [human-in-the-loop.md](./references/human-in-the-loop.md)
@@ -69,7 +63,5 @@ For review criteria and case studies, see:
 - [comparison-report_ja.md](./references/comparison-report_ja.md)
 
 ## Execution
-
-Use the prompt template:
 
 - [review_prompt.md](./assets/review_prompt.md)
