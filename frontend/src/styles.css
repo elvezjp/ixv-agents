@@ -3,24 +3,49 @@
 @tailwind utilities;
 
 :root {
-  /* 背景色 */
-  --color-bg-base: 255 255 255;        /* white - ページ全体の背景 */
-  --color-bg-surface: 248 250 252;     /* slate-50 - カード等の背景 */
-  --color-bg-muted: 241 245 249;       /* slate-100 - 控えめな背景 */
-  --color-bg-hover: 226 232 240;       /* slate-200 - ホバー時の背景 */
+  /* 背景色 (gray パレット - coding-policy-ai-auditor準拠) */
+  --color-bg-base: 243 244 246;        /* gray-100 - ページ全体の背景 */
+  --color-bg-surface: 255 255 255;     /* white - カード等の背景 */
+  --color-bg-muted: 249 250 251;       /* gray-50 - 控えめな背景 */
+  --color-bg-hover: 229 231 235;       /* gray-200 - ホバー時の背景 */
 
-  /* テキスト色 */
-  --color-text-base: 15 23 42;         /* slate-900 - メインテキスト */
-  --color-text-secondary: 71 85 105;   /* slate-500 - セカンダリテキスト */
-  --color-text-muted: 148 163 184;     /* slate-400 - 控えめなテキスト */
+  /* テキスト色 (gray パレット) */
+  --color-text-base: 17 24 39;         /* gray-900 - メインテキスト */
+  --color-text-strong: 31 41 55;       /* gray-800 - 強調テキスト */
+  --color-text-default: 55 65 81;      /* gray-700 - 通常テキスト */
+  --color-text-secondary: 107 114 128; /* gray-500 - セカンダリテキスト */
+  --color-text-muted: 156 163 175;     /* gray-400 - 控えめなテキスト */
 
-  /* ボーダー色 */
-  --color-border: 226 232 240;         /* slate-200 - 通常ボーダー */
-  --color-border-muted: 241 245 249;   /* slate-100 - 控えめなボーダー */
+  /* ボーダー色 (gray パレット) */
+  --color-border: 229 231 235;         /* gray-200 - 通常ボーダー */
+  --color-border-strong: 209 213 219;  /* gray-300 - 強調ボーダー */
+  --color-border-muted: 243 244 246;   /* gray-100 - 控えめなボーダー */
 
-  /* アクセント色 */
-  --color-accent: 16 185 129;          /* emerald-500 */
-  --color-accent-muted: 6 78 59;       /* emerald-900 - アクセント背景用 */
+  /* プライマリ色 (blue - リンク、主要ボタン) */
+  --color-primary: 63 97 167;          /* #3F61A7 - ベース */
+  --color-primary-hover: 29 78 216;    /* blue-700 - ホバー時 */
+  --color-primary-light: 219 234 254;  /* blue-100 - 背景用 */
+  --color-primary-ring: 59 130 246;    /* blue-500 - フォーカスリング */
+
+  /* アクセント色 (yellow - 選択状態等) */
+  --color-accent: 255 211 45;          /* #FFD32D - ベース */
+  --color-accent-hover: 234 179 8;     /* yellow-500 - ホバー時 */
+  --color-accent-light: 254 249 195;   /* yellow-100 - 背景用 */
+
+  /* ステータス色 - 成功 (green) */
+  --color-success: 22 163 74;          /* green-600 */
+  --color-success-hover: 21 128 61;    /* green-700 */
+  --color-success-light: 220 252 231;  /* green-100 */
+
+  /* ステータス色 - 警告 (yellow) */
+  --color-warning: 202 138 4;          /* yellow-600 */
+  --color-warning-hover: 161 98 7;     /* yellow-700 */
+  --color-warning-light: 254 249 195;  /* yellow-100 */
+
+  /* ステータス色 - エラー (red) */
+  --color-danger: 220 38 38;           /* red-600 */
+  --color-danger-hover: 185 28 28;     /* red-700 */
+  --color-danger-light: 254 226 226;   /* red-100 */
 }
 
 body {
@@ -40,21 +65,21 @@ body {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  border: 1px solid rgba(16, 185, 129, 0.6);
+  border: 1px solid rgba(63, 97, 167, 0.6);
   animation: ixvPing 1.2s ease-out infinite;
 }
 
 @keyframes ixvFlash {
   0% {
-    box-shadow: 0 0 0 rgba(16, 185, 129, 0.8);
+    box-shadow: 0 0 0 rgba(63, 97, 167, 0.8);
     transform: translateY(0);
   }
   40% {
-    box-shadow: 0 0 20px rgba(16, 185, 129, 0.6);
+    box-shadow: 0 0 20px rgba(63, 97, 167, 0.6);
     transform: translateY(-2px);
   }
   100% {
-    box-shadow: 0 0 0 rgba(16, 185, 129, 0);
+    box-shadow: 0 0 0 rgba(63, 97, 167, 0);
     transform: translateY(0);
   }
 }

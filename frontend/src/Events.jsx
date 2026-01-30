@@ -122,7 +122,7 @@ export default function Events({ apiBase = "", demoMode = false }) {
             >
               <div className="flex items-center justify-between">
                 <div className="font-medium">{agent}</div>
-                <div className={`h-2 w-2 rounded-full bg-accent ${isHot ? "ixv-ping" : ""}`} />
+                <div className={`h-2 w-2 rounded-full bg-primary ${isHot ? "ixv-ping" : ""}`} />
               </div>
               <div className="text-xs text-text-muted mt-1">
                 {new Date(data.ts).toLocaleTimeString()}

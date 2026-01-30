@@ -83,7 +83,7 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-bg-base">
-      <header className="px-6 py-5 border-b border-border-default">
+      <header className="px-6 py-5 border-b border-border-default bg-bg-surface">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">IXV-Agents Dashboard</h1>
@@ -91,7 +91,7 @@ export default function App() {
           </div>
           <div className="flex items-center gap-3">
             <button
-              className={`text-xs px-2 py-1 rounded border ${demoMode ? "border-accent bg-accent/10" : "border-border-default hover:bg-bg-hover"}`}
+              className={`text-xs px-2 py-1 rounded border ${demoMode ? "border-primary bg-primary-light" : "border-border-default hover:bg-bg-hover"}`}
               onClick={() => setDemoMode((d) => !d)}
               title="デモモード切替"
             >
@@ -145,7 +145,7 @@ export default function App() {
                     onClick={() => setSelectedTaskId(t.data?.task_id || "")}
                     className={`text-left rounded border px-2 py-2 ${
                       t.data?.task_id === selectedTaskId
-                        ? "border-accent bg-accent/10"
+                        ? "border-primary bg-primary-light"
                         : "border-border-default hover:bg-bg-hover"
                     }`}
                   >
