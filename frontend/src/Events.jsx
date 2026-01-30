@@ -82,21 +82,21 @@ export default function Events({ apiBase = "", demoMode = false }) {
         <h2 className="text-lg font-semibold">Agent Events (real-time)</h2>
         <div className="flex items-center gap-2">
           <button
-            className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800"
+            className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
             onClick={() => (runningRef.current = true)}
             title="Resume events"
           >
             Resume
           </button>
           <button
-            className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800"
+            className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
             onClick={() => (runningRef.current = false)}
             title="Pause events"
           >
             Pause
           </button>
           <button
-            className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800"
+            className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
             onClick={() => setEvents([])}
             title="Clear events"
           >
@@ -107,7 +107,7 @@ export default function Events({ apiBase = "", demoMode = false }) {
 
       <div className="grid grid-cols-2 gap-2 mb-3">
         {Object.keys(agentStatus).length === 0 && (
-          <div className="col-span-2 text-slate-500 text-sm">
+          <div className="col-span-2 text-text-muted text-sm">
             No agent activity yet
           </div>
         )}
@@ -116,18 +116,18 @@ export default function Events({ apiBase = "", demoMode = false }) {
           return (
             <div
               key={agent}
-              className={`rounded border border-slate-800 bg-slate-900/60 p-2 ${
+              className={`rounded border border-border-default bg-bg-muted p-2 ${
                 isHot ? "ixv-flash" : ""
               }`}
             >
               <div className="flex items-center justify-between">
                 <div className="font-medium">{agent}</div>
-                <div className={`h-2 w-2 rounded-full bg-emerald-400 ${isHot ? "ixv-ping" : ""}`} />
+                <div className={`h-2 w-2 rounded-full bg-accent ${isHot ? "ixv-ping" : ""}`} />
               </div>
-              <div className="text-xs text-slate-400 mt-1">
+              <div className="text-xs text-text-muted mt-1">
                 {new Date(data.ts).toLocaleTimeString()}
               </div>
-              <div className="text-slate-300 text-xs mt-1">
+              <div className="text-text-secondary text-xs mt-1">
                 {data.message || "-"}
               </div>
             </div>
@@ -135,9 +135,9 @@ export default function Events({ apiBase = "", demoMode = false }) {
         })}
       </div>
 
-      <div className="h-64 overflow-y-auto bg-slate-900/50 p-2 rounded">
+      <div className="h-64 overflow-y-auto bg-bg-muted p-2 rounded">
         {events.length === 0 && (
-          <div className="text-slate-500 text-sm">No events yet</div>
+          <div className="text-text-muted text-sm">No events yet</div>
         )}
         <ul className="space-y-2 text-sm">
           {events.map((ev) => {
@@ -145,15 +145,15 @@ export default function Events({ apiBase = "", demoMode = false }) {
             return (
               <li
                 key={ev.id}
-                className={`rounded border border-slate-800 p-2 ${
+                className={`rounded border border-border-default bg-bg-surface p-2 ${
                   isFresh ? "ixv-flash" : ""
                 }`}
               >
               <div className="flex items-baseline justify-between">
                 <div className="font-medium">{ev.agent}</div>
-                <div className="text-xs text-slate-400">{new Date(ev.ts).toLocaleTimeString()}</div>
+                <div className="text-xs text-text-muted">{new Date(ev.ts).toLocaleTimeString()}</div>
               </div>
-              <div className="text-slate-300 text-sm">{ev.message}</div>
+              <div className="text-text-secondary text-sm">{ev.message}</div>
               </li>
             );
           })}

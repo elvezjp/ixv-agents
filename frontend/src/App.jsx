@@ -82,54 +82,54 @@ export default function App() {
   );
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950">
-      <header className="px-6 py-5 border-b border-slate-800">
+    <div className="min-h-screen bg-bg-base">
+      <header className="px-6 py-5 border-b border-border-default">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-2xl font-semibold">IXV-Agents Dashboard</h1>
-            <p className="text-slate-400 text-sm">Read-only status view</p>
+            <p className="text-text-muted text-sm">Read-only status view</p>
           </div>
           <div className="flex items-center gap-3">
             <button
-              className={`text-xs px-2 py-1 rounded border ${demoMode ? "border-emerald-600 bg-emerald-950/40" : "border-slate-700 hover:bg-slate-800"}`}
+              className={`text-xs px-2 py-1 rounded border ${demoMode ? "border-accent bg-accent/10" : "border-border-default hover:bg-bg-hover"}`}
               onClick={() => setDemoMode((d) => !d)}
               title="デモモード切替"
             >
               {demoMode ? "デモモード" : "ライブモード"}
             </button>
             {demoMode && (
-              <div className="text-xs text-slate-400">デモデータ表示中</div>
+              <div className="text-xs text-text-muted">デモデータ表示中</div>
             )}
           </div>
         </div>
       </header> 
       <main className="grid gap-6 p-6 lg:grid-cols-3 xl:grid-cols-4">
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
           <h2 className="text-lg font-semibold mb-3">Dashboard</h2>
-          <pre className="whitespace-pre-wrap text-sm text-slate-200">
+          <pre className="whitespace-pre-wrap text-sm text-text-base">
             {dashboard}
           </pre>
         </section>
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
           <div className="flex items-center justify-between mb-3">
             <h2 className="text-lg font-semibold">Queue Overview</h2>
             <button
-              className="text-xs px-2 py-1 rounded border border-slate-700 hover:bg-slate-800"
+              className="text-xs px-2 py-1 rounded border border-border-default hover:bg-bg-hover"
               onClick={loadData}
             >
               Refresh
             </button>
           </div>
-          <div className="text-xs text-slate-400 mb-4">
+          <div className="text-xs text-text-muted mb-4">
             Last updated: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
           </div>
           <div className="space-y-4 text-sm">
             <div>
               <div className="font-semibold">PO → SM</div>
-              <div className="text-slate-300">
+              <div className="text-text-secondary">
                 {queue?.po_to_sm?.data?.summary || "No summary"}
               </div>
-              <div className="text-xs text-slate-500">
+              <div className="text-xs text-text-muted">
                 {queue?.po_to_sm?.file} · {queue?.po_to_sm?.mtime || "-"}
               </div>
             </div>
@@ -137,7 +137,7 @@ export default function App() {
               <div className="font-semibold">Tasks</div>
               <div className="grid gap-2">
                 {tasks.length === 0 && (
-                  <div className="text-slate-500">No tasks</div>
+                  <div className="text-text-muted">No tasks</div>
                 )}
                 {tasks.map((t) => (
                   <button
@@ -145,17 +145,17 @@ export default function App() {
                     onClick={() => setSelectedTaskId(t.data?.task_id || "")}
                     className={`text-left rounded border px-2 py-2 ${
                       t.data?.task_id === selectedTaskId
-                        ? "border-emerald-600 bg-emerald-950/40"
-                        : "border-slate-800 hover:bg-slate-800/60"
+                        ? "border-accent bg-accent/10"
+                        : "border-border-default hover:bg-bg-hover"
                     }`}
                   >
                     <div className="font-medium">
                       {t.data?.task_id || t.file}
                     </div>
-                    <div className="text-xs text-slate-400">
+                    <div className="text-xs text-text-muted">
                       {t.data?.assignee || "-"} · {t.mtime}
                     </div>
-                    <div className="text-slate-300 text-xs">
+                    <div className="text-text-secondary text-xs">
                       {t.data?.summary || "-"}
                     </div>
                   </button>
@@ -164,38 +164,38 @@ export default function App() {
             </div>
             <div>
               <div className="font-semibold">Reports</div>
-              <div className="text-xs text-slate-400">
+              <div className="text-xs text-text-muted">
                 {reports.length} files
               </div>
             </div>
           </div>
         </section>
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
           <h2 className="text-lg font-semibold mb-3">Task Detail</h2>
           {!selectedTask && (
-            <div className="text-sm text-slate-400">No task selected</div>
+            <div className="text-sm text-text-muted">No task selected</div>
           )}
           {selectedTask && (
             <div className="space-y-3 text-sm">
               <div>
-                <div className="text-slate-400 text-xs">Task ID</div>
+                <div className="text-text-muted text-xs">Task ID</div>
                 <div>{selectedTask.data?.task_id || "-"}</div>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Assignee</div>
+                <div className="text-text-muted text-xs">Assignee</div>
                 <div>{selectedTask.data?.assignee || "-"}</div>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Type</div>
+                <div className="text-text-muted text-xs">Type</div>
                 <div>{selectedTask.data?.type || "-"}</div>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Summary</div>
+                <div className="text-text-muted text-xs">Summary</div>
                 <div>{selectedTask.data?.summary || "-"}</div>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Definition of Done</div>
-                <ul className="list-disc list-inside text-slate-300">
+                <div className="text-text-muted text-xs">Definition of Done</div>
+                <ul className="list-disc list-inside text-text-secondary">
                   {(selectedTask.data?.definition_of_done || []).map(
                     (item, idx) => (
                       <li key={idx}>{item}</li>
@@ -204,12 +204,12 @@ export default function App() {
                 </ul>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Report Status</div>
+                <div className="text-text-muted text-xs">Report Status</div>
                 <div>{matchedReport?.data?.status || "-"}</div>
               </div>
               <div>
-                <div className="text-slate-400 text-xs">Artifacts</div>
-                <ul className="list-disc list-inside text-slate-300">
+                <div className="text-text-muted text-xs">Artifacts</div>
+                <ul className="list-disc list-inside text-text-secondary">
                   {(matchedReport?.data?.artifacts || []).map((item, idx) => (
                     <li key={idx}>{item}</li>
                   ))}
@@ -218,10 +218,10 @@ export default function App() {
             </div>
           )}
         </section>
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
           <Events apiBase={API_BASE} demoMode={demoMode} />
         </section>
-        <section className="rounded-lg border border-slate-800 bg-slate-900/60 p-4">
+        <section className="rounded-lg border border-border-default bg-bg-surface p-4">
           <TerminalStream apiBase={API_BASE} demoMode={demoMode} />
         </section>
       </main>

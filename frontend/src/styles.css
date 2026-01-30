@@ -2,6 +2,27 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  /* 背景色 */
+  --color-bg-base: 255 255 255;        /* white - ページ全体の背景 */
+  --color-bg-surface: 248 250 252;     /* slate-50 - カード等の背景 */
+  --color-bg-muted: 241 245 249;       /* slate-100 - 控えめな背景 */
+  --color-bg-hover: 226 232 240;       /* slate-200 - ホバー時の背景 */
+
+  /* テキスト色 */
+  --color-text-base: 15 23 42;         /* slate-900 - メインテキスト */
+  --color-text-secondary: 71 85 105;   /* slate-500 - セカンダリテキスト */
+  --color-text-muted: 148 163 184;     /* slate-400 - 控えめなテキスト */
+
+  /* ボーダー色 */
+  --color-border: 226 232 240;         /* slate-200 - 通常ボーダー */
+  --color-border-muted: 241 245 249;   /* slate-100 - 控えめなボーダー */
+
+  /* アクセント色 */
+  --color-accent: 16 185 129;          /* emerald-500 */
+  --color-accent-muted: 6 78 59;       /* emerald-900 - アクセント背景用 */
+}
+
 body {
   font-family: "Space Grotesk", system-ui, sans-serif;
 }
