@@ -51,10 +51,40 @@ const demoFlowTemplates = [
   { from: "SM", to: "PO", summary: "スコープとリリース案を共有" }
 ];
 
-const demoPoInboxTemplates = [
-  { title: "要件整理メモ", detail: "オンボーディング短縮で初回体験を改善" },
-  { title: "KPI整理", detail: "登録完了率 +8% を目標に設定" },
-  { title: "スコープ提案", detail: "主要3画面に限定して検証" }
+const demoYamlTemplates = [
+  {
+    schema_version: "1.0",
+    request_id: "REQ-20260128-001",
+    priority: "P0",
+    summary: "オンボーディング改善",
+    acceptance_criteria: ["初回体験の短縮", "離脱率の低減"],
+    constraints: ["ローカルのみ"],
+    notes: "Phase 5 verification"
+  },
+  {
+    schema_version: "1.0",
+    request_id: "REQ-20260128-002",
+    priority: "P1",
+    summary: "検索フィルタ保存",
+    acceptance_criteria: ["保存済みフィルタ表示", "再利用機能"],
+    constraints: ["既存API利用"],
+    notes: "UX改善"
+  },
+  {
+    schema_version: "1.0",
+    request_id: "REQ-20260128-003",
+    priority: "P1",
+    summary: "請求書ダウンロード機能",
+    acceptance_criteria: ["フィルタ機能", "並び替え機能"],
+    constraints: ["PDF形式対応"],
+    notes: "経理部門要望"
+  }
+];
+
+const demoTaskTemplates = [
+  ["UI調整", "API連携", "追跡計測"],
+  ["フィルタUI実装", "保存API", "復元処理"],
+  ["一覧画面", "フィルタ実装", "ソート実装", "ダウンロードAPI"]
 ];
 
 const demoPoToHumanTemplates = [
@@ -86,12 +116,6 @@ const demoCompletionNotes = [
   "全タスクが完了し、回帰テストも問題ございませんでした。"
 ];
 
-const demoSmInboxTemplates = [
-  { title: "タスク分解", detail: "UI調整 / API連携 / 追跡計測" },
-  { title: "スプリント計画", detail: "Story 5件を優先順位順で配置" },
-  { title: "技術検討", detail: "既存フローの再利用可否を確認" }
-];
-
 const demoQaTemplates = [
   { label: "QA 待機中", detail: "準備完了。テストケース 12 件" },
   { label: "QA 実行中", detail: "回帰テスト 4 件、手動確認中" },
@@ -106,19 +130,55 @@ const createFlowEvent = (template) => ({
   time: new Date().toLocaleTimeString()
 });
 
-const createInboxItem = (template) => ({
-  id: `inbox-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
-  title: template.title,
-  detail: template.detail,
-  time: new Date().toLocaleTimeString()
-});
-
 const createChatMessage = (role, text) => ({
   id: `chat-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
   role,
   text,
   time: new Date().toLocaleTimeString()
 });
+
+const createPoInboxItemWithSteps = (request, yamlIndex = 0) => ({
+  id: `po-inbox-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+  title: request.length > 20 ? request.substring(0, 20) + "..." : request,
+  time: new Date().toLocaleTimeString(),
+  yamlIndex,
+  steps: [
+    {
+      type: "received",
+      label: "指示受領",
+      content: request,
+      time: new Date().toLocaleTimeString()
+    }
+  ],
+  outputFiles: []
+});
+
+const createSmInboxItemWithSteps = (yamlData) => ({
+  id: `sm-inbox-${Date.now()}-${Math.random().toString(16).slice(2, 6)}`,
+  title: `タスク分解: ${yamlData.request_id}`,
+  time: new Date().toLocaleTimeString(),
+  steps: [
+    {
+      type: "received",
+      label: "指示受領",
+      content: "POからYAML読取指示を受信",
+      time: new Date().toLocaleTimeString()
+    }
+  ],
+  outputFiles: []
+});
+
+const generateYamlString = (template) => {
+  return `schema_version: "${template.schema_version}"
+request_id: "${template.request_id}"
+priority: "${template.priority}"
+summary: "${template.summary}"
+acceptance_criteria:
+${template.acceptance_criteria.map((c) => `  - "${c}"`).join("\n")}
+constraints:
+${template.constraints.map((c) => `  - "${c}"`).join("\n")}
+notes: "${template.notes}"`;
+};
 
 export default function App() {
   const [demoMode, setDemoMode] = useState(BUILD_DEMO);
@@ -138,11 +198,16 @@ export default function App() {
   const [smInbox, setSmInbox] = useState([]);
   const [qaStatus, setQaStatus] = useState({ label: "-", detail: "-" });
   const [lastUpdated, setLastUpdated] = useState(null);
+  const [selectedPoInboxId, setSelectedPoInboxId] = useState(null);
+  const [selectedSmInboxId, setSelectedSmInboxId] = useState(null);
   const [flashIds, setFlashIds] = useState({
     flow: null,
     po: null,
     sm: null,
-    agent: null
+    agent: null,
+    poInbox: false,
+    smInbox: false,
+    poSmChat: false
   });
 
   const flowIndex = useRef(0);
@@ -184,11 +249,43 @@ export default function App() {
       setPoSmMessages([
         createFlowEvent({ from: "PO", to: "SM", summary: "要件を受領し、タスク化を依頼" })
       ]);
-      setPoInbox([createInboxItem(demoPoInboxTemplates[0])]);
-      setSmInbox([createInboxItem(demoSmInboxTemplates[0])]);
+
+      // 新しいステップ付きInbox構造で初期化
+      const initialPoItem = createPoInboxItemWithSteps(demoRequests[0], 0);
+      initialPoItem.steps = [
+        { type: "received", label: "指示受領", content: demoRequests[0], time: new Date().toLocaleTimeString() },
+        { type: "generating", label: "YAML生成", content: "po_to_sm.yaml を生成完了", time: new Date().toLocaleTimeString() },
+        { type: "saved", label: "ファイル保存", content: "queue/po_to_sm.yaml に保存完了", time: new Date().toLocaleTimeString() },
+        { type: "notify", label: "SM通知", content: "SMにYAML読取指示を送信", time: new Date().toLocaleTimeString() }
+      ];
+      initialPoItem.outputFiles = [
+        { name: "po_to_sm.yaml", content: generateYamlString(demoYamlTemplates[0]) }
+      ];
+      setPoInbox([initialPoItem]);
+      setSelectedPoInboxId(initialPoItem.id);
+
+      const initialSmItem = createSmInboxItemWithSteps(demoYamlTemplates[0]);
+      initialSmItem.steps = [
+        { type: "received", label: "指示受領", content: "POからYAML読取指示を受信", time: new Date().toLocaleTimeString() },
+        { type: "parsing", label: "YAML解析", content: `queue/po_to_sm.yaml を読取完了\n${demoYamlTemplates[0].summary}`, time: new Date().toLocaleTimeString() },
+        { type: "tasks", label: "タスク分解", content: demoTaskTemplates[0], time: new Date().toLocaleTimeString() }
+      ];
+      initialSmItem.outputFiles = [
+        {
+          name: "tasks.yaml",
+          content: `request_id: "${demoYamlTemplates[0].request_id}"
+tasks:
+${demoTaskTemplates[0].map((t, i) => `  - id: TASK-${i + 1}
+    title: "${t}"
+    status: pending`).join("\n")}`
+        }
+      ];
+      setSmInbox([initialSmItem]);
+      setSelectedSmInboxId(initialSmItem.id);
+
       setQaStatus(demoQaTemplates[0]);
       setLastUpdated(new Date());
-      setFlashIds({ flow: null, po: null, sm: null, agent: null });
+      setFlashIds({ flow: null, po: null, sm: null, agent: null, poInbox: false, smInbox: false, poSmChat: false });
     } else {
       setHumanRequest("");
       setChatMessages([]);
@@ -207,9 +304,11 @@ export default function App() {
       setPoSmMessages([]);
       setPoInbox([]);
       setSmInbox([]);
+      setSelectedPoInboxId(null);
+      setSelectedSmInboxId(null);
       setQaStatus({ label: "QA 未開始", detail: "入力待機中" });
       setLastUpdated(null);
-      setFlashIds({ flow: null, po: null, sm: null, agent: null });
+      setFlashIds({ flow: null, po: null, sm: null, agent: null, poInbox: false, smInbox: false, poSmChat: false });
     }
   }, [demoMode]);
 
@@ -217,35 +316,14 @@ export default function App() {
     if (!demoMode) return;
 
     const id = setInterval(() => {
+      // Flow更新
       const flowTemplate =
         demoFlowTemplates[flowIndex.current % demoFlowTemplates.length];
       const nextFlow = createFlowEvent(flowTemplate);
       flowIndex.current += 1;
-
       setFlowEvents((prev) => [nextFlow, ...prev].slice(0, 6));
-      if (
-        (nextFlow.from === "PO" && nextFlow.to === "SM") ||
-        (nextFlow.from === "SM" && nextFlow.to === "PO")
-      ) {
-        setPoSmMessages((prev) => [...prev, nextFlow].slice(-8));
-      }
 
-      const nextRequest = demoRequests[requestIndex.current % demoRequests.length];
-      const nextReply = demoPoReplies[requestIndex.current % demoPoReplies.length];
-      requestIndex.current += 1;
-      setHumanRequest(nextRequest);
-      setChatMessages((prev) =>
-        [
-          ...prev,
-          createChatMessage("human", nextRequest),
-          createChatMessage("po", nextReply)
-        ].slice(-10)
-      );
-
-      const nextPo =
-        demoPoInboxTemplates[poIndex.current % demoPoInboxTemplates.length];
-      const nextSm =
-        demoSmInboxTemplates[smIndex.current % demoSmInboxTemplates.length];
+      // PO Report更新
       const nextPoReport =
         demoPoToHumanTemplates[
           poReportIndex.current % demoPoToHumanTemplates.length
@@ -254,15 +332,8 @@ export default function App() {
         demoWorkStatusTemplates[
           statusIndex.current % demoWorkStatusTemplates.length
         ];
-      const poItem = createInboxItem(nextPo);
-      const smItem = createInboxItem(nextSm);
-      poIndex.current += 1;
       poReportIndex.current += 1;
       statusIndex.current += 1;
-      smIndex.current += 1;
-
-      setPoInbox((prev) => [poItem, ...prev].slice(0, 4));
-      setSmInbox((prev) => [smItem, ...prev].slice(0, 4));
       setPoReport(nextPoReport);
       setWorkStatus(nextStatus);
       setCompletionNote(
@@ -273,19 +344,21 @@ export default function App() {
           : ""
       );
 
+      // QA更新
       const nextQa = demoQaTemplates[qaIndex.current % demoQaTemplates.length];
       qaIndex.current += 1;
       setQaStatus(nextQa);
 
+      // Agent状態更新
       const pickDevAgentId = () => {
-        const id = `dev${(devAgentIndex.current % 8) + 1}`;
+        const agentId = `dev${(devAgentIndex.current % 8) + 1}`;
         devAgentIndex.current += 1;
-        return id;
+        return agentId;
       };
       const pickQaAgentId = () => {
-        const id = `qa${(qaAgentIndex.current % 2) + 1}`;
+        const agentId = `qa${(qaAgentIndex.current % 2) + 1}`;
         qaAgentIndex.current += 1;
-        return id;
+        return agentId;
       };
       const activeAgentId =
         nextFlow.to === "SM"
@@ -306,8 +379,8 @@ export default function App() {
 
       setFlashIds({
         flow: nextFlow.id,
-        po: poItem.id,
-        sm: smItem.id,
+        po: null,
+        sm: null,
         agent: activeAgentId
       });
       setLastUpdated(new Date());
@@ -333,9 +406,56 @@ export default function App() {
     chatScrollRef.current.scrollTop = chatScrollRef.current.scrollHeight;
   }, [chatMessages]);
 
+  const triggerFlash = (key) => {
+    setFlashIds((prev) => ({ ...prev, [key]: true }));
+    setTimeout(() => {
+      setFlashIds((prev) => ({ ...prev, [key]: false }));
+    }, 1200);
+  };
+
+  const addPoInboxStep = (itemId, step) => {
+    setPoInbox((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, steps: [...item.steps, step] } : item
+      )
+    );
+    triggerFlash("poInbox");
+  };
+
+  const addPoInboxOutputFile = (itemId, file) => {
+    setPoInbox((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? { ...item, outputFiles: [...item.outputFiles, file] }
+          : item
+      )
+    );
+  };
+
+  const addSmInboxStep = (itemId, step) => {
+    setSmInbox((prev) =>
+      prev.map((item) =>
+        item.id === itemId ? { ...item, steps: [...item.steps, step] } : item
+      )
+    );
+    triggerFlash("smInbox");
+  };
+
+  const addSmInboxOutputFile = (itemId, file) => {
+    setSmInbox((prev) =>
+      prev.map((item) =>
+        item.id === itemId
+          ? { ...item, outputFiles: [...item.outputFiles, file] }
+          : item
+      )
+    );
+  };
+
   const handleHumanSend = () => {
     const value = humanRequest.trim();
     if (!value) return;
+
+    // チャットメッセージ追加
     setChatMessages((prev) =>
       [...prev, createChatMessage("human", value)].slice(-10)
     );
@@ -350,32 +470,117 @@ export default function App() {
         recent: agent.id === "po" ? value : agent.recent
       }))
     );
-    setPoSmMessages((prev) =>
-      [
-        ...prev,
-        createFlowEvent({
-          from: "PO",
-          to: "SM",
-          summary: "新規リクエストを受領。要件整理を開始します。"
-        })
-      ].slice(-8)
-    );
-    if (!demoMode) {
-      const reply = "了解しました。内容を確認し、対応方針をご報告します。";
+
+    // PO Inboxに新アイテム追加（receivedステップのみ）
+    const yamlIdx = requestIndex.current % demoYamlTemplates.length;
+    const newPoItem = createPoInboxItemWithSteps(value, yamlIdx);
+    setPoInbox((prev) => [newPoItem, ...prev].slice(0, 10));
+    setSelectedPoInboxId(newPoItem.id);
+
+    // POの返信
+    const reply = demoPoReplies[requestIndex.current % demoPoReplies.length];
+    setTimeout(() => {
+      setChatMessages((prev) =>
+        [...prev, createChatMessage("po", reply)].slice(-10)
+      );
+    }, 800);
+
+    // 1.5秒後: YAML生成中ステップ
+    const yamlTemplate = demoYamlTemplates[yamlIdx];
+    setTimeout(() => {
+      addPoInboxStep(newPoItem.id, {
+        type: "generating",
+        label: "YAML生成中",
+        content: "po_to_sm.yaml を生成中...",
+        time: new Date().toLocaleTimeString()
+      });
+    }, 1500);
+
+    // 3秒後: ファイル保存ステップ → outputFilesに追加
+    setTimeout(() => {
+      addPoInboxStep(newPoItem.id, {
+        type: "saved",
+        label: "ファイル保存",
+        content: "queue/po_to_sm.yaml に保存完了",
+        time: new Date().toLocaleTimeString()
+      });
+      addPoInboxOutputFile(newPoItem.id, {
+        name: "po_to_sm.yaml",
+        content: generateYamlString(yamlTemplate)
+      });
+    }, 3000);
+
+    // 4.5秒後: SM通知ステップ + SM Inbox追加
+    setTimeout(() => {
+      addPoInboxStep(newPoItem.id, {
+        type: "notify",
+        label: "SM通知",
+        content: "SMにYAML読取指示を送信",
+        time: new Date().toLocaleTimeString()
+      });
+
+      // PO-SMチャットに追加
+      setPoSmMessages((prev) =>
+        [
+          ...prev,
+          createFlowEvent({
+            from: "PO",
+            to: "SM",
+            summary: `${yamlTemplate.request_id} のYAMLを読んでください`
+          })
+        ].slice(-8)
+      );
+      triggerFlash("poSmChat");
+
+      // SM Inbox追加
+      const newSmItem = createSmInboxItemWithSteps(yamlTemplate);
+      setSmInbox((prev) => [newSmItem, ...prev].slice(0, 10));
+      setSelectedSmInboxId(newSmItem.id);
+
+      // 6秒後: SM YAML解析ステップ
       setTimeout(() => {
-        setChatMessages((prev) =>
-          [...prev, createChatMessage("po", reply)].slice(-10)
+        addSmInboxStep(newSmItem.id, {
+          type: "parsing",
+          label: "YAML解析",
+          content: `queue/po_to_sm.yaml を読取中...\n${yamlTemplate.summary}`,
+          time: new Date().toLocaleTimeString()
+        });
+      }, 1500);
+
+      // 7.5秒後: SM タスク分解ステップ
+      setTimeout(() => {
+        const tasks = demoTaskTemplates[yamlIdx % demoTaskTemplates.length];
+        addSmInboxStep(newSmItem.id, {
+          type: "tasks",
+          label: "タスク分解",
+          content: tasks,
+          time: new Date().toLocaleTimeString()
+        });
+        addSmInboxOutputFile(newSmItem.id, {
+          name: "tasks.yaml",
+          content: `request_id: "${yamlTemplate.request_id}"
+tasks:
+${tasks.map((t, i) => `  - id: TASK-${i + 1}
+    title: "${t}"
+    status: pending`).join("\n")}`
+        });
+
+        // SM→POへの返信
+        setPoSmMessages((prev) =>
+          [
+            ...prev,
+            createFlowEvent({
+              from: "SM",
+              to: "PO",
+              summary: `${tasks.length}件のタスクに分解完了`
+            })
+          ].slice(-8)
         );
-        setFlashIds((prev) => ({ ...prev, agent: "po" }));
-        setAgentInventory((prev) =>
-          prev.map((agent) => ({
-            ...agent,
-            status: agent.id === "po" ? "active" : "idle",
-            recent: agent.id === "po" ? reply : agent.recent
-          }))
-        );
-      }, 600);
-    }
+        triggerFlash("poSmChat");
+      }, 3000);
+    }, 4500);
+
+    requestIndex.current += 1;
   };
 
   return (
@@ -402,16 +607,18 @@ export default function App() {
           </div>
         </div>
       </header>
-      <main className="flex flex-col gap-6 p-6 lg:flex-row">
-        <section className="flex-none w-full space-y-6 lg:w-80 xl:w-96">
-          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+      <main className="flex flex-col gap-6 p-6">
+        {/* Row 1: Human→POチャット | PO Inbox */}
+        <div className="grid gap-6 lg:grid-cols-10">
+          {/* Human→POチャット */}
+          <div className="lg:col-span-2 rounded-lg border border-border-default bg-bg-surface p-4">
             <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
               Human → PO チャット
             </h2>
             <div className="mt-3 flex flex-col gap-3">
               <div
                 ref={chatScrollRef}
-                className="flex max-h-64 flex-col gap-3 overflow-y-auto rounded-lg border border-border-muted bg-bg-muted p-3"
+                className="flex max-h-48 flex-col gap-3 overflow-y-auto rounded-lg border border-border-muted bg-bg-muted p-3"
               >
                 {chatMessages.length === 0 && (
                   <div className="text-xs text-text-muted">
@@ -476,12 +683,121 @@ export default function App() {
                 Enterで送信 / Shift+Enterで改行
               </div>
             </div>
-            <p className="mt-2 text-xs text-text-muted">
-              人間の要望がここに集約されます
-            </p>
           </div>
 
-          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+          {/* PO Inbox メーラー形式 (3カラム) */}
+          <div className={`lg:col-span-8 rounded-lg border border-border-default bg-bg-surface p-4 ${flashIds.poInbox ? "ixv-flash" : ""}`}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                PO Inbox
+              </h2>
+              <span className="text-xs text-text-muted">
+                {poInbox.length} items
+              </span>
+            </div>
+            <div className="mt-4 flex gap-4 min-h-[200px]">
+              {/* 左: 一覧 (20%) */}
+              <div className="w-[20%] border-r border-border-muted pr-3 space-y-2 overflow-y-auto max-h-[240px]">
+                {poInbox.length === 0 && (
+                  <div className="text-sm text-text-muted">メッセージはありません。</div>
+                )}
+                {poInbox.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelectedPoInboxId(item.id)}
+                    className={`cursor-pointer rounded px-2 py-2 transition-colors ${
+                      selectedPoInboxId === item.id
+                        ? "bg-primary-light border border-primary"
+                        : "hover:bg-bg-hover border border-transparent"
+                    }`}
+                  >
+                    <div className="text-sm font-semibold truncate text-text-base">
+                      {item.title}
+                    </div>
+                    <div className="text-xs text-text-muted">{item.time}</div>
+                  </div>
+                ))}
+              </div>
+              {/* 中央: 実行詳細 (40%) */}
+              <div className="w-[40%] border-r border-border-muted pr-3 space-y-3 overflow-y-auto max-h-[240px]">
+                {(() => {
+                  const selectedItem = poInbox.find((i) => i.id === selectedPoInboxId);
+                  if (!selectedItem) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        アイテムを選択してください
+                      </div>
+                    );
+                  }
+                  return selectedItem.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-lg border border-border-muted bg-bg-muted px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-primary">
+                          [{step.label}]
+                        </span>
+                        <span className="text-xs text-text-muted">{step.time}</span>
+                      </div>
+                      <div className="mt-2 text-sm">
+                        <div className="text-text-secondary">{step.content}</div>
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+              {/* 右: 出力プレビュー (40%) */}
+              <div className="w-[40%] space-y-2 overflow-y-auto max-h-[240px]">
+                {(() => {
+                  const selectedItem = poInbox.find((i) => i.id === selectedPoInboxId);
+                  if (!selectedItem) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        ファイルを表示するにはアイテムを選択してください
+                      </div>
+                    );
+                  }
+                  if (!selectedItem.outputFiles || selectedItem.outputFiles.length === 0) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        出力ファイルはまだありません
+                      </div>
+                    );
+                  }
+                  return (
+                    <>
+                      {/* タブ */}
+                      <div className="flex gap-1 border-b border-border-muted">
+                        {selectedItem.outputFiles.map((file, idx) => (
+                          <button
+                            key={idx}
+                            className={`px-3 py-1 text-xs font-semibold border-b-2 ${
+                              idx === 0
+                                ? "text-primary border-primary"
+                                : "text-text-muted border-transparent hover:text-text-base"
+                            }`}
+                          >
+                            {file.name}
+                          </button>
+                        ))}
+                      </div>
+                      {/* ファイル内容 */}
+                      <pre className="bg-bg-base p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap border border-border-muted">
+                        {selectedItem.outputFiles[0]?.content}
+                      </pre>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 2: PO↔SMチャット | SM Inbox */}
+        <div className="grid gap-6 lg:grid-cols-10">
+          {/* PO↔SMチャット */}
+          <div className={`lg:col-span-2 rounded-lg border border-border-default bg-bg-surface p-4 ${flashIds.poSmChat ? "ixv-flash" : ""}`}>
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
                 PO ↔ SM チャット
@@ -490,7 +806,7 @@ export default function App() {
                 {poSmEvents.length} messages
               </span>
             </div>
-            <div className="mt-4 max-h-56 space-y-3 overflow-y-auto pr-1 text-sm">
+            <div className="mt-4 max-h-48 space-y-3 overflow-y-auto pr-1 text-sm">
               {poSmEvents.length === 0 && (
                 <div className="text-sm text-text-muted">
                   まだやり取りはありません。
@@ -527,9 +843,131 @@ export default function App() {
             </div>
           </div>
 
-          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+          {/* SM Inbox メーラー形式 (3カラム) */}
+          <div className={`lg:col-span-8 rounded-lg border border-border-default bg-bg-surface p-4 ${flashIds.smInbox ? "ixv-flash" : ""}`}>
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                SM Inbox
+              </h2>
+              <span className="text-xs text-text-muted">
+                {smInbox.length} items
+              </span>
+            </div>
+            <div className="mt-4 flex gap-4 min-h-[200px]">
+              {/* 左: 一覧 (20%) */}
+              <div className="w-[20%] border-r border-border-muted pr-3 space-y-2 overflow-y-auto max-h-[240px]">
+                {smInbox.length === 0 && (
+                  <div className="text-sm text-text-muted">メッセージはありません。</div>
+                )}
+                {smInbox.map((item) => (
+                  <div
+                    key={item.id}
+                    onClick={() => setSelectedSmInboxId(item.id)}
+                    className={`cursor-pointer rounded px-2 py-2 transition-colors ${
+                      selectedSmInboxId === item.id
+                        ? "bg-primary-light border border-primary"
+                        : "hover:bg-bg-hover border border-transparent"
+                    }`}
+                  >
+                    <div className="text-sm font-semibold truncate text-text-base">
+                      {item.title}
+                    </div>
+                    <div className="text-xs text-text-muted">{item.time}</div>
+                  </div>
+                ))}
+              </div>
+              {/* 中央: 実行詳細 (40%) */}
+              <div className="w-[40%] border-r border-border-muted pr-3 space-y-3 overflow-y-auto max-h-[240px]">
+                {(() => {
+                  const selectedItem = smInbox.find((i) => i.id === selectedSmInboxId);
+                  if (!selectedItem) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        アイテムを選択してください
+                      </div>
+                    );
+                  }
+                  return selectedItem.steps.map((step, idx) => (
+                    <div
+                      key={idx}
+                      className="rounded-lg border border-border-muted bg-bg-muted px-3 py-2"
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-xs font-semibold text-primary">
+                          [{step.label}]
+                        </span>
+                        <span className="text-xs text-text-muted">{step.time}</span>
+                      </div>
+                      <div className="mt-2 text-sm">
+                        {step.type === "tasks" ? (
+                          <ul className="list-disc list-inside text-text-secondary">
+                            {step.content.map((task, i) => (
+                              <li key={i}>{task}</li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <div className="text-text-secondary whitespace-pre-wrap">
+                            {step.content}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  ));
+                })()}
+              </div>
+              {/* 右: 出力プレビュー (40%) */}
+              <div className="w-[40%] space-y-2 overflow-y-auto max-h-[240px]">
+                {(() => {
+                  const selectedItem = smInbox.find((i) => i.id === selectedSmInboxId);
+                  if (!selectedItem) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        ファイルを表示するにはアイテムを選択してください
+                      </div>
+                    );
+                  }
+                  if (!selectedItem.outputFiles || selectedItem.outputFiles.length === 0) {
+                    return (
+                      <div className="text-sm text-text-muted">
+                        出力ファイルはまだありません
+                      </div>
+                    );
+                  }
+                  return (
+                    <>
+                      {/* タブ */}
+                      <div className="flex gap-1 border-b border-border-muted">
+                        {selectedItem.outputFiles.map((file, idx) => (
+                          <button
+                            key={idx}
+                            className={`px-3 py-1 text-xs font-semibold border-b-2 ${
+                              idx === 0
+                                ? "text-primary border-primary"
+                                : "text-text-muted border-transparent hover:text-text-base"
+                            }`}
+                          >
+                            {file.name}
+                          </button>
+                        ))}
+                      </div>
+                      {/* ファイル内容 */}
+                      <pre className="bg-bg-base p-3 rounded text-xs overflow-x-auto whitespace-pre-wrap border border-border-muted">
+                        {selectedItem.outputFiles[0]?.content}
+                      </pre>
+                    </>
+                  );
+                })()}
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 3: PO→Human Report | Flow */}
+        <div className="grid gap-6 lg:grid-cols-10">
+          {/* PO→Human Report */}
+          <div className="lg:col-span-2 rounded-lg border border-border-default bg-bg-surface p-4">
             <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-              PO → Human report
+              PO → Human Report
             </h2>
             <div className="mt-3 rounded-lg border-2 border-primary bg-primary-light px-4 py-3 text-sm shadow-sm">
               <div className="flex items-center gap-2 text-primary">
@@ -567,25 +1005,132 @@ export default function App() {
             </div>
           </div>
 
+          {/* Flow */}
+          <div className="lg:col-span-8 rounded-lg border border-border-default bg-bg-surface p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                Flow
+              </h2>
+              <span className="text-xs text-text-muted">PO → SM → Dev</span>
+            </div>
+            <div className="mt-4 grid gap-4 lg:grid-cols-3">
+              <div className="space-y-4 lg:col-span-2">
+                <div className="flex items-center gap-3 text-xs text-text-secondary">
+                  <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                    PO
+                  </span>
+                  <span className="text-text-muted">→</span>
+                  <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                    SM
+                  </span>
+                  <span className="text-text-muted">→</span>
+                  <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
+                    Dev
+                  </span>
+                </div>
+                <div className="space-y-3 max-h-32 overflow-y-auto">
+                  {flowEvents.length === 0 && (
+                    <div className="text-sm text-text-muted">
+                      まだイベントはありません。
+                    </div>
+                  )}
+                  {flowEvents.map((event) => (
+                    <div
+                      key={event.id}
+                      className={`rounded-lg border border-border-default bg-bg-muted px-3 py-2 text-sm ${
+                        flashIds.flow === event.id ? "ixv-flash" : ""
+                      }`}
+                    >
+                      <div className="flex items-center justify-between">
+                        <div className="font-semibold text-text-base">
+                          {event.from} → {event.to}
+                        </div>
+                        <div className="text-xs text-text-muted">{event.time}</div>
+                      </div>
+                      <div className="text-xs text-text-secondary">
+                        {event.summary}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="rounded-lg border border-border-muted bg-bg-muted p-3">
+                <div className="text-xs font-semibold text-text-muted uppercase tracking-wide">
+                  QA
+                </div>
+                <div className="mt-3 text-sm font-semibold text-text-base">
+                  {qaStatus.label}
+                </div>
+                <div className="mt-2 text-xs text-text-secondary">
+                  {qaStatus.detail}
+                </div>
+                <div className="mt-4 text-xs text-text-muted">
+                  最終更新: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Row 4: High-level Plan | Agent Inventory | Agent Directories */}
+        <div className="grid gap-6 lg:grid-cols-3">
+          {/* High-level Plan */}
           <div className="rounded-lg border border-border-default bg-bg-surface p-4">
             <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-              High-level plan
+              High-level Plan
             </h2>
             <ol className="mt-3 space-y-2 text-sm text-text-base">
               {planSteps.map((step, index) => (
                 <li key={`${step}-${index}`} className="flex gap-2">
-                  <span className="font-semibold text-primary">
-                    {index + 1}.
-                  </span>
+                  <span className="font-semibold text-primary">{index + 1}.</span>
                   <span>{step}</span>
                 </li>
               ))}
             </ol>
           </div>
 
+          {/* Agent Inventory */}
+          <div className="rounded-lg border border-border-default bg-bg-surface p-4">
+            <div className="flex items-center justify-between">
+              <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
+                Agent Inventory
+              </h2>
+              <span className="text-xs text-text-muted">
+                active {agentInventory.filter((a) => a.status === "active").length}
+              </span>
+            </div>
+            <div className="mt-4 max-h-[180px] space-y-2 overflow-y-auto pr-1 text-sm">
+              {agentInventory.map((agent) => (
+                <div
+                  key={agent.id}
+                  className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
+                    flashIds.agent === agent.id ? "ixv-flash" : ""
+                  }`}
+                >
+                  <div className="flex items-center justify-between">
+                    <div className="font-semibold text-text-base text-sm">
+                      {agent.name}
+                    </div>
+                    <span
+                      className={`text-xs ${
+                        agent.status === "active" ? "text-success" : "text-text-muted"
+                      }`}
+                    >
+                      {agent.status === "active" ? "active" : "idle"}
+                    </span>
+                  </div>
+                  <div className="text-xs text-text-muted truncate">
+                    {agent.recent}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Agent Directories */}
           <div className="rounded-lg border border-border-default bg-bg-surface p-4">
             <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-              Agent directories
+              Agent Directories
             </h2>
             <div className="mt-3 flex flex-wrap gap-2">
               {demoDirectories.map((dir) => (
@@ -598,198 +1143,7 @@ export default function App() {
               ))}
             </div>
           </div>
-        </section>
-
-        <section className="flex-1 space-y-6">
-          <div className="grid gap-6 xl:grid-cols-3">
-            <div className="rounded-lg border border-border-default bg-bg-surface p-4 xl:col-span-1">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-                  Agent inventory
-                </h2>
-                <span className="text-xs text-text-muted">
-                  active{" "}
-                  {agentInventory.filter((agent) => agent.status === "active").length}
-                </span>
-              </div>
-              <div className="mt-4 max-h-[420px] space-y-3 overflow-y-auto pr-1 text-sm">
-                {agentInventory.map((agent) => (
-                  <div
-                    key={agent.id}
-                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
-                      flashIds.agent === agent.id ? "ixv-flash" : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-text-base">
-                        {agent.name}
-                      </div>
-                      <span
-                        className={`text-xs ${
-                          agent.status === "active"
-                            ? "text-success"
-                            : "text-text-muted"
-                        }`}
-                      >
-                        {agent.status === "active" ? "active" : "idle"}
-                      </span>
-                    </div>
-                    <div className="text-xs text-text-secondary">{agent.role}</div>
-                    <div className="mt-2 text-xs text-text-muted">
-                      最新: {agent.recent}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-border-default bg-bg-surface p-4 xl:col-span-2">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-                  Flow
-                </h2>
-                <span className="text-xs text-text-muted">
-                  PO → SM → Dev
-                </span>
-              </div>
-
-              <div className="mt-4 grid gap-4 lg:grid-cols-3">
-                <div className="space-y-4 lg:col-span-2">
-                  <div className="flex items-center gap-3 text-xs text-text-secondary">
-                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
-                      PO
-                    </span>
-                    <span className="text-text-muted">→</span>
-                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
-                      SM
-                    </span>
-                    <span className="text-text-muted">→</span>
-                    <span className="rounded-full bg-primary-light px-3 py-1 text-primary">
-                      Dev
-                    </span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {flowEvents.length === 0 && (
-                      <div className="text-sm text-text-muted">
-                        まだイベントはありません。
-                      </div>
-                    )}
-                    {flowEvents.map((event) => (
-                      <div
-                        key={event.id}
-                        className={`rounded-lg border border-border-default bg-bg-muted px-3 py-2 text-sm ${
-                          flashIds.flow === event.id ? "ixv-flash" : ""
-                        }`}
-                      >
-                        <div className="flex items-center justify-between">
-                          <div className="font-semibold text-text-base">
-                            {event.from} → {event.to}
-                          </div>
-                          <div className="text-xs text-text-muted">
-                            {event.time}
-                          </div>
-                        </div>
-                        <div className="text-xs text-text-secondary">
-                          {event.summary}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                <div className="rounded-lg border border-border-muted bg-bg-muted p-3">
-                  <div className="text-xs font-semibold text-text-muted uppercase tracking-wide">
-                    QA
-                  </div>
-                  <div className="mt-3 text-sm font-semibold text-text-base">
-                    {qaStatus.label}
-                  </div>
-                  <div className="mt-2 text-xs text-text-secondary">
-                    {qaStatus.detail}
-                  </div>
-                  <div className="mt-4 text-xs text-text-muted">
-                    最終更新: {lastUpdated ? lastUpdated.toLocaleTimeString() : "-"}
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="grid gap-6 lg:grid-cols-2">
-            <div className="rounded-lg border border-border-default bg-bg-surface p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-                  PO inbox
-                </h2>
-                <span className="text-xs text-text-muted">
-                  {poInbox.length} items
-                </span>
-              </div>
-              <div className="mt-4 space-y-3 text-sm">
-                {poInbox.length === 0 && (
-                  <div className="text-text-muted text-sm">
-                    まだメッセージはありません。
-                  </div>
-                )}
-                {poInbox.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
-                      flashIds.po === item.id ? "ixv-flash" : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-text-base">
-                        {item.title}
-                      </div>
-                      <div className="text-xs text-text-muted">{item.time}</div>
-                    </div>
-                    <div className="text-xs text-text-secondary">
-                      {item.detail}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="rounded-lg border border-border-default bg-bg-surface p-4">
-              <div className="flex items-center justify-between">
-                <h2 className="text-sm font-semibold text-text-muted uppercase tracking-wide">
-                  SM inbox
-                </h2>
-                <span className="text-xs text-text-muted">
-                  {smInbox.length} items
-                </span>
-              </div>
-              <div className="mt-4 space-y-3 text-sm">
-                {smInbox.length === 0 && (
-                  <div className="text-text-muted text-sm">
-                    まだメッセージはありません。
-                  </div>
-                )}
-                {smInbox.map((item) => (
-                  <div
-                    key={item.id}
-                    className={`rounded-lg border border-border-muted bg-bg-muted px-3 py-2 ${
-                      flashIds.sm === item.id ? "ixv-flash" : ""
-                    }`}
-                  >
-                    <div className="flex items-center justify-between">
-                      <div className="font-semibold text-text-base">
-                        {item.title}
-                      </div>
-                      <div className="text-xs text-text-muted">{item.time}</div>
-                    </div>
-                    <div className="text-xs text-text-secondary">
-                      {item.detail}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          </div>
-        </section>
+        </div>
       </main>
     </div>
   );
