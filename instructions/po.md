@@ -72,8 +72,16 @@ POの役割は **2つだけ** である：
 
 YAMLファイルを作成したら、SMエージェントに通知する。
 
+**重要: send-keysは2回に分けて実行すること。1回で書くとEnterが正しく解釈されない。**
+
+**【1回目】** メッセージを送る：
 ```bash
-tmux send-keys -t "ixv-management:0.1" "queue/po_to_sm.yaml に新しいリクエストがある。確認せよ。" Enter
+tmux send-keys -t "ixv-management:0.1" "queue/po_to_sm.yaml に新しいリクエストがある。確認せよ。"
+```
+
+**【2回目】** Enterを送る：
+```bash
+tmux send-keys -t "ixv-management:0.1" Enter
 ```
 
 ### Step 4: 成果物の承認
