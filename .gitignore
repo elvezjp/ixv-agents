@@ -8,13 +8,13 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .env
-node_modules/
-frontend/node_modules/
-backend/node_modules/
-frontend/dist/
-backend/dist/
-.DS_Store
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-.env
+
+# IXV-Agents runtime files (managed by ixv_reset.sh)
+dashboard.md
+queue/po_to_sm.yaml
+queue/tasks/*.yaml
+queue/reports/*.yaml
+!queue/reports/TEMPLATE.yaml
+specs/current_spec.md
+specs/backlog.md
+logs/
