@@ -1,8 +1,9 @@
 #!/bin/bash
 # IXV-Agents bootstrap script
 # Usage:
-#   ./scripts/ixv_boot.sh           # start tmux + agents
-#   ./scripts/ixv_boot.sh -s        # setup only (no claude)
+#   ./scripts/ixv_boot.sh              # start tmux + agents (opencode)
+#   ./scripts/ixv_boot.sh --claude-code # use Claude Code instead
+#   ./scripts/ixv_boot.sh -s           # setup only (no CLI)
 
 set -e
 
@@ -11,6 +12,8 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "$ROOT_DIR"
 
 SETUP_ONLY=false
+CLI_NAME="opencode"
+CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":{\"*\":\"allow\"}}}' opencode"
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -18,8 +21,15 @@ while [[ $# -gt 0 ]]; do
       SETUP_ONLY=true
       shift
       ;;
+    --claude-code)
+      CLI_NAME="claude"
+      CLI_CMD="claude --dangerously-skip-permissions"
+      shift
+      ;;
     -h|--help)
-      echo "Usage: ./scripts/ixv_boot.sh [-s|--setup-only]"
+      echo "Usage: ./scripts/ixv_boot.sh [--setup-only] [--claude-code]"
+      echo "  --setup-only    Setup tmux sessions without launching CLI"
+      echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
       exit 0
       ;;
     *)
@@ -72,23 +82,23 @@ tmux send-keys -t "ixv-qa:0.0" "cd $ROOT_DIR && export PS1='(QA1) \\w\\$ ' && cl
 tmux send-keys -t "ixv-qa:0.1" "cd $ROOT_DIR && export PS1='(QA2) \\w\\$ ' && clear" Enter
 
 if [ "$SETUP_ONLY" = false ]; then
-  log "Launching Claude Code in all panes..."
-  tmux send-keys -t "ixv-management:0.0" "claude --dangerously-skip-permissions" Enter
-  tmux send-keys -t "ixv-management:0.1" "claude --dangerously-skip-permissions" Enter
+  log "Launching $CLI_NAME in all panes..."
+  tmux send-keys -t "ixv-management:0.0" "$CLI_CMD" Enter
+  tmux send-keys -t "ixv-management:0.1" "$CLI_CMD" Enter
   for i in {0..7}; do
-    tmux send-keys -t "ixv-dev:0.$i" "claude --dangerously-skip-permissions" Enter
+    tmux send-keys -t "ixv-dev:0.$i" "$CLI_CMD" Enter
   done
-  tmux send-keys -t "ixv-qa:0.0" "claude --dangerously-skip-permissions" Enter
-  tmux send-keys -t "ixv-qa:0.1" "claude --dangerously-skip-permissions" Enter
+  tmux send-keys -t "ixv-qa:0.0" "$CLI_CMD" Enter
+  tmux send-keys -t "ixv-qa:0.1" "$CLI_CMD" Enter
 
   sleep 8
 
-  # Claude Code起動時にターミナルタイトルが「Claude Code」に上書きされる。
+  # CLIツール起動時にターミナルタイトルが上書きされることがある。
   # フロントエンドはペインタイトルをキーとして表示するため、
   # 全ペインが同じタイトルだと1件に集約されてしまう。
-  # そのため、Claude Code起動完了後にタイトルを再設定する。
+  # そのため、CLI起動完了後にタイトルを再設定する。
   # FIXME: ターミナルタイトルに依存しない方式に変更する
-  log "Re-setting pane titles (after Claude Code overwrites them)..."
+  log "Re-setting pane titles (after $CLI_NAME overwrites them)..."
   tmux select-pane -t "ixv-management:0.0" -T "PO"
   tmux select-pane -t "ixv-management:0.1" -T "SM"
   for i in {0..7}; do
