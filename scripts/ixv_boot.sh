@@ -1,9 +1,10 @@
 #!/bin/bash
 # IXV-Agents bootstrap script
 # Usage:
-#   ./scripts/ixv_boot.sh              # start tmux + agents (opencode)
-#   ./scripts/ixv_boot.sh --claude-code # use Claude Code instead
-#   ./scripts/ixv_boot.sh -s           # setup only (no CLI)
+#   ./scripts/ixv_boot.sh                        # start tmux + agents (opencode)
+#   ./scripts/ixv_boot.sh --claude-code          # use Claude Code instead
+#   ./scripts/ixv_boot.sh --model <model_name>   # specify model
+#   ./scripts/ixv_boot.sh -s                     # setup only (no CLI)
 
 set -e
 
@@ -14,6 +15,7 @@ cd "$ROOT_DIR"
 SETUP_ONLY=false
 CLI_NAME="opencode"
 CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":{\"*\":\"allow\"}}}' opencode"
+MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -26,10 +28,15 @@ while [[ $# -gt 0 ]]; do
       CLI_CMD="claude --dangerously-skip-permissions"
       shift
       ;;
+    --model)
+      MODEL="$2"
+      shift 2
+      ;;
     -h|--help)
-      echo "Usage: ./scripts/ixv_boot.sh [--setup-only] [--claude-code]"
+      echo "Usage: ./scripts/ixv_boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
       echo "  --setup-only    Setup tmux sessions without launching CLI"
       echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
+      echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
       exit 0
       ;;
     *)
@@ -38,6 +45,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Append model option if specified
+if [ -n "$MODEL" ]; then
+  CLI_CMD="$CLI_CMD --model $MODEL"
+fi
 
 log() {
   echo "[ixv] $1"
