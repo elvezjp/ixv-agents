@@ -1,8 +1,10 @@
 #!/bin/bash
 # IXV-Agents bootstrap script
 # Usage:
-#   ./scripts/ixv_boot.sh           # start tmux + agents
-#   ./scripts/ixv_boot.sh -s        # setup only (no claude)
+#   ./scripts/ixv_boot.sh                        # start tmux + agents (opencode)
+#   ./scripts/ixv_boot.sh --claude-code          # use Claude Code instead
+#   ./scripts/ixv_boot.sh --model <model_name>   # specify model
+#   ./scripts/ixv_boot.sh -s                     # setup only (no CLI)
 
 set -e
 
@@ -11,6 +13,9 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "$ROOT_DIR"
 
 SETUP_ONLY=false
+CLI_NAME="opencode"
+CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":\"allow\"}}' opencode"
+MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
@@ -18,8 +23,20 @@ while [[ $# -gt 0 ]]; do
       SETUP_ONLY=true
       shift
       ;;
+    --claude-code)
+      CLI_NAME="claude"
+      CLI_CMD="claude --dangerously-skip-permissions"
+      shift
+      ;;
+    --model)
+      MODEL="$2"
+      shift 2
+      ;;
     -h|--help)
-      echo "Usage: ./scripts/ixv_boot.sh [-s|--setup-only]"
+      echo "Usage: ./scripts/ixv_boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
+      echo "  --setup-only    Setup tmux sessions without launching CLI"
+      echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
+      echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
       exit 0
       ;;
     *)
@@ -28,6 +45,11 @@ while [[ $# -gt 0 ]]; do
       ;;
   esac
 done
+
+# Append model option if specified
+if [ -n "$MODEL" ]; then
+  CLI_CMD="$CLI_CMD --model $MODEL"
+fi
 
 log() {
   echo "[ixv] $1"
@@ -72,40 +94,124 @@ tmux send-keys -t "ixv-qa:0.0" "cd $ROOT_DIR && export PS1='(QA1) \\w\\$ ' && cl
 tmux send-keys -t "ixv-qa:0.1" "cd $ROOT_DIR && export PS1='(QA2) \\w\\$ ' && clear" Enter
 
 if [ "$SETUP_ONLY" = false ]; then
-  log "Launching Claude Code in all panes..."
-  tmux send-keys -t "ixv-management:0.0" "claude --dangerously-skip-permissions" Enter
-  tmux send-keys -t "ixv-management:0.1" "claude --dangerously-skip-permissions" Enter
-  for i in {0..7}; do
-    tmux send-keys -t "ixv-dev:0.$i" "claude --dangerously-skip-permissions" Enter
-  done
-  tmux send-keys -t "ixv-qa:0.0" "claude --dangerously-skip-permissions" Enter
-  tmux send-keys -t "ixv-qa:0.1" "claude --dangerously-skip-permissions" Enter
+  log "Launching $CLI_NAME in all panes..."
 
+  # PO/SM
+  tmux send-keys -t "ixv-management:0.0" "$CLI_CMD"
+  tmux send-keys -t "ixv-management:0.0" Enter
+  tmux send-keys -t "ixv-management:0.1" "$CLI_CMD"
+  tmux send-keys -t "ixv-management:0.1" Enter
+
+  # Dev1-Dev8
+  for i in {0..7}; do
+    tmux send-keys -t "ixv-dev:0.$i" "$CLI_CMD"
+    tmux send-keys -t "ixv-dev:0.$i" Enter
+  done
+
+  # QA1-QA2
+  tmux send-keys -t "ixv-qa:0.0" "$CLI_CMD"
+  tmux send-keys -t "ixv-qa:0.0" Enter
+  tmux send-keys -t "ixv-qa:0.1" "$CLI_CMD"
+  tmux send-keys -t "ixv-qa:0.1" Enter
+
+  log "Waiting for $CLI_NAME to start..."
   sleep 8
 
-  # Claude Code起動時にターミナルタイトルが「Claude Code」に上書きされる。
-  # フロントエンドはペインタイトルをキーとして表示するため、
-  # 全ペインが同じタイトルだと1件に集約されてしまう。
-  # そのため、Claude Code起動完了後にタイトルを再設定する。
-  # FIXME: ターミナルタイトルに依存しない方式に変更する
-  log "Re-setting pane titles (after Claude Code overwrites them)..."
-  tmux select-pane -t "ixv-management:0.0" -T "PO"
-  tmux select-pane -t "ixv-management:0.1" -T "SM"
-  for i in {0..7}; do
-    tmux select-pane -t "ixv-dev:0.$i" -T "Dev$((i+1))"
-  done
-  tmux select-pane -t "ixv-qa:0.0" -T "QA1"
-  tmux select-pane -t "ixv-qa:0.1" -T "QA2"
-
   log "Sending role instructions..."
-  tmux send-keys -t "ixv-management:0.0" "instructions/po.md を読んで役割を理解せよ。" Enter
-  tmux send-keys -t "ixv-management:0.1" "instructions/sm.md を読んで役割を理解せよ。" Enter
+
+  # PO/SM
+  tmux send-keys -t "ixv-management:0.0" "instructions/po.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-management:0.0" Enter
+  tmux send-keys -t "ixv-management:0.1" "instructions/sm.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-management:0.1" Enter
+
+  # Dev1-Dev8
   for i in {0..7}; do
-    tmux send-keys -t "ixv-dev:0.$i" "instructions/dev.md を読んで役割を理解せよ。汝は Dev$((i+1)) である。" Enter
+    tmux send-keys -t "ixv-dev:0.$i" "instructions/dev.md を読んで役割を理解してください。あなたは Dev$((i+1)) です。"
+    tmux send-keys -t "ixv-dev:0.$i" Enter
   done
-  tmux send-keys -t "ixv-qa:0.0" "instructions/qa.md を読んで役割を理解せよ。汝は QA1 である。" Enter
-  tmux send-keys -t "ixv-qa:0.1" "instructions/qa.md を読んで役割を理解せよ。汝は QA2 である。" Enter
+
+  # QA1-QA2
+  tmux send-keys -t "ixv-qa:0.0" "instructions/qa.md を読んで役割を理解してください。あなたは QA1 です。"
+  tmux send-keys -t "ixv-qa:0.0" Enter
+  tmux send-keys -t "ixv-qa:0.1" "instructions/qa.md を読んで役割を理解してください。あなたは QA2 です。"
+  tmux send-keys -t "ixv-qa:0.1" Enter
 fi
 
+# ═══════════════════════════════════════════════════════════════════════════════
+# 完了メッセージ
+# ═══════════════════════════════════════════════════════════════════════════════
+echo ""
 log "Sessions ready:"
 tmux list-sessions
+echo ""
+
+echo "  ┌──────────────────────────────────────────────────────────────┐"
+echo "  │  IXV-Agents セッション構成                                    │"
+echo "  └──────────────────────────────────────────────────────────────┘"
+echo ""
+echo "    【ixv-management】PO/SM"
+echo "    ┌─────────────────┐"
+echo "    │  Pane 0: PO     │  ← Product Owner"
+echo "    ├─────────────────┤"
+echo "    │  Pane 1: SM     │  ← Scrum Master"
+echo "    └─────────────────┘"
+echo ""
+echo "    【ixv-dev】Dev1-Dev8 (4x2)"
+echo "    ┌──────┬──────┬──────┬──────┐"
+echo "    │ Dev1 │ Dev3 │ Dev5 │ Dev7 │"
+echo "    ├──────┼──────┼──────┼──────┤"
+echo "    │ Dev2 │ Dev4 │ Dev6 │ Dev8 │"
+echo "    └──────┴──────┴──────┴──────┘"
+echo ""
+echo "    【ixv-qa】QA1-QA2"
+echo "    ┌─────────────────┐"
+echo "    │  Pane 0: QA1    │"
+echo "    ├─────────────────┤"
+echo "    │  Pane 1: QA2    │"
+echo "    └─────────────────┘"
+echo ""
+
+if [ "$SETUP_ONLY" = true ]; then
+  echo "  ⚠️  セットアップのみモード: CLIは未起動です"
+  echo ""
+  echo "  手動でCLIを起動するには:"
+  echo "  ┌──────────────────────────────────────────────────────────────┐"
+  echo "  │  # 全ペインに一括でCLIを起動                                 │"
+  echo "  │  tmux send-keys -t ixv-management:0.0 '$CLI_CMD' Enter       │"
+  echo "  │  tmux send-keys -t ixv-management:0.1 '$CLI_CMD' Enter       │"
+  echo "  │  for i in {0..7}; do                                        │"
+  echo "  │    tmux send-keys -t ixv-dev:0.\$i '$CLI_CMD' Enter          │"
+  echo "  │  done                                                       │"
+  echo "  │  tmux send-keys -t ixv-qa:0.0 '$CLI_CMD' Enter              │"
+  echo "  │  tmux send-keys -t ixv-qa:0.1 '$CLI_CMD' Enter              │"
+  echo "  └──────────────────────────────────────────────────────────────┘"
+  echo ""
+fi
+
+echo "  次のステップ:"
+echo "  ┌──────────────────────────────────────────────────────────────┐"
+echo "  │  POにアタッチして開発を開始:                                  │"
+echo "  │    tmux attach-session -t ixv-management                     │"
+echo "  │                                                              │"
+echo "  │  Devチームを確認する:                                        │"
+echo "  │    tmux attach-session -t ixv-dev                            │"
+echo "  │                                                              │"
+echo "  │  QAチームを確認する:                                         │"
+echo "  │    tmux attach-session -t ixv-qa                             │"
+echo "  │                                                              │"
+echo "  │  セッション一覧を確認:                                        │"
+echo "  │    tmux ls                                                   │"
+echo "  │                                                              │"
+echo "  │  セッションをデタッチ:                                        │"
+echo "  │    Ctrl+b d                                                  │"
+echo "  │                                                              │"
+echo "  │  全セッションを停止:                                          │"
+echo "  │    tmux kill-session -t ixv-management                       │"
+echo "  │    tmux kill-session -t ixv-dev                              │"
+echo "  │    tmux kill-session -t ixv-qa                               │"
+echo "  │                                                              │"
+echo "  │  tmuxサーバーごと停止（全セッション終了）:                      │"
+echo "  │    tmux kill-server                                          │"
+echo "  └──────────────────────────────────────────────────────────────┘"
+echo ""
