@@ -106,6 +106,7 @@ Sprint Planning、Daily Scrum、Sprint Review、Retrospective をシステムの
 
 - `Spec.md`: システム構成、役割、ワークフロー、制約
 - `Plan.md`: 実装フェーズとタスク
+- `docs/skill-guide.md`: ixv-agents 向けスキル設計ガイド
 
 ---
 
