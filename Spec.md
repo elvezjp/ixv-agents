@@ -306,6 +306,9 @@ ixv-agents/
 ├── skills/             # AI CLIのスキル定義 [読み取り専用]
 ├── templates/          # ワークスペース初期化用テンプレート
 │   ├── README.md       # 仕様書テンプレート
+│   ├── CONSTITUTION.md # プロジェクト憲章
+│   ├── PROCESS.md      # 工程と運用フロー
+│   ├── AGENTS.md       # AI行動規範
 │   ├── .gitignore
 │   └── queue/
 │       ├── dashboard.md
@@ -332,6 +335,9 @@ ixv-agents/
 ```
 workspace/
 ├── README.md           # 仕様書 (Single Source of Truth)
+├── CONSTITUTION.md     # プロジェクト憲章
+├── PROCESS.md          # 工程と運用フロー
+├── AGENTS.md           # AI行動規範
 ├── .gitignore          # Git除外設定（queue/等）
 ├── .claude/            # Claude Code設定
 │   ├── settings.local.json

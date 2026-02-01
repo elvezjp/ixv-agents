@@ -1,8 +1,12 @@
 # Project Name
 
-## Metadata
-- Version: 0.1.0
-- Last Updated: {{DATE}}
+この`README.md`は、このプロジェクトにおける **唯一の仕様（Single Source of Truth）** です。
+迷ったら必ずここに戻り、必要であれば更新してください。
+
+## 仕様の扱い
+- **優先順位**: `CONSTITUTION.md` → `README.md` → `PROCESS.md` → `AGENTS.md` → `roles/*`
+- **補助ドキュメント**（設計メモなど）を作ってもよいが、**仕様として有効なのはREADMEの記載のみ**。
+  - 補助ドキュメントに重要な決定がある場合、READMEの該当セクション（制約/スコープ/受入基準など）へ**要点を反映**する。
 
 ## Goal
 - 目的/達成したい価値
@@ -35,6 +39,9 @@
 ```
 workspace/
 ├── README.md           # 本ファイル（仕様書）
+├── CONSTITUTION.md     # プロジェクト憲章
+├── PROCESS.md          # 工程と運用フロー
+├── AGENTS.md           # AI行動規範
 ├── queue/              # エージェント間通信
 │   ├── dashboard.md    # プロジェクト状況ボード
 │   ├── po_to_sm.yaml   # PO -> SM
@@ -51,4 +58,7 @@ workspace/
 
 ## References
 
+- [CONSTITUTION.md](CONSTITUTION.md) - プロジェクト憲章
+- [PROCESS.md](PROCESS.md) - 工程と運用フロー
+- [AGENTS.md](AGENTS.md) - AI行動規範
 - [instructions/](instructions/) - 各ロールへの指示書

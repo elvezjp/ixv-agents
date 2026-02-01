@@ -244,6 +244,15 @@ apply_template "${TEMPLATES_DIR}/README.md" \
                "$TIMESTAMP" "$CURRENT_DATE" ""
 log_info "README.md（仕様書）を初期化"
 
+cp "${TEMPLATES_DIR}/CONSTITUTION.md" "${WORKSPACE_DIR}/CONSTITUTION.md"
+log_info "CONSTITUTION.md を初期化"
+
+cp "${TEMPLATES_DIR}/PROCESS.md" "${WORKSPACE_DIR}/PROCESS.md"
+log_info "PROCESS.md を初期化"
+
+cp "${TEMPLATES_DIR}/AGENTS.md" "${WORKSPACE_DIR}/AGENTS.md"
+log_info "AGENTS.md を初期化"
+
 cp "${TEMPLATES_DIR}/.gitignore" "${WORKSPACE_DIR}/.gitignore"
 log_info ".gitignore を初期化"
 
@@ -261,6 +270,9 @@ echo "  ワークスペース: ${WORKSPACE_DIR}/"
 echo ""
 echo "  初期化されたファイル:"
 echo "    - workspace/README.md（仕様書）"
+echo "    - workspace/CONSTITUTION.md"
+echo "    - workspace/PROCESS.md"
+echo "    - workspace/AGENTS.md"
 echo "    - workspace/.gitignore"
 echo "    - workspace/queue/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
