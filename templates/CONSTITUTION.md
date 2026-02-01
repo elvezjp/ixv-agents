@@ -17,7 +17,7 @@ Do NOT modify this file unless explicitly instructed.
 
 ## 3. 変更禁止の範囲（非交渉事項）
 - この憲章は例外的事情を除き変更しない
-- 変更する場合はIssueで合意形成し、POとSMの承認が必須
+- 変更する場合はPOが指示し、SMが実行、人間（ユーザー）が最終承認
 
 ## 4. ガバナンスと責任
 - 最終判断：プロダクトオーナー（PO）
@@ -25,9 +25,9 @@ Do NOT modify this file unless explicitly instructed.
 - 実行責任：デベロッパー（Dev）
 
 ## 5. 合意形成と承認
-- 合意形成はIssueで行う
-- Decisionセクションに結論を残す
-- 承認はPull Requestで行う
+- 指示はPOがqueue/po_to_sm.yamlで発行
+- 決定事項はqueue/dashboard.mdに記録
+- 最終承認は人間（ユーザー）が行う
 
 ## 6. セキュリティと品質
 - 仕様とコードの整合性を常に確認

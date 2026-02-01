@@ -24,13 +24,6 @@
 ## Constraints
 - 技術/運用/セキュリティ制約
 
-## Backlog
-| ID | Priority | Summary | Status |
-|----|----------|---------|--------|
-| - | - | - | - |
-
-## Icebox
-- TBD
 
 ---
 
@@ -42,6 +35,7 @@ workspace/
 ├── CONSTITUTION.md     # プロジェクト憲章
 ├── PROCESS.md          # 工程と運用フロー
 ├── AGENTS.md           # AI行動規範
+├── roles/              # 各エージェントの役割規定
 ├── queue/              # エージェント間通信
 │   ├── dashboard.md    # プロジェクト状況ボード
 │   ├── po_to_sm.yaml   # PO -> SM
@@ -50,15 +44,10 @@ workspace/
 └── (成果物)            # 実装コード、テスト等
 ```
 
-## Roles
-
-- **PO (Product Owner)**: 仕様策定（README.md更新）、バックログ管理
-- **SM (Scrum Master)**: タスク分解、割り当て、進捗管理
-- **Dev (Developer)**: 実装
 
 ## References
 
 - [CONSTITUTION.md](CONSTITUTION.md) - プロジェクト憲章
 - [PROCESS.md](PROCESS.md) - 工程と運用フロー
 - [AGENTS.md](AGENTS.md) - AI行動規範
-- [instructions/](instructions/) - 各ロールへの指示書
+- [roles/](roles/) - 各ロールの役割規定
