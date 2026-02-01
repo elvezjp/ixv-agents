@@ -1,6 +1,6 @@
 #!/bin/bash
 # ============================================================
-# setup_workdir.sh - IXV-Agents 前回記録バックアップ＆初期化スクリプト
+# setup_workdir.sh - IXV-Agents ワークスペース初期化スクリプト
 # ============================================================
 # 使用方法:
 #   ./scripts/setup_workdir.sh           # バックアップ＆初期化
@@ -14,6 +14,10 @@ set -e
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "$ROOT_DIR"
+
+# ワークスペースとバックアップのディレクトリ
+WORKSPACE_DIR="./workspace"
+BACKUP_BASE_DIR="./backups"
 
 # 色定義
 RED='\033[0;31m'
@@ -56,7 +60,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         -h|--help)
             echo ""
-            echo "IXV-Agents 前回記録バックアップ＆初期化スクリプト"
+            echo "IXV-Agents ワークスペース初期化スクリプト"
             echo ""
             echo "使用方法: ./scripts/setup_workdir.sh [オプション]"
             echo ""
@@ -65,10 +69,10 @@ while [[ $# -gt 0 ]]; do
             echo "  -h, --help     このヘルプを表示"
             echo ""
             echo "動作内容:"
-            echo "  1. 前回記録をバックアップ（logs/backup_YYYYMMDD_HHMMSS/）"
-            echo "  2. キューファイルを初期化（queue/tasks/, queue/reports/, queue/po_to_sm.yaml）"
-            echo "  3. specsを初期化（specs/current_spec.md, specs/backlog.md）"
-            echo "  4. ダッシュボードを初期化（dashboard.md）"
+            echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
+            echo "  2. workspace/ ディレクトリを初期化"
+            echo "  3. シンボリックリンクを作成（instructions, skills）"
+            echo "  4. キューファイル・specs・ダッシュボードを初期化"
             echo ""
             exit 0
             ;;
@@ -82,8 +86,8 @@ done
 
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
-echo "  ║  IXV-Agents Reset Script                                     ║"
-echo "  ║  前回記録バックアップ＆初期化                                   ║"
+echo "  ║  IXV-Agents Workspace Setup                                  ║"
+echo "  ║  ワークスペース初期化                                          ║"
 echo "  ╚══════════════════════════════════════════════════════════════╝"
 echo ""
 
@@ -93,11 +97,11 @@ echo ""
 if [ "$NO_BACKUP" = false ]; then
     log_step "STEP 1: 前回記録のバックアップ"
 
-    BACKUP_DIR="./logs/backup_$(date '+%Y%m%d_%H%M%S')"
+    BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
     NEED_BACKUP=false
 
     # バックアップが必要かチェック（タスクファイルにデータがあるか）
-    for f in ./queue/tasks/*.yaml; do
+    for f in "${WORKSPACE_DIR}"/queue/tasks/*.yaml; do
         if [ -f "$f" ]; then
             if grep -q "task_id:" "$f" 2>/dev/null && ! grep -q "task_id: null" "$f" 2>/dev/null; then
                 NEED_BACKUP=true
@@ -107,7 +111,7 @@ if [ "$NO_BACKUP" = false ]; then
     done
 
     # レポートファイルをチェック（TEMPLATE以外）
-    for f in ./queue/reports/*.yaml; do
+    for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
         if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
             NEED_BACKUP=true
             break
@@ -115,15 +119,15 @@ if [ "$NO_BACKUP" = false ]; then
     done
 
     # dashboard.mdにタスク記録があるかチェック
-    if [ -f "./dashboard.md" ]; then
-        if grep -q "TASK-" "./dashboard.md" 2>/dev/null || grep -q "REQ-" "./dashboard.md" 2>/dev/null; then
+    if [ -f "${WORKSPACE_DIR}/dashboard.md" ]; then
+        if grep -q "TASK-" "${WORKSPACE_DIR}/dashboard.md" 2>/dev/null || grep -q "REQ-" "${WORKSPACE_DIR}/dashboard.md" 2>/dev/null; then
             NEED_BACKUP=true
         fi
     fi
 
     # specs/current_spec.mdに内容があるかチェック
-    if [ -f "./specs/current_spec.md" ]; then
-        if ! grep -q "^# TBD" "./specs/current_spec.md" 2>/dev/null; then
+    if [ -f "${WORKSPACE_DIR}/specs/current_spec.md" ]; then
+        if ! grep -q "^# TBD" "${WORKSPACE_DIR}/specs/current_spec.md" 2>/dev/null; then
             NEED_BACKUP=true
         fi
     fi
@@ -132,27 +136,27 @@ if [ "$NO_BACKUP" = false ]; then
         mkdir -p "$BACKUP_DIR"
 
         # dashboard.mdをバックアップ
-        if [ -f "./dashboard.md" ]; then
-            cp "./dashboard.md" "$BACKUP_DIR/"
+        if [ -f "${WORKSPACE_DIR}/dashboard.md" ]; then
+            cp "${WORKSPACE_DIR}/dashboard.md" "$BACKUP_DIR/"
             log_info "dashboard.md をバックアップ"
         fi
 
         # queue/po_to_sm.yamlをバックアップ
-        if [ -f "./queue/po_to_sm.yaml" ]; then
-            cp "./queue/po_to_sm.yaml" "$BACKUP_DIR/"
+        if [ -f "${WORKSPACE_DIR}/queue/po_to_sm.yaml" ]; then
+            cp "${WORKSPACE_DIR}/queue/po_to_sm.yaml" "$BACKUP_DIR/"
             log_info "queue/po_to_sm.yaml をバックアップ"
         fi
 
         # queue/tasksをバックアップ
-        if [ -d "./queue/tasks" ]; then
-            cp -r "./queue/tasks" "$BACKUP_DIR/"
+        if [ -d "${WORKSPACE_DIR}/queue/tasks" ]; then
+            cp -r "${WORKSPACE_DIR}/queue/tasks" "$BACKUP_DIR/"
             log_info "queue/tasks/ をバックアップ"
         fi
 
         # queue/reportsをバックアップ（TEMPLATE以外）
-        if [ -d "./queue/reports" ]; then
+        if [ -d "${WORKSPACE_DIR}/queue/reports" ]; then
             mkdir -p "$BACKUP_DIR/reports"
-            for f in ./queue/reports/*.yaml; do
+            for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
                 if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
                     cp "$f" "$BACKUP_DIR/reports/"
                 fi
@@ -161,8 +165,8 @@ if [ "$NO_BACKUP" = false ]; then
         fi
 
         # specsをバックアップ
-        if [ -d "./specs" ]; then
-            cp -r "./specs" "$BACKUP_DIR/"
+        if [ -d "${WORKSPACE_DIR}/specs" ]; then
+            cp -r "${WORKSPACE_DIR}/specs" "$BACKUP_DIR/"
             log_info "specs/ をバックアップ"
         fi
 
@@ -179,22 +183,55 @@ fi
 # ============================================================
 log_step "STEP 2: ディレクトリ構造の確認"
 
-[ -d ./queue/tasks ] || mkdir -p ./queue/tasks
-[ -d ./queue/reports ] || mkdir -p ./queue/reports
-[ -d ./specs ] || mkdir -p ./specs
-[ -d ./logs ] || mkdir -p ./logs
+mkdir -p "${WORKSPACE_DIR}/queue/tasks"
+mkdir -p "${WORKSPACE_DIR}/queue/reports"
+mkdir -p "${WORKSPACE_DIR}/specs"
+mkdir -p "${WORKSPACE_DIR}/.claude"
+mkdir -p "${WORKSPACE_DIR}/.opencode"
+mkdir -p "${BACKUP_BASE_DIR}"
 
 log_success "ディレクトリ構造 OK"
 
 # ============================================================
-# STEP 3: キューファイルのリセット
+# STEP 3: シンボリックリンクの作成
 # ============================================================
-log_step "STEP 3: キューファイルの初期化"
+log_step "STEP 3: シンボリックリンクの作成"
+
+# instructions へのシンボリックリンク
+if [ ! -L "${WORKSPACE_DIR}/instructions" ]; then
+    ln -sfn ../instructions "${WORKSPACE_DIR}/instructions"
+    log_info "workspace/instructions -> ../instructions を作成"
+else
+    log_info "workspace/instructions は既に存在"
+fi
+
+# .claude/skills へのシンボリックリンク
+if [ ! -L "${WORKSPACE_DIR}/.claude/skills" ]; then
+    ln -sfn ../../skills "${WORKSPACE_DIR}/.claude/skills"
+    log_info "workspace/.claude/skills -> ../../skills を作成"
+else
+    log_info "workspace/.claude/skills は既に存在"
+fi
+
+# .opencode/skills へのシンボリックリンク
+if [ ! -L "${WORKSPACE_DIR}/.opencode/skills" ]; then
+    ln -sfn ../../skills "${WORKSPACE_DIR}/.opencode/skills"
+    log_info "workspace/.opencode/skills -> ../../skills を作成"
+else
+    log_info "workspace/.opencode/skills は既に存在"
+fi
+
+log_success "シンボリックリンク OK"
+
+# ============================================================
+# STEP 4: キューファイルのリセット
+# ============================================================
+log_step "STEP 4: キューファイルの初期化"
 
 TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
 
 # po_to_sm.yaml を初期化
-cat > ./queue/po_to_sm.yaml << EOF
+cat > "${WORKSPACE_DIR}/queue/po_to_sm.yaml" << EOF
 schema_version: "1.0"
 created_at: "${TIMESTAMP}"
 updated_at: "${TIMESTAMP}"
@@ -210,7 +247,7 @@ log_info "queue/po_to_sm.yaml を初期化"
 
 # Dev用タスクファイルを初期化 (dev1-dev8)
 for i in {1..8}; do
-    cat > ./queue/tasks/dev${i}.yaml << EOF
+    cat > "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" << EOF
 schema_version: "1.0"
 created_at: "${TIMESTAMP}"
 updated_at: "${TIMESTAMP}"
@@ -230,7 +267,7 @@ log_info "queue/tasks/dev1-dev8.yaml を初期化"
 
 # レポートファイルを削除（TEMPLATE以外）
 DELETED_COUNT=0
-for f in ./queue/reports/*.yaml; do
+for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
     if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
         rm "$f"
         DELETED_COUNT=$((DELETED_COUNT + 1))
@@ -243,8 +280,8 @@ else
 fi
 
 # TEMPLATEファイルが存在しない場合は作成
-if [ ! -f "./queue/reports/TEMPLATE.yaml" ]; then
-    cat > ./queue/reports/TEMPLATE.yaml << 'EOF'
+if [ ! -f "${WORKSPACE_DIR}/queue/reports/TEMPLATE.yaml" ]; then
+    cat > "${WORKSPACE_DIR}/queue/reports/TEMPLATE.yaml" << 'EOF'
 schema_version: "1.0"
 created_at: "YYYY-MM-DDTHH:MM:SSZ"
 updated_at: "YYYY-MM-DDTHH:MM:SSZ"
@@ -261,12 +298,12 @@ fi
 log_success "キューファイル初期化完了"
 
 # ============================================================
-# STEP 4: specsの初期化
+# STEP 5: specsの初期化
 # ============================================================
-log_step "STEP 4: specsの初期化"
+log_step "STEP 5: specsの初期化"
 
 # specs/current_spec.md を初期化
-cat > ./specs/current_spec.md << 'EOF'
+cat > "${WORKSPACE_DIR}/specs/current_spec.md" << 'EOF'
 # TBD
 
 ## Metadata
@@ -297,7 +334,7 @@ EOF
 log_info "specs/current_spec.md を初期化"
 
 # specs/backlog.md を初期化
-cat > ./specs/backlog.md << 'EOF'
+cat > "${WORKSPACE_DIR}/specs/backlog.md" << 'EOF'
 # Product Backlog
 
 ## Active Items
@@ -313,13 +350,13 @@ log_info "specs/backlog.md を初期化"
 log_success "specs初期化完了"
 
 # ============================================================
-# STEP 5: ダッシュボードの初期化
+# STEP 6: ダッシュボードの初期化
 # ============================================================
-log_step "STEP 5: ダッシュボードの初期化"
+log_step "STEP 6: ダッシュボードの初期化"
 
 DASHBOARD_DATE=$(date "+%Y-%m-%d")
 
-cat > ./dashboard.md << EOF
+cat > "${WORKSPACE_DIR}/dashboard.md" << EOF
 # IXV-Agents Dashboard
 
 ## Sprint Info
@@ -360,16 +397,23 @@ log_success "dashboard.md を初期化"
 # ============================================================
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
-echo "  ║  ✅ 初期化完了                                                ║"
+echo "  ║  ✅ ワークスペース初期化完了                                    ║"
 echo "  ╚══════════════════════════════════════════════════════════════╝"
 echo ""
+echo "  ワークスペース: ${WORKSPACE_DIR}/"
+echo ""
 echo "  初期化されたファイル:"
-echo "    - dashboard.md"
-echo "    - queue/po_to_sm.yaml"
-echo "    - queue/tasks/dev1-dev8.yaml"
-echo "    - queue/reports/ (TEMPLATEを除き削除)"
-echo "    - specs/current_spec.md"
-echo "    - specs/backlog.md"
+echo "    - workspace/dashboard.md"
+echo "    - workspace/queue/po_to_sm.yaml"
+echo "    - workspace/queue/tasks/dev1-dev8.yaml"
+echo "    - workspace/queue/reports/ (TEMPLATEを除き削除)"
+echo "    - workspace/specs/current_spec.md"
+echo "    - workspace/specs/backlog.md"
+echo ""
+echo "  シンボリックリンク:"
+echo "    - workspace/instructions -> ../instructions"
+echo "    - workspace/.claude/skills -> ../../skills"
+echo "    - workspace/.opencode/skills -> ../../skills"
 echo ""
 if [ "$NO_BACKUP" = false ] && [ "$NEED_BACKUP" = true ]; then
     echo "  バックアップ先: $BACKUP_DIR"

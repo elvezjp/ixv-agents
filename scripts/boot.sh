@@ -10,6 +10,7 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
+WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
 
 SETUP_ONLY=false
@@ -55,6 +56,12 @@ log() {
   echo "[ixv] $1"
 }
 
+# Check if workspace exists
+if [ ! -d "$WORKSPACE_DIR" ]; then
+  log "Workspace not found. Running setup_workdir.sh first..."
+  "${SCRIPT_DIR}/setup_workdir.sh" --no-backup
+fi
+
 log "Stopping existing sessions if present..."
 tmux kill-session -t ixv-po 2>/dev/null || true
 tmux kill-session -t ixv-agents 2>/dev/null || true
@@ -62,7 +69,7 @@ tmux kill-session -t ixv-agents 2>/dev/null || true
 log "Creating ixv-po session (PO only)..."
 tmux new-session -d -s ixv-po -n "po" -x 200 -y 50
 tmux select-pane -t "ixv-po:0.0" -T "PO"
-tmux send-keys -t "ixv-po:0.0" "cd $ROOT_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
+tmux send-keys -t "ixv-po:0.0" "cd $WORKSPACE_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
 
 log "Creating ixv-agents session (SM + Dev1-Dev8, 3x3)..."
 tmux new-session -d -s ixv-agents -n "agents" -x 200 -y 50
@@ -94,7 +101,7 @@ tmux split-window -v -t "ixv-agents:0.6"
 AGENT_TITLES=("SM" "Dev1" "Dev2" "Dev3" "Dev4" "Dev5" "Dev6" "Dev7" "Dev8")
 for i in {0..8}; do
   tmux select-pane -t "ixv-agents:0.$i" -T "${AGENT_TITLES[$i]}"
-  tmux send-keys -t "ixv-agents:0.$i" "cd $ROOT_DIR && export PS1='(${AGENT_TITLES[$i]}) \\w\\$ ' && clear" Enter
+  tmux send-keys -t "ixv-agents:0.$i" "cd $WORKSPACE_DIR && export PS1='(${AGENT_TITLES[$i]}) \\w\\$ ' && clear" Enter
 done
 
 if [ "$SETUP_ONLY" = false ]; then
@@ -141,6 +148,8 @@ echo ""
 echo "  ┌──────────────────────────────────────────────────────────────┐"
 echo "  │  IXV-Agents セッション構成                                    │"
 echo "  └──────────────────────────────────────────────────────────────┘"
+echo ""
+echo "    作業ディレクトリ: $WORKSPACE_DIR"
 echo ""
 echo "    【ixv-po】Product Owner"
 echo "    ┌─────────────────┐"

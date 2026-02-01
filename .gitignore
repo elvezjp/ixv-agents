@@ -9,12 +9,16 @@ yarn-debug.log*
 yarn-error.log*
 .env
 
-# IXV-Agents runtime files (managed by ixv_reset.sh)
-dashboard.md
-queue/po_to_sm.yaml
-queue/tasks/*.yaml
-queue/reports/*.yaml
-!queue/reports/TEMPLATE.yaml
-specs/current_spec.md
-specs/backlog.md
+# IXV-Agents workspace (AI editor working directory)
+workspace/
+
+# IXV-Agents backups
+backups/
+
+# Legacy directories (to be removed after migration)
 logs/
+queue/
+specs/
+dashboard.md
+.claude/
+.opencode/
