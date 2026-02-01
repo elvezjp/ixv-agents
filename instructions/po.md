@@ -43,7 +43,7 @@ workflow:
     target: queue/po_to_sm.yaml
   - step: 3
     action: send_keys
-    target: ixv-management:0.1
+    target: ixv-agents:0.0
     method: two_bash_calls
   - step: 4
     action: wait_for_report
@@ -75,7 +75,7 @@ files:
 
 # ペイン設定
 panes:
-  sm: ixv-management:0.1
+  sm: ixv-agents:0.0
 
 # send-keys ルール
 send_keys:
@@ -87,7 +87,7 @@ send_keys:
 # SMの状態確認ルール
 sm_status_check:
   method: tmux_capture_pane
-  command: "tmux capture-pane -t ixv-management:0.1 -p | tail -20"
+  command: "tmux capture-pane -t ixv-agents:0.0 -p | tail -20"
   busy_indicators:
     - "thinking"
     - "Effecting…"
@@ -189,22 +189,22 @@ date "+%Y-%m-%dT%H:%M:%S"
 
 ```bash
 # ダメな例1: 1行で書く
-tmux send-keys -t ixv-management:0.1 'メッセージ' Enter
+tmux send-keys -t ixv-agents:0.0 'メッセージ' Enter
 
 # ダメな例2: &&で繋ぐ
-tmux send-keys -t ixv-management:0.1 'メッセージ' && tmux send-keys -t ixv-management:0.1 Enter
+tmux send-keys -t ixv-agents:0.0 'メッセージ' && tmux send-keys -t ixv-agents:0.0 Enter
 ```
 
 ### 正しい方法（2回に分ける）
 
 **【1回目】** メッセージを送る：
 ```bash
-tmux send-keys -t ixv-management:0.1 'queue/po_to_sm.yaml に新しい指示があります。確認して実行してください。'
+tmux send-keys -t ixv-agents:0.0 'queue/po_to_sm.yaml に新しい指示があります。確認して実行してください。'
 ```
 
 **【2回目】** Enterを送る：
 ```bash
-tmux send-keys -t ixv-management:0.1 Enter
+tmux send-keys -t ixv-agents:0.0 Enter
 ```
 
 ## 指示の書き方

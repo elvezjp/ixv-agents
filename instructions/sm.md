@@ -58,7 +58,7 @@ workflow:
     note: "各Dev専用ファイル"
   - step: 7
     action: send_keys
-    target: "ixv-dev:0.{N}"
+    target: "ixv-agents:0.{N}"
     method: two_bash_calls
   - step: 8
     action: stop
@@ -88,17 +88,17 @@ files:
 
 # ペイン設定
 panes:
-  po: ixv-management:0.0
-  self: ixv-management:0.1
+  po: ixv-po:0.0
+  self: ixv-agents:0.0
   dev:
-    - { id: 1, pane: "ixv-dev:0.0" }
-    - { id: 2, pane: "ixv-dev:0.1" }
-    - { id: 3, pane: "ixv-dev:0.2" }
-    - { id: 4, pane: "ixv-dev:0.3" }
-    - { id: 5, pane: "ixv-dev:0.4" }
-    - { id: 6, pane: "ixv-dev:0.5" }
-    - { id: 7, pane: "ixv-dev:0.6" }
-    - { id: 8, pane: "ixv-dev:0.7" }
+    - { id: 1, pane: "ixv-agents:0.1" }
+    - { id: 2, pane: "ixv-agents:0.2" }
+    - { id: 3, pane: "ixv-agents:0.3" }
+    - { id: 4, pane: "ixv-agents:0.4" }
+    - { id: 5, pane: "ixv-agents:0.5" }
+    - { id: 6, pane: "ixv-agents:0.6" }
+    - { id: 7, pane: "ixv-agents:0.7" }
+    - { id: 8, pane: "ixv-agents:0.8" }
 
 # send-keys ルール
 send_keys:
@@ -110,7 +110,7 @@ send_keys:
 # Devの状態確認ルール
 dev_status_check:
   method: tmux_capture_pane
-  command: "tmux capture-pane -t ixv-dev:0.{N} -p | tail -20"
+  command: "tmux capture-pane -t ixv-agents:0.{N} -p | tail -20"
   busy_indicators:
     - "thinking"
     - "Esc to interrupt"
@@ -192,19 +192,19 @@ date "+%Y-%m-%dT%H:%M:%S"
 ### 禁止パターン
 
 ```bash
-tmux send-keys -t ixv-dev:0.1 'メッセージ' Enter  # ダメ
+tmux send-keys -t ixv-agents:0.1 'メッセージ' Enter  # ダメ
 ```
 
 ### 正しい方法（2回に分ける）
 
 **【1回目】**
 ```bash
-tmux send-keys -t ixv-dev:0.{N} 'queue/tasks/dev{N}.yaml にタスクがあります。確認して実行してください。'
+tmux send-keys -t ixv-agents:0.{N} 'queue/tasks/dev{N}.yaml にタスクがあります。確認して実行してください。'
 ```
 
 **【2回目】**
 ```bash
-tmux send-keys -t ixv-dev:0.{N} Enter
+tmux send-keys -t ixv-agents:0.{N} Enter
 ```
 
 ### POへの send-keys は禁止

@@ -72,14 +72,13 @@ specifications, while AI agents collaborate as a structured team.
 -   Product Owner AI (1)
 -   Scrum Master AI (1)
 -   Development AI (8)
--   QA / Quality AI (2)
 
 ------------------------------------------------------------------------
 
 ## Roles
 
 PO AI defines goals and priorities. SM AI orchestrates workflow. Dev AI
-executes implementation. QA AI ensures compliance and quality.
+executes implementation.
 
 ------------------------------------------------------------------------
 
@@ -149,7 +148,7 @@ ixv-agents/
 ├── config/             # Project configuration
 ├── frontend/           # React + Tailwind UI (local, read-only)
 ├── backend/            # Local read-only service for files/queue
-├── instructions/       # Role instructions (PO, SM, Dev, QA)
+├── instructions/       # Role instructions (PO, SM, Dev)
 ├── specs/              # Specifications (Single Source of Truth)
 ├── queue/              # Communication buffers
 ├── dashboard.md        # Project status board

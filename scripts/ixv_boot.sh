@@ -56,86 +56,78 @@ log() {
 }
 
 log "Stopping existing sessions if present..."
-tmux kill-session -t ixv-management 2>/dev/null || true
-tmux kill-session -t ixv-dev 2>/dev/null || true
-tmux kill-session -t ixv-qa 2>/dev/null || true
+tmux kill-session -t ixv-po 2>/dev/null || true
+tmux kill-session -t ixv-agents 2>/dev/null || true
 
-log "Creating ixv-management session (PO/SM)..."
-tmux new-session -d -s ixv-management -n "management" -x 200 -y 50
-tmux split-window -v -t "ixv-management:0"
-tmux select-pane -t "ixv-management:0.0" -T "PO"
-tmux select-pane -t "ixv-management:0.1" -T "SM"
-tmux send-keys -t "ixv-management:0.0" "cd $ROOT_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
-tmux send-keys -t "ixv-management:0.1" "cd $ROOT_DIR && export PS1='(SM) \\w\\$ ' && clear" Enter
+log "Creating ixv-po session (PO only)..."
+tmux new-session -d -s ixv-po -n "po" -x 200 -y 50
+tmux select-pane -t "ixv-po:0.0" -T "PO"
+tmux send-keys -t "ixv-po:0.0" "cd $ROOT_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
 
-log "Creating ixv-dev session (Dev1-Dev8)..."
-tmux new-session -d -s ixv-dev -n "dev" -x 200 -y 50
-tmux split-window -h -t "ixv-dev:0"
-tmux split-window -h -t "ixv-dev:0"
-tmux split-window -h -t "ixv-dev:0"
+log "Creating ixv-agents session (SM + Dev1-Dev8, 3x3)..."
+tmux new-session -d -s ixv-agents -n "agents" -x 200 -y 50
 
-for p in 0 1 2 3; do
-  tmux select-pane -t "ixv-dev:0.$p"
-  tmux split-window -v -t "ixv-dev:0.$p"
+# Create 3x3 grid
+# First split horizontally into 3 columns
+tmux split-window -h -t "ixv-agents:0"
+tmux split-window -h -t "ixv-agents:0"
+
+# Now split each column vertically into 3 rows
+# After horizontal splits, panes are: 0, 1, 2 (left to right)
+# Split pane 0 (leftmost) twice vertically
+tmux split-window -v -t "ixv-agents:0.0"
+tmux split-window -v -t "ixv-agents:0.0"
+
+# Split pane 1 (middle) twice vertically - after above splits, middle column is now pane 3
+tmux split-window -v -t "ixv-agents:0.3"
+tmux split-window -v -t "ixv-agents:0.3"
+
+# Split pane 2 (rightmost) twice vertically - after above splits, right column is now pane 6
+tmux split-window -v -t "ixv-agents:0.6"
+tmux split-window -v -t "ixv-agents:0.6"
+
+# Set titles and prompts
+# Pane layout after splits (3x3):
+#   0: SM    3: Dev3   6: Dev6
+#   1: Dev1  4: Dev4   7: Dev7
+#   2: Dev2  5: Dev5   8: Dev8
+AGENT_TITLES=("SM" "Dev1" "Dev2" "Dev3" "Dev4" "Dev5" "Dev6" "Dev7" "Dev8")
+for i in {0..8}; do
+  tmux select-pane -t "ixv-agents:0.$i" -T "${AGENT_TITLES[$i]}"
+  tmux send-keys -t "ixv-agents:0.$i" "cd $ROOT_DIR && export PS1='(${AGENT_TITLES[$i]}) \\w\\$ ' && clear" Enter
 done
-
-DEV_TITLES=("Dev1" "Dev2" "Dev3" "Dev4" "Dev5" "Dev6" "Dev7" "Dev8")
-for i in {0..7}; do
-  tmux select-pane -t "ixv-dev:0.$i" -T "${DEV_TITLES[$i]}"
-  tmux send-keys -t "ixv-dev:0.$i" "cd $ROOT_DIR && export PS1='(${DEV_TITLES[$i]}) \\w\\$ ' && clear" Enter
-done
-
-log "Creating ixv-qa session (QA1-QA2)..."
-tmux new-session -d -s ixv-qa -n "qa" -x 200 -y 50
-tmux split-window -v -t "ixv-qa:0"
-tmux select-pane -t "ixv-qa:0.0" -T "QA1"
-tmux select-pane -t "ixv-qa:0.1" -T "QA2"
-tmux send-keys -t "ixv-qa:0.0" "cd $ROOT_DIR && export PS1='(QA1) \\w\\$ ' && clear" Enter
-tmux send-keys -t "ixv-qa:0.1" "cd $ROOT_DIR && export PS1='(QA2) \\w\\$ ' && clear" Enter
 
 if [ "$SETUP_ONLY" = false ]; then
   log "Launching $CLI_NAME in all panes..."
 
-  # PO/SM
-  tmux send-keys -t "ixv-management:0.0" "$CLI_CMD"
-  tmux send-keys -t "ixv-management:0.0" Enter
-  tmux send-keys -t "ixv-management:0.1" "$CLI_CMD"
-  tmux send-keys -t "ixv-management:0.1" Enter
+  # PO
+  tmux send-keys -t "ixv-po:0.0" "$CLI_CMD"
+  tmux send-keys -t "ixv-po:0.0" Enter
 
-  # Dev1-Dev8
-  for i in {0..7}; do
-    tmux send-keys -t "ixv-dev:0.$i" "$CLI_CMD"
-    tmux send-keys -t "ixv-dev:0.$i" Enter
+  # SM + Dev1-Dev8
+  for i in {0..8}; do
+    tmux send-keys -t "ixv-agents:0.$i" "$CLI_CMD"
+    tmux send-keys -t "ixv-agents:0.$i" Enter
   done
-
-  # QA1-QA2
-  tmux send-keys -t "ixv-qa:0.0" "$CLI_CMD"
-  tmux send-keys -t "ixv-qa:0.0" Enter
-  tmux send-keys -t "ixv-qa:0.1" "$CLI_CMD"
-  tmux send-keys -t "ixv-qa:0.1" Enter
 
   log "Waiting for $CLI_NAME to start..."
   sleep 8
 
   log "Sending role instructions..."
 
-  # PO/SM
-  tmux send-keys -t "ixv-management:0.0" "instructions/po.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-management:0.0" Enter
-  tmux send-keys -t "ixv-management:0.1" "instructions/sm.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-management:0.1" Enter
+  # PO
+  tmux send-keys -t "ixv-po:0.0" "instructions/po.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-po:0.0" Enter
 
-  # Dev1-Dev8
-  for i in {0..7}; do
-    tmux send-keys -t "ixv-dev:0.$i" "instructions/dev.md を読んで役割を理解してください。あなたは Dev$((i+1)) です。"
-    tmux send-keys -t "ixv-dev:0.$i" Enter
+  # SM (pane 0)
+  tmux send-keys -t "ixv-agents:0.0" "instructions/sm.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.0" Enter
+
+  # Dev1-Dev8 (panes 1-8)
+  for i in {1..8}; do
+    tmux send-keys -t "ixv-agents:0.$i" "instructions/dev.md を読んで役割を理解してください。あなたは Dev$i です。"
+    tmux send-keys -t "ixv-agents:0.$i" Enter
   done
-
-  # QA1-QA2
-  tmux send-keys -t "ixv-qa:0.0" "instructions/qa.md を読んで役割を理解してください。あなたは QA1 です。"
-  tmux send-keys -t "ixv-qa:0.0" Enter
-  tmux send-keys -t "ixv-qa:0.1" "instructions/qa.md を読んで役割を理解してください。あなたは QA2 です。"
-  tmux send-keys -t "ixv-qa:0.1" Enter
 fi
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -150,26 +142,19 @@ echo "  ┌───────────────────────
 echo "  │  IXV-Agents セッション構成                                    │"
 echo "  └──────────────────────────────────────────────────────────────┘"
 echo ""
-echo "    【ixv-management】PO/SM"
+echo "    【ixv-po】Product Owner"
 echo "    ┌─────────────────┐"
-echo "    │  Pane 0: PO     │  ← Product Owner"
-echo "    ├─────────────────┤"
-echo "    │  Pane 1: SM     │  ← Scrum Master"
+echo "    │  Pane 0: PO     │"
 echo "    └─────────────────┘"
 echo ""
-echo "    【ixv-dev】Dev1-Dev8 (4x2)"
-echo "    ┌──────┬──────┬──────┬──────┐"
-echo "    │ Dev1 │ Dev3 │ Dev5 │ Dev7 │"
-echo "    ├──────┼──────┼──────┼──────┤"
-echo "    │ Dev2 │ Dev4 │ Dev6 │ Dev8 │"
-echo "    └──────┴──────┴──────┴──────┘"
-echo ""
-echo "    【ixv-qa】QA1-QA2"
-echo "    ┌─────────────────┐"
-echo "    │  Pane 0: QA1    │"
-echo "    ├─────────────────┤"
-echo "    │  Pane 1: QA2    │"
-echo "    └─────────────────┘"
+echo "    【ixv-agents】SM + Dev1-Dev8 (3x3)"
+echo "    ┌──────┬──────┬──────┐"
+echo "    │  SM  │ Dev3 │ Dev6 │"
+echo "    ├──────┼──────┼──────┤"
+echo "    │ Dev1 │ Dev4 │ Dev7 │"
+echo "    ├──────┼──────┼──────┤"
+echo "    │ Dev2 │ Dev5 │ Dev8 │"
+echo "    └──────┴──────┴──────┘"
 echo ""
 
 if [ "$SETUP_ONLY" = true ]; then
@@ -178,13 +163,10 @@ if [ "$SETUP_ONLY" = true ]; then
   echo "  手動でCLIを起動するには:"
   echo "  ┌──────────────────────────────────────────────────────────────┐"
   echo "  │  # 全ペインに一括でCLIを起動                                 │"
-  echo "  │  tmux send-keys -t ixv-management:0.0 '$CLI_CMD' Enter       │"
-  echo "  │  tmux send-keys -t ixv-management:0.1 '$CLI_CMD' Enter       │"
-  echo "  │  for i in {0..7}; do                                        │"
-  echo "  │    tmux send-keys -t ixv-dev:0.\$i '$CLI_CMD' Enter          │"
+  echo "  │  tmux send-keys -t ixv-po:0.0 '$CLI_CMD' Enter               │"
+  echo "  │  for i in {0..8}; do                                        │"
+  echo "  │    tmux send-keys -t ixv-agents:0.\$i '$CLI_CMD' Enter       │"
   echo "  │  done                                                       │"
-  echo "  │  tmux send-keys -t ixv-qa:0.0 '$CLI_CMD' Enter              │"
-  echo "  │  tmux send-keys -t ixv-qa:0.1 '$CLI_CMD' Enter              │"
   echo "  └──────────────────────────────────────────────────────────────┘"
   echo ""
 fi
@@ -192,13 +174,10 @@ fi
 echo "  次のステップ:"
 echo "  ┌──────────────────────────────────────────────────────────────┐"
 echo "  │  POにアタッチして開発を開始:                                  │"
-echo "  │    tmux attach-session -t ixv-management                     │"
+echo "  │    tmux attach-session -t ixv-po                             │"
 echo "  │                                                              │"
-echo "  │  Devチームを確認する:                                        │"
-echo "  │    tmux attach-session -t ixv-dev                            │"
-echo "  │                                                              │"
-echo "  │  QAチームを確認する:                                         │"
-echo "  │    tmux attach-session -t ixv-qa                             │"
+echo "  │  エージェントチームを確認する:                                │"
+echo "  │    tmux attach-session -t ixv-agents                         │"
 echo "  │                                                              │"
 echo "  │  セッション一覧を確認:                                        │"
 echo "  │    tmux ls                                                   │"
@@ -207,9 +186,8 @@ echo "  │  セッションをデタッチ:                                    
 echo "  │    Ctrl+b d                                                  │"
 echo "  │                                                              │"
 echo "  │  全セッションを停止:                                          │"
-echo "  │    tmux kill-session -t ixv-management                       │"
-echo "  │    tmux kill-session -t ixv-dev                              │"
-echo "  │    tmux kill-session -t ixv-qa                               │"
+echo "  │    tmux kill-session -t ixv-po                               │"
+echo "  │    tmux kill-session -t ixv-agents                           │"
 echo "  │                                                              │"
 echo "  │  tmuxサーバーごと停止（全セッション終了）:                      │"
 echo "  │    tmux kill-server                                          │"
