@@ -10,8 +10,8 @@
 
 | Item | Status |
 |------|--------|
-| Specification (Spec.md) | Draft v0.2.0 |
-| Implementation | Foundation Complete (tmux + AI CLI) |
+| Specification (Spec.md) | Draft v0.3.0 |
+| Implementation | Foundation Complete (tmux + AI CLI + workspace bootstrap) |
 
 ---
 
@@ -60,6 +60,9 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 # Specify model
 ./scripts/boot.sh --model opus
+
+# Setup tmux only (do not launch CLI)
+./scripts/boot.sh --setup-only
 ```
 
 On first run, the workspace is automatically initialized.
@@ -95,6 +98,9 @@ tmux attach-session -t ixv-agents
 
 ```bash
 ./scripts/setup_workspace.sh
+
+# Skip backup and reinitialize only
+./scripts/setup_workspace.sh --no-backup
 ```
 
 If an existing `workspace/` exists, it will be backed up to `backups/`, and a new workspace will be created.
@@ -116,10 +122,14 @@ ixv-agents/
 ├── roles/              # Role instructions (PO, SM, Dev)
 ├── skills/             # AI CLI skill definitions
 ├── templates/          # Workspace initialization templates
+│   └── queue/          # Queue and report templates
 ├── scripts/            # Startup and management scripts
+│   ├── banner.sh       # Display banner
 │   ├── boot.sh         # Start agents
+│   ├── flow_check.sh   # Flow check utility
 │   ├── stop.sh         # Stop agents
 │   └── setup_workspace.sh # Initialize workspace
+├── OLD/                # Legacy assets (kept for reference)
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]
 ├── docs/               # Documentation
@@ -134,17 +144,18 @@ It is isolated from the repository root, preventing AI editors from accessing to
 
 ```
 workspace/
-├── roles -> ../roles  (symlink)
+├── README.md           # Project spec (Single Source of Truth)
+├── CONSTITUTION.md     # Project constitution
+├── PROCESS.md          # Process and operations
+├── AGENTS.md           # AI conduct guidelines
+├── roles -> ../roles   (symlink)
 ├── .claude/skills -> ../../skills   (symlink)
 ├── .opencode/skills -> ../../skills (symlink)
-├── specs/              # Specifications (Single Source of Truth)
-│   ├── current_spec.md
-│   └── backlog.md
 ├── queue/              # Inter-agent communication
+│   ├── dashboard.md    # Project status board
 │   ├── po_to_sm.yaml   # PO -> SM
 │   ├── tasks/          # SM -> Dev
 │   └── reports/        # Dev -> SM
-├── dashboard.md        # Project status board
 └── (artifacts)         # Implementation code, tests, etc.
 ```
 
@@ -152,7 +163,7 @@ workspace/
 
 ## Operational Principles
 
-- **Single Source of Truth**: Always reference `workspace/specs/current_spec.md`
+- **Single Source of Truth**: Always reference `workspace/README.md`
 - **Traceability**: Track via `spec_ref` / `request_id` / `task_id`
 - **Role Boundaries**: Writing to files outside role scope is prohibited
 
@@ -161,7 +172,8 @@ workspace/
 ## Key Documents
 
 - `Spec.md`: System architecture, roles, workflow, and constraints
-- `docs/skill-guide.md`: Skill design guide for ixv-agents
+- `docs/20260129implementation-plan.md`: Implementation plan
+- `docs/20260201directory-restructure-plan.md`: Directory restructure plan
 
 ---
 
