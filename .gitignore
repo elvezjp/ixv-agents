@@ -9,16 +9,14 @@ yarn-debug.log*
 yarn-error.log*
 .env
 
+# AI editor directories
+.claude/*
+.opencode/*
+.vscode/*
+
+
 # IXV-Agents workspace (AI editor working directory)
 workspace/
 
 # IXV-Agents backups
 backups/
-
-# Legacy directories (to be removed after migration)
-logs/
-queue/
-specs/
-dashboard.md
-.claude/
-.opencode/
