@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================
-# ixv_reset.sh - IXV-Agents 前回記録バックアップ＆初期化スクリプト
+# setup_workdir.sh - IXV-Agents 前回記録バックアップ＆初期化スクリプト
 # ============================================================
 # 使用方法:
-#   ./scripts/ixv_reset.sh           # バックアップ＆初期化
-#   ./scripts/ixv_reset.sh --no-backup  # バックアップなしで初期化のみ
-#   ./scripts/ixv_reset.sh -h        # ヘルプ表示
+#   ./scripts/setup_workdir.sh           # バックアップ＆初期化
+#   ./scripts/setup_workdir.sh --no-backup  # バックアップなしで初期化のみ
+#   ./scripts/setup_workdir.sh -h        # ヘルプ表示
 # ============================================================
 
 set -e
@@ -58,7 +58,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "IXV-Agents 前回記録バックアップ＆初期化スクリプト"
             echo ""
-            echo "使用方法: ./scripts/ixv_reset.sh [オプション]"
+            echo "使用方法: ./scripts/setup_workdir.sh [オプション]"
             echo ""
             echo "オプション:"
             echo "  --no-backup    バックアップをスキップして初期化のみ実行"
@@ -74,7 +74,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "不明なオプション: $1"
-            echo "./scripts/ixv_reset.sh -h でヘルプを表示"
+            echo "./scripts/setup_workdir.sh -h でヘルプを表示"
             exit 1
             ;;
     esac
@@ -376,5 +376,5 @@ if [ "$NO_BACKUP" = false ] && [ "$NEED_BACKUP" = true ]; then
     echo ""
 fi
 echo "  次のステップ:"
-echo "    ./scripts/ixv_boot.sh    # エージェントを起動"
+echo "    ./scripts/boot.sh    # エージェントを起動"
 echo ""

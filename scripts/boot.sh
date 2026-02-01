@@ -1,10 +1,10 @@
 #!/bin/bash
 # IXV-Agents bootstrap script
 # Usage:
-#   ./scripts/ixv_boot.sh                        # start tmux + agents (opencode)
-#   ./scripts/ixv_boot.sh --claude-code          # use Claude Code instead
-#   ./scripts/ixv_boot.sh --model <model_name>   # specify model
-#   ./scripts/ixv_boot.sh -s                     # setup only (no CLI)
+#   ./scripts/boot.sh                        # start tmux + agents (opencode)
+#   ./scripts/boot.sh --claude-code          # use Claude Code instead
+#   ./scripts/boot.sh --model <model_name>   # specify model
+#   ./scripts/boot.sh -s                     # setup only (no CLI)
 
 set -e
 
@@ -33,7 +33,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -h|--help)
-      echo "Usage: ./scripts/ixv_boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
+      echo "Usage: ./scripts/boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
       echo "  --setup-only    Setup tmux sessions without launching CLI"
       echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
       echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
