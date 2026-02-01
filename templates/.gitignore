@@ -1,5 +1,11 @@
-# エージェント作業記録
-queue/
+# エージェント作業記録（テンプレートは除外対象外）
+queue/*
+!queue/dashboard.md
+!queue/po_to_sm.yaml
+queue/reports/*
+!queue/reports/TEMPLATE.yaml
+queue/tasks/*
+!queue/tasks/dev.yaml
 
 # AI CLI設定
 .claude/
