@@ -37,6 +37,34 @@ metadata:
 | feature | 機能追加（デフォルト） | - |
 | bugfix | バグ修正 | - |
 
+## フェーズ順序の確認（重要）
+
+**タスク発行前に、現在のフェーズ状態を確認してください。**
+
+### 確認手順
+
+1. `po-check-constitution` でフェーズ1の完了を確認
+2. `po-check-spec` でフェーズ2の完了を確認
+3. 前フェーズが未完了なら、そのフェーズのタスクのみを発行
+
+### 発行制限
+
+| 現在の状態 | 発行可能なtask_type | 発行禁止 |
+|-----------|-------------------|---------|
+| フェーズ1未完了（憲章未記入） | constitution_update のみ | feature, spec_update, plan, execute 等 |
+| フェーズ2未完了（仕様未反映） | spec_update のみ | feature, plan, execute 等 |
+| フェーズ2完了 | 全てのtask_type | - |
+
+### 禁止パターン
+
+```yaml
+# ダメな例: 憲章更新と機能追加を同時に発行
+# → constitution_update のみを発行し、完了後に feature を発行すること
+
+# 1回の実行で発行するのは1タスクのみ
+# 前のタスクが完了（dashboard.mdでdone確認）してから次を発行
+```
+
 ## Instructions
 
 ### Step 1: task_typeの判定
@@ -267,3 +295,5 @@ notes: "再現手順: localhost:3000 → Tasksタブ"
 - このスキルはPOロールのみが使用する
 - YAMLの詳細なスキーマは `references/yaml-schema.md` を参照
 - SMへの通知は roles/po.md のワークフローに従う
+- **フェーズ順序厳守**: 前フェーズが未完了なら、そのフェーズのタスクのみを発行する
+- **1回1タスク**: 複数のtask_typeを同時に発行しない
