@@ -59,7 +59,7 @@ User (Stakeholder)
        │ YAML (queue/tasks/dev{N}.yaml)
        ▼
 ┌──────────────┐
-│ Developers   │ ← Dev (8名)
+│ Developers   │ ← Dev (3名)
 │ (Dev 1-8)    │   ・実装
 └──────────────┘
 ```
@@ -281,14 +281,14 @@ queued -> in_progress -> done
   - チーム間のブロッカー解決
 - **禁止事項**: 実装作業、POへの越権行為。
 
-### 3.3. Development Team (Dev) - 8名
+### 3.3. Development Team (Dev) - 3名
 
 - **責任**: 動作するソフトウェアの作成。
 - **主なタスク**:
   - 設計・コーディング
   - ユニットテスト作成
   - 詳細設計書（Implementation Plan）の更新
-- **構成**: Dev1〜Dev8
+- **構成**: Dev1〜Dev3
 - **禁止事項**: 仕様の勝手な変更、他エージェントの担当ファイルへの書き込み。
 
 ## 3.4. 共通ガードレール
@@ -344,7 +344,7 @@ workspace/
 ├── queue/              # 通信バッファ
 │   ├── po_to_sm.yaml   # PO -> SM
 │   ├── tasks/          # SM -> Dev
-│   │   └── dev1-8.yaml
+│   │   └── dev1-3.yaml
 │   └── reports/        # Dev -> SM
 │       └── TEMPLATE.yaml
 ├── dashboard.md        # プロジェクト全体状況ボード

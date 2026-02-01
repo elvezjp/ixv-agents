@@ -196,13 +196,13 @@ apply_template "${TEMPLATES_DIR}/queue/po_to_sm.yaml" \
                "$TIMESTAMP" "$CURRENT_DATE" ""
 log_info "queue/po_to_sm.yaml を初期化"
 
-# Dev用タスクファイルを初期化 (dev1-dev8)
-for i in {1..8}; do
+# Dev用タスクファイルを初期化 (dev1-dev3)
+for i in {1..3}; do
     apply_template "${TEMPLATES_DIR}/queue/tasks/dev.yaml" \
                    "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" \
                    "$TIMESTAMP" "$CURRENT_DATE" "dev${i}"
 done
-log_info "queue/tasks/dev1-dev8.yaml を初期化"
+log_info "queue/tasks/dev1-dev3.yaml を初期化"
 
 # レポートファイルを削除（TEMPLATE以外）
 DELETED_COUNT=0
@@ -261,7 +261,7 @@ echo ""
 echo "  初期化されたファイル:"
 echo "    - workspace/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
-echo "    - workspace/queue/tasks/dev1-dev8.yaml"
+echo "    - workspace/queue/tasks/dev1-dev3.yaml"
 echo "    - workspace/queue/reports/TEMPLATE.yaml"
 echo "    - workspace/specs/current_spec.md"
 echo "    - workspace/specs/backlog.md"

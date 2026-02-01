@@ -18,11 +18,6 @@
 | Dev1 | - | idle | - |
 | Dev2 | - | idle | - |
 | Dev3 | - | idle | - |
-| Dev4 | - | idle | - |
-| Dev5 | - | idle | - |
-| Dev6 | - | idle | - |
-| Dev7 | - | idle | - |
-| Dev8 | - | idle | - |
 
 ## Blockers
 - [ ] None

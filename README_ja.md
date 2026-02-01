@@ -32,7 +32,7 @@
 |------|------|------|
 | Product Owner (PO) | 1 | 目標と優先順位を定義、仕様策定 |
 | Scrum Master (SM) | 1 | ワークフロー統制、タスク分解・割り当て |
-| Development (Dev) | 8 | 実装 |
+| Development (Dev) | 3 | 実装 |
 
 ---
 
@@ -73,7 +73,7 @@
 
 起動すると以下のtmuxセッションが作成されます：
 - **ixv-po**: Product Owner用（1ペイン）
-- **ixv-agents**: SM + Dev1-Dev8用（3x3グリッド）
+- **ixv-agents**: SM + Dev1-Dev3用（2x2グリッド）
 
 ### 3. POに接続して開発を開始
 
