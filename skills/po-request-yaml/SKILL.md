@@ -29,11 +29,11 @@ metadata:
 
 | task_type | 用途 | 対応フェーズ |
 |-----------|------|-------------|
-| constitution_update | 憲章更新タスク | 5.1 |
-| spec_update | 仕様策定・更新タスク | 5.2, 5.7 |
-| plan | 計画策定依頼 | 5.3 |
-| execute | 実行指示 | 5.4 |
-| backlog_update | Backlog更新指示 | 5.6 |
+| constitution_update | 憲章更新タスク | 1 |
+| spec_update | 仕様策定・更新タスク | 2, 7 |
+| plan | 計画策定依頼 | 3 |
+| execute | 実行指示 | 4 |
+| backlog_update | Backlog更新指示 | 6 |
 | feature | 機能追加（デフォルト） | - |
 | bugfix | バグ修正 | - |
 
