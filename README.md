@@ -52,7 +52,7 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 ### 1. Initialize Workspace
 
 ```bash
-./scripts/setup_workdir.sh
+./scripts/setup_workspace.sh
 ```
 
 This creates the `workspace/` directory and populates it with initial files from templates.
@@ -119,7 +119,7 @@ ixv-agents/
 ├── scripts/            # Startup and management scripts
 │   ├── boot.sh         # Start agents
 │   ├── stop.sh         # Stop agents
-│   └── setup_workdir.sh # Initialize workspace
+│   └── setup_workspace.sh # Initialize workspace
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]
 ├── docs/               # Documentation

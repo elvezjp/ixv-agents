@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================
-# setup_workdir.sh - IXV-Agents ワークスペース初期化スクリプト
+# setup_workspace.sh - IXV-Agents ワークスペース初期化スクリプト
 # ============================================================
 # 使用方法:
-#   ./scripts/setup_workdir.sh           # バックアップ＆初期化
-#   ./scripts/setup_workdir.sh --no-backup  # バックアップなしで初期化のみ
-#   ./scripts/setup_workdir.sh -h        # ヘルプ表示
+#   ./scripts/setup_workspace.sh           # バックアップ＆初期化
+#   ./scripts/setup_workspace.sh --no-backup  # バックアップなしで初期化のみ
+#   ./scripts/setup_workspace.sh -h        # ヘルプ表示
 # ============================================================
 
 set -e
@@ -77,7 +77,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "IXV-Agents ワークスペース初期化スクリプト"
             echo ""
-            echo "使用方法: ./scripts/setup_workdir.sh [オプション]"
+            echo "使用方法: ./scripts/setup_workspace.sh [オプション]"
             echo ""
             echo "オプション:"
             echo "  --no-backup    バックアップをスキップして初期化のみ実行"
@@ -93,7 +93,7 @@ while [[ $# -gt 0 ]]; do
             ;;
         *)
             echo "不明なオプション: $1"
-            echo "./scripts/setup_workdir.sh -h でヘルプを表示"
+            echo "./scripts/setup_workspace.sh -h でヘルプを表示"
             exit 1
             ;;
     esac

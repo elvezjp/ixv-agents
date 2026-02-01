@@ -58,8 +58,8 @@ log() {
 
 # Check if workspace exists
 if [ ! -d "$WORKSPACE_DIR" ]; then
-  log "Workspace not found. Running setup_workdir.sh first..."
-  "${SCRIPT_DIR}/setup_workdir.sh" --no-backup
+  log "Workspace not found. Running setup_workspace.sh first..."
+  "${SCRIPT_DIR}/setup_workspace.sh" --no-backup
 fi
 
 log "Stopping existing sessions if present..."

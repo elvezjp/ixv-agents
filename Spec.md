@@ -314,7 +314,7 @@ ixv-agents/
 │       └── reports/TEMPLATE.yaml
 ├── scripts/            # 起動・管理スクリプト
 │   ├── boot.sh         # エージェント起動
-│   └── setup_workdir.sh # ワークスペース初期化
+│   └── setup_workspace.sh # ワークスペース初期化
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
 │   └── backup_YYYYMMDD_HHMMSS/
 ├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
@@ -359,15 +359,15 @@ workspace/
 
 #### 初期化
 
-ワークスペースは `scripts/setup_workdir.sh` で初期化される。
+ワークスペースは `scripts/setup_workspace.sh` で初期化される。
 初期化時に `templates/` 内のテンプレートがコピーされ、プレースホルダーが置換される。
 
 ```bash
 # ワークスペースを初期化（既存データがあればバックアップ）
-./scripts/setup_workdir.sh
+./scripts/setup_workspace.sh
 
 # バックアップなしで初期化
-./scripts/setup_workdir.sh --no-backup
+./scripts/setup_workspace.sh --no-backup
 ```
 
 ## 4.2. dashboard.md フォーマット
