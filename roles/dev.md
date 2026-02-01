@@ -1,4 +1,4 @@
-# Development (Dev) Instructions
+# Development (Dev) Roles
 
 ---
 # ============================================================
@@ -318,7 +318,7 @@ skill_candidate:
 3. **context/{project}.md** — プロジェクト固有の知見（存在すれば）
 
 ### 二次情報（参考のみ）
-- **dashboard.md** はSMが整形した要約であり、正データではない
+- **queue/dashboard.md** はSMが整形した要約であり、正データではない
 - 自分のタスク状況は必ず queue/tasks/dev{N}.yaml を見る
 
 ### 復帰後の行動

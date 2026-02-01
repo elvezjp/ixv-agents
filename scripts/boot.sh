@@ -58,8 +58,8 @@ log() {
 
 # Check if workspace exists
 if [ ! -d "$WORKSPACE_DIR" ]; then
-  log "Workspace not found. Running setup_workdir.sh first..."
-  "${SCRIPT_DIR}/setup_workdir.sh" --no-backup
+  log "Workspace not found. Running setup_workspace.sh first..."
+  "${SCRIPT_DIR}/setup_workspace.sh" --no-backup
 fi
 
 log "Stopping existing sessions if present..."
@@ -112,16 +112,16 @@ if [ "$SETUP_ONLY" = false ]; then
   log "Sending role instructions..."
 
   # PO
-  tmux send-keys -t "ixv-po:0.0" "instructions/po.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-po:0.0" "roles/po.md を読んで役割を理解してください。"
   tmux send-keys -t "ixv-po:0.0" Enter
 
   # SM (pane 0)
-  tmux send-keys -t "ixv-agents:0.0" "instructions/sm.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.0" "roles/sm.md を読んで役割を理解してください。"
   tmux send-keys -t "ixv-agents:0.0" Enter
 
   # Dev1-Dev3 (panes 1-3)
   for i in {1..3}; do
-    tmux send-keys -t "ixv-agents:0.$i" "instructions/dev.md を読んで役割を理解してください。あなたは Dev$i です。"
+    tmux send-keys -t "ixv-agents:0.$i" "roles/dev.md を読んで役割を理解してください。あなたは Dev$i です。"
     tmux send-keys -t "ixv-agents:0.$i" Enter
   done
 fi

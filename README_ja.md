@@ -113,7 +113,7 @@ tmux attach-session -t ixv-agents
 
 ```
 ixv-agents/
-├── instructions/       # 各ロールへの指示書 (PO, SM, Dev)
+├── roles/              # 各ロールへの指示書 (PO, SM, Dev)
 ├── skills/             # AI CLIのスキル定義
 ├── templates/          # ワークスペース初期化用テンプレート
 ├── scripts/            # 起動・管理スクリプト
@@ -134,7 +134,7 @@ ixv-agents/
 
 ```
 workspace/
-├── instructions -> ../instructions  (symlink)
+├── roles -> ../roles  (symlink)
 ├── .claude/skills -> ../../skills   (symlink)
 ├── .opencode/skills -> ../../skills (symlink)
 ├── specs/              # 仕様書 (Single Source of Truth)

@@ -1,11 +1,11 @@
 #!/bin/bash
 # ============================================================
-# setup_workdir.sh - IXV-Agents ワークスペース初期化スクリプト
+# setup_workspace.sh - IXV-Agents ワークスペース初期化スクリプト
 # ============================================================
 # 使用方法:
-#   ./scripts/setup_workdir.sh           # バックアップ＆初期化
-#   ./scripts/setup_workdir.sh --no-backup  # バックアップなしで初期化のみ
-#   ./scripts/setup_workdir.sh -h        # ヘルプ表示
+#   ./scripts/setup_workspace.sh           # バックアップ＆初期化
+#   ./scripts/setup_workspace.sh --no-backup  # バックアップなしで初期化のみ
+#   ./scripts/setup_workspace.sh -h        # ヘルプ表示
 # ============================================================
 
 set -e
@@ -77,7 +77,7 @@ while [[ $# -gt 0 ]]; do
             echo ""
             echo "IXV-Agents ワークスペース初期化スクリプト"
             echo ""
-            echo "使用方法: ./scripts/setup_workdir.sh [オプション]"
+            echo "使用方法: ./scripts/setup_workspace.sh [オプション]"
             echo ""
             echo "オプション:"
             echo "  --no-backup    バックアップをスキップして初期化のみ実行"
@@ -86,14 +86,14 @@ while [[ $# -gt 0 ]]; do
             echo "動作内容:"
             echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
             echo "  2. workspace/ ディレクトリを初期化"
-            echo "  3. シンボリックリンクを作成（instructions, skills）"
-            echo "  4. テンプレートからキューファイル・specs・ダッシュボードを初期化"
+            echo "  3. シンボリックリンクを作成（roles, skills）"
+            echo "  4. テンプレートからキューファイル・ダッシュボード・README.mdを初期化"
             echo ""
             exit 0
             ;;
         *)
             echo "不明なオプション: $1"
-            echo "./scripts/setup_workdir.sh -h でヘルプを表示"
+            echo "./scripts/setup_workspace.sh -h でヘルプを表示"
             exit 1
             ;;
     esac
@@ -144,7 +144,6 @@ log_step "STEP 2: ディレクトリ構造の確認"
 
 mkdir -p "${WORKSPACE_DIR}/queue/tasks"
 mkdir -p "${WORKSPACE_DIR}/queue/reports"
-mkdir -p "${WORKSPACE_DIR}/specs"
 mkdir -p "${WORKSPACE_DIR}/.claude"
 mkdir -p "${WORKSPACE_DIR}/.opencode"
 mkdir -p "${BACKUP_BASE_DIR}"
@@ -156,12 +155,12 @@ log_success "ディレクトリ構造 OK"
 # ============================================================
 log_step "STEP 3: シンボリックリンクの作成"
 
-# instructions へのシンボリックリンク
-if [ ! -L "${WORKSPACE_DIR}/instructions" ]; then
-    ln -sfn ../instructions "${WORKSPACE_DIR}/instructions"
-    log_info "workspace/instructions -> ../instructions を作成"
+# roles へのシンボリックリンク
+if [ ! -L "${WORKSPACE_DIR}/roles" ]; then
+    ln -sfn ../roles "${WORKSPACE_DIR}/roles"
+    log_info "workspace/roles -> ../roles を作成"
 else
-    log_info "workspace/instructions は既に存在"
+    log_info "workspace/roles は既に存在"
 fi
 
 # .claude/skills へのシンボリックリンク
@@ -225,28 +224,39 @@ log_info "queue/reports/TEMPLATE.yaml を初期化"
 log_success "キューファイル初期化完了"
 
 # ============================================================
-# STEP 5: specsの初期化（テンプレートから）
+# STEP 5: ダッシュボードの初期化（テンプレートから）
 # ============================================================
-log_step "STEP 5: specsの初期化"
+log_step "STEP 5: ダッシュボードの初期化"
 
-cp "${TEMPLATES_DIR}/specs/current_spec.md" "${WORKSPACE_DIR}/specs/current_spec.md"
-log_info "specs/current_spec.md を初期化"
-
-cp "${TEMPLATES_DIR}/specs/backlog.md" "${WORKSPACE_DIR}/specs/backlog.md"
-log_info "specs/backlog.md を初期化"
-
-log_success "specs初期化完了"
-
-# ============================================================
-# STEP 6: ダッシュボードの初期化（テンプレートから）
-# ============================================================
-log_step "STEP 6: ダッシュボードの初期化"
-
-apply_template "${TEMPLATES_DIR}/dashboard.md" \
-               "${WORKSPACE_DIR}/dashboard.md" \
+apply_template "${TEMPLATES_DIR}/queue/dashboard.md" \
+               "${WORKSPACE_DIR}/queue/dashboard.md" \
                "$TIMESTAMP" "$CURRENT_DATE" ""
 
-log_success "dashboard.md を初期化"
+log_success "queue/dashboard.md を初期化"
+
+# ============================================================
+# STEP 6: ワークスペースルートファイルの初期化
+# ============================================================
+log_step "STEP 6: ワークスペースルートファイルの初期化"
+
+apply_template "${TEMPLATES_DIR}/README.md" \
+               "${WORKSPACE_DIR}/README.md" \
+               "$TIMESTAMP" "$CURRENT_DATE" ""
+log_info "README.md（仕様書）を初期化"
+
+cp "${TEMPLATES_DIR}/CONSTITUTION.md" "${WORKSPACE_DIR}/CONSTITUTION.md"
+log_info "CONSTITUTION.md を初期化"
+
+cp "${TEMPLATES_DIR}/PROCESS.md" "${WORKSPACE_DIR}/PROCESS.md"
+log_info "PROCESS.md を初期化"
+
+cp "${TEMPLATES_DIR}/AGENTS.md" "${WORKSPACE_DIR}/AGENTS.md"
+log_info "AGENTS.md を初期化"
+
+cp "${TEMPLATES_DIR}/.gitignore" "${WORKSPACE_DIR}/.gitignore"
+log_info ".gitignore を初期化"
+
+log_success "ルートファイル初期化完了"
 
 # ============================================================
 # 完了メッセージ
@@ -259,15 +269,18 @@ echo ""
 echo "  ワークスペース: ${WORKSPACE_DIR}/"
 echo ""
 echo "  初期化されたファイル:"
-echo "    - workspace/dashboard.md"
+echo "    - workspace/README.md（仕様書）"
+echo "    - workspace/CONSTITUTION.md"
+echo "    - workspace/PROCESS.md"
+echo "    - workspace/AGENTS.md"
+echo "    - workspace/.gitignore"
+echo "    - workspace/queue/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
 echo "    - workspace/queue/tasks/dev1-dev3.yaml"
 echo "    - workspace/queue/reports/TEMPLATE.yaml"
-echo "    - workspace/specs/current_spec.md"
-echo "    - workspace/specs/backlog.md"
 echo ""
 echo "  シンボリックリンク:"
-echo "    - workspace/instructions -> ../instructions"
+echo "    - workspace/roles -> ../roles"
 echo "    - workspace/.claude/skills -> ../../skills"
 echo "    - workspace/.opencode/skills -> ../../skills"
 echo ""
