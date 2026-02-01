@@ -87,7 +87,7 @@ while [[ $# -gt 0 ]]; do
             echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
             echo "  2. workspace/ ディレクトリを初期化"
             echo "  3. シンボリックリンクを作成（instructions, skills）"
-            echo "  4. テンプレートからキューファイル・specs・ダッシュボードを初期化"
+            echo "  4. テンプレートからキューファイル・ダッシュボード・README.mdを初期化"
             echo ""
             exit 0
             ;;
@@ -144,7 +144,6 @@ log_step "STEP 2: ディレクトリ構造の確認"
 
 mkdir -p "${WORKSPACE_DIR}/queue/tasks"
 mkdir -p "${WORKSPACE_DIR}/queue/reports"
-mkdir -p "${WORKSPACE_DIR}/specs"
 mkdir -p "${WORKSPACE_DIR}/.claude"
 mkdir -p "${WORKSPACE_DIR}/.opencode"
 mkdir -p "${BACKUP_BASE_DIR}"
@@ -225,22 +224,9 @@ log_info "queue/reports/TEMPLATE.yaml を初期化"
 log_success "キューファイル初期化完了"
 
 # ============================================================
-# STEP 5: specsの初期化（テンプレートから）
+# STEP 5: ダッシュボードの初期化（テンプレートから）
 # ============================================================
-log_step "STEP 5: specsの初期化"
-
-cp "${TEMPLATES_DIR}/specs/current_spec.md" "${WORKSPACE_DIR}/specs/current_spec.md"
-log_info "specs/current_spec.md を初期化"
-
-cp "${TEMPLATES_DIR}/specs/backlog.md" "${WORKSPACE_DIR}/specs/backlog.md"
-log_info "specs/backlog.md を初期化"
-
-log_success "specs初期化完了"
-
-# ============================================================
-# STEP 6: ダッシュボードの初期化（テンプレートから）
-# ============================================================
-log_step "STEP 6: ダッシュボードの初期化"
+log_step "STEP 5: ダッシュボードの初期化"
 
 apply_template "${TEMPLATES_DIR}/queue/dashboard.md" \
                "${WORKSPACE_DIR}/queue/dashboard.md" \
@@ -249,12 +235,14 @@ apply_template "${TEMPLATES_DIR}/queue/dashboard.md" \
 log_success "queue/dashboard.md を初期化"
 
 # ============================================================
-# STEP 7: ワークスペースルートファイルの初期化
+# STEP 6: ワークスペースルートファイルの初期化
 # ============================================================
-log_step "STEP 7: ワークスペースルートファイルの初期化"
+log_step "STEP 6: ワークスペースルートファイルの初期化"
 
-cp "${TEMPLATES_DIR}/README.md" "${WORKSPACE_DIR}/README.md"
-log_info "README.md を初期化"
+apply_template "${TEMPLATES_DIR}/README.md" \
+               "${WORKSPACE_DIR}/README.md" \
+               "$TIMESTAMP" "$CURRENT_DATE" ""
+log_info "README.md（仕様書）を初期化"
 
 cp "${TEMPLATES_DIR}/.gitignore" "${WORKSPACE_DIR}/.gitignore"
 log_info ".gitignore を初期化"
@@ -272,14 +260,12 @@ echo ""
 echo "  ワークスペース: ${WORKSPACE_DIR}/"
 echo ""
 echo "  初期化されたファイル:"
-echo "    - workspace/README.md"
+echo "    - workspace/README.md（仕様書）"
 echo "    - workspace/.gitignore"
 echo "    - workspace/queue/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
 echo "    - workspace/queue/tasks/dev1-dev3.yaml"
 echo "    - workspace/queue/reports/TEMPLATE.yaml"
-echo "    - workspace/specs/current_spec.md"
-echo "    - workspace/specs/backlog.md"
 echo ""
 echo "  シンボリックリンク:"
 echo "    - workspace/instructions -> ../instructions"
