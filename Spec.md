@@ -317,6 +317,7 @@ ixv-agents/
 │       └── reports/TEMPLATE.yaml
 ├── scripts/            # 起動・管理スクリプト
 │   ├── boot.sh         # エージェント起動
+│   ├── banner.sh       # ASCIIアート表示
 │   └── setup_workspace.sh # ワークスペース初期化
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
 │   └── backup_YYYYMMDD_HHMMSS/
@@ -440,6 +441,32 @@ workspace/
 - {Future ideas not yet prioritized}
 ```
 
+## 4.4. スクリプト
+
+### 4.4.1. boot.sh（エージェント起動）
+
+エージェントを起動するスクリプト。
+
+**機能**:
+- 起動時に `banner.sh` を呼び出してASCIIアートを表示する
+- tmuxセッションを作成する
+- 各エージェント（PO, SM, Dev1-3）のウィンドウを起動する
+- Claude Code CLIを初期化する
+
+### 4.4.2. banner.sh（ASCIIアート表示）
+
+「IXV-agents」のASCIIアートを標準出力に表示するスクリプト。
+
+### 4.4.3. setup_workspace.sh（ワークスペース初期化）
+
+ワークスペースを初期化するスクリプト。
+
+**機能**:
+- `templates/` からファイルをコピー
+- プレースホルダーの置換
+- シンボリックリンクの作成
+- 既存データのバックアップ（`--no-backup` オプションで無効化可能）
+
 ## 5. エージェントワークフロー
 
 本セクションは PROCESS.md の7つの工程に対応する。
@@ -468,9 +495,7 @@ workspace/
            ↓
        [PO] 目的をヒアリングし、po_to_sm.yaml に憲章更新タスクを記録
            ↓
-       [SM] タスクを分解し tasks/dev{N}.yaml を作成
-           ↓
-       [Dev] CONSTITUTION.md を更新
+       [SM] CONSTITUTION.md を更新
            ↓
        [Human] ★ 憲章承認
 ```
@@ -478,8 +503,7 @@ workspace/
 | 担当 | 作成/更新ファイル | 承認 |
 |------|------------------|------|
 | PO | `queue/po_to_sm.yaml` | - |
-| SM | `queue/tasks/dev{N}.yaml` | - |
-| Dev | `CONSTITUTION.md` | Human |
+| SM | `CONSTITUTION.md` | Human |
 
 ### 5.2. 企画・要件定義フェーズ（Specify）
 

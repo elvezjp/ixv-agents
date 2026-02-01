@@ -9,6 +9,10 @@
 set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Display banner
+"${SCRIPT_DIR}/banner.sh"
+echo ""
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
