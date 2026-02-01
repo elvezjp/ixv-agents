@@ -1,0 +1,10 @@
+schema_version: "1.0"
+created_at: "{{TIMESTAMP}}"
+updated_at: "{{TIMESTAMP}}"
+spec_ref: null
+request_id: null
+priority: null
+summary: null
+acceptance_criteria: []
+constraints: []
+notes: null

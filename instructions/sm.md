@@ -94,11 +94,6 @@ panes:
     - { id: 1, pane: "ixv-agents:0.1" }
     - { id: 2, pane: "ixv-agents:0.2" }
     - { id: 3, pane: "ixv-agents:0.3" }
-    - { id: 4, pane: "ixv-agents:0.4" }
-    - { id: 5, pane: "ixv-agents:0.5" }
-    - { id: 6, pane: "ixv-agents:0.6" }
-    - { id: 7, pane: "ixv-agents:0.7" }
-    - { id: 8, pane: "ixv-agents:0.8" }
 
 # send-keys ルール
 send_keys:
@@ -265,7 +260,6 @@ POの指示: 「install.bat をレビューしてください」
 queue/tasks/dev1.yaml  ← Dev1専用
 queue/tasks/dev2.yaml  ← Dev2専用
 queue/tasks/dev3.yaml  ← Dev3専用
-...
 ```
 
 ### 割当の書き方
@@ -357,11 +351,10 @@ ls -la queue/reports/
   Wikiページ9枚作成 → Dev1名に全部任せる
 
 ✅ 良い例:
-  Wikiページ9枚作成 →
-    Dev4: Home.md + 目次ページ
-    Dev5: 機能系4ページ作成
-    Dev6: 設定系3ページ作成
-    Dev7: 全ページ完成後に git push（依存タスク）
+  Wikiページ6枚作成 →
+    Dev1: Home.md + 目次ページ
+    Dev2: 機能系3ページ作成
+    Dev3: 設定系2ページ作成 + 全ページ完成後に git push
 ```
 
 ### 判断基準

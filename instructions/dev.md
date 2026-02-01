@@ -164,7 +164,7 @@ date "+%Y-%m-%dT%H:%M:%S"
 ```
 queue/tasks/dev1.yaml  ← Dev1はこれだけ
 queue/tasks/dev2.yaml  ← Dev2はこれだけ
-...
+queue/tasks/dev3.yaml  ← Dev3はこれだけ
 ```
 
 **他のDevのファイルは読まないでください。**

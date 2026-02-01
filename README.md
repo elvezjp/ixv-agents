@@ -2,169 +2,168 @@
 
 ## Overview
 
-**IXV-Agents** is a specification-driven AI development system that
-organizes multiple AI agents into a fixed, role-based team. It
-integrates agile roles and events with specification-driven development
-to ensure governance, traceability, and practical enterprise usage.
+**IXV-Agents** is a specification-driven AI development system that organizes multiple AI agents into a fixed, role-based team. It integrates agile roles and events with specification-driven development to ensure governance, traceability, and practical enterprise usage.
 
-
-
-------------------------------------------------------------------------
-
-## Reference Implementation
-
-This project explicitly references `multi-agent-shogun-main/` in this workspace as the baseline implementation for scripts, tmux layout, and role instruction templates.
-
-------------------------------------------------------------------------
-
-## 日本語サマリ
-
-**IXV-Agents** は、仕様（Spec）を単一の真実として、PO/SM/Dev/QAの固定ロールで協働するAI開発体制を構築する仕組みです。
-トレーサビリティとガバナンスを重視し、役割とイベントで運用を律します。
-
-------------------------------------------------------------------------
+---
 
 ## Status
 
 | Item | Status |
 |------|--------|
-| Specification (Spec.md) | Draft v0.1.0 |
-| Implementation Plan (Plan.md) | Draft v0.1.0 |
-| Implementation | In Progress (Web UI + SSE demo) |
+| Specification (Spec.md) | Draft v0.2.0 |
+| Implementation | Foundation Complete (tmux + AI CLI) |
 
-**Next Step**: Phase 1 - Environment Setup
-
-------------------------------------------------------------------------
-
-## Web UI
-
-The system will provide a local Web UI for viewing dashboard and queue status. The Markdown files remain the source of truth, and the UI mirrors them.
-Frontend uses **React + Tailwind**, and backend is a **read-only** local service.
-
-### Demo mode (no backend required)
-
-You can run the UI with built-in demo data:
-
-- Start: `cd frontend && VITE_DEMO=1 npm run dev`
-- Toggle: **Demo Mode / Live Mode** button in the header
-
-### Real-time agent events (SSE)
-
-The UI shows a live stream of agent events:
-
-- **Demo mode**: frontend generates simulated events
-- **Live mode**: connects to backend `/api/events` (SSE)
-
-Backend start:
-`cd backend && npm run dev`
-
-------------------------------------------------------------------------
+---
 
 ## Core Concept
 
-**Fixed roles, evolving skills.** Humans define intent and
-specifications, while AI agents collaborate as a structured team.
+**Fixed roles, evolving skills.**
+Humans define intent and specifications, while AI agents collaborate as a structured team.
 
-------------------------------------------------------------------------
+- **Specifications (Specs)** are the single source of truth
+- **Roles** define responsibility boundaries
+- **Events** establish development rhythm
+
+---
 
 ## Agent Team Composition (Fixed)
 
--   Product Owner AI (1)
--   Scrum Master AI (1)
--   Development AI (8)
+| Role | Count | Responsibility |
+|------|-------|----------------|
+| Product Owner (PO) | 1 | Define goals and priorities, create specifications |
+| Scrum Master (SM) | 1 | Orchestrate workflow, decompose and assign tasks |
+| Development (Dev) | 8 | Implementation |
 
-------------------------------------------------------------------------
-
-## Roles
-
-PO AI defines goals and priorities. SM AI orchestrates workflow. Dev AI
-executes implementation.
-
-------------------------------------------------------------------------
-
-## Agile Events
-
-Sprint Planning, Daily Scrum, Sprint Review, Retrospective are system
-primitives.
-
-------------------------------------------------------------------------
-
-## Specification-Driven Development
-
-Specifications are the single source of truth. Implementation is
-continuously validated against them.
-
-------------------------------------------------------------------------
-
-## Skill System
-
-Skills are reusable units of judgment that emerge from repeated
-behavior.
-
-------------------------------------------------------------------------
-
-## Architecture
-
-Role-based, event-driven, and fully traceable.
-
-------------------------------------------------------------------------
-
-## Philosophy
-
-Specifications define intent. Roles define responsibility. Skills define
-capability. Events define rhythm.
-
-------------------------------------------------------------------------
-
-## Key Documents
-
--   `Spec.md`: System architecture, roles, workflow, and constraints.
--   `Plan.md`: Implementation phases and tasks (execution plan).
--   `docs/skill-guide.md`: Skill design guide for ixv-agents.
-
-------------------------------------------------------------------------
+---
 
 ## Prerequisites
 
--   macOS / Linux
--   tmux
--   Claude Code CLI (`claude-code`)
--   Bash 4.0+
+- macOS / Linux
+- tmux
+- AI CLI (one of the following)
+  - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - Default
+  - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
+- Bash 4.0+
 
-------------------------------------------------------------------------
+---
 
-## Getting Started
+## Quick Start
 
-1. Read `Spec.md` to understand the system architecture.
-2. Review `Plan.md` for the implementation roadmap.
-3. (After implementation) Run `scripts/ixv_boot.sh` to start the agent team.
+### 1. Initialize Workspace
 
-------------------------------------------------------------------------
+```bash
+./scripts/setup_workdir.sh
+```
 
-## Directory Structure (Planned)
+This creates the `workspace/` directory and populates it with initial files from templates.
+If an existing `workspace/` exists, it will be backed up to `backups/`.
+
+### 2. Start Agents
+
+```bash
+# Start with OpenCode (default)
+./scripts/boot.sh
+
+# Start with Claude Code
+./scripts/boot.sh --claude-code
+
+# Specify model
+./scripts/boot.sh --model opus
+```
+
+This creates the following tmux sessions:
+- **ixv-po**: Product Owner (1 pane)
+- **ixv-agents**: SM + Dev1-Dev8 (3x3 grid)
+
+### 3. Connect to PO and Start Development
+
+```bash
+tmux attach-session -t ixv-po
+```
+
+Communicate your requirements to PO, and tasks will be assigned to the Dev team via SM.
+
+### 4. Monitor Agent Team
+
+```bash
+tmux attach-session -t ixv-agents
+```
+
+### 5. Stop Sessions
+
+```bash
+# Stop IXV sessions
+./scripts/stop.sh
+
+# Stop all tmux sessions
+./scripts/stop.sh --all-tmux
+```
+
+### tmux Quick Reference
+
+| Action | Command |
+|--------|---------|
+| Detach from session | `Ctrl+b d` |
+| List sessions | `tmux ls` |
+| Navigate between panes | `Ctrl+b Arrow keys` |
+
+---
+
+## Directory Structure
 
 ```
 ixv-agents/
-├── config/             # Project configuration
-├── frontend/           # React + Tailwind UI (local, read-only)
-├── backend/            # Local read-only service for files/queue
 ├── instructions/       # Role instructions (PO, SM, Dev)
-├── specs/              # Specifications (Single Source of Truth)
-├── queue/              # Communication buffers
-├── dashboard.md        # Project status board
-├── memory/             # MCP Memory
-└── scripts/            # Startup scripts
+├── skills/             # AI CLI skill definitions
+├── templates/          # Workspace initialization templates
+├── scripts/            # Startup and management scripts
+│   ├── boot.sh         # Start agents
+│   ├── stop.sh         # Stop agents
+│   └── setup_workdir.sh # Initialize workspace
+├── backups/            # Workspace backups [.gitignore]
+├── workspace/          # AI editor working directory [.gitignore]
+├── docs/               # Documentation
+├── Spec.md             # System specification
+└── README.md
 ```
 
-------------------------------------------------------------------------
+### workspace/ Directory
+
+`workspace/` is the directory where AI editors actually perform their work.
+It is isolated from the repository root, preventing AI editors from accessing tool READMEs and other unrelated files.
+
+```
+workspace/
+├── instructions -> ../instructions  (symlink)
+├── .claude/skills -> ../../skills   (symlink)
+├── .opencode/skills -> ../../skills (symlink)
+├── specs/              # Specifications (Single Source of Truth)
+│   ├── current_spec.md
+│   └── backlog.md
+├── queue/              # Inter-agent communication
+│   ├── po_to_sm.yaml   # PO -> SM
+│   ├── tasks/          # SM -> Dev
+│   └── reports/        # Dev -> SM
+├── dashboard.md        # Project status board
+└── (artifacts)         # Implementation code, tests, etc.
+```
+
+---
 
 ## Operational Principles
 
-- **Single Source of Truth**: `specs/current_spec.md` を必ず参照
-- **Traceability**: `spec_ref` / `request_id` / `task_id` で追跡
-- **Role Boundaries**: 役割外のファイル更新は禁止
+- **Single Source of Truth**: Always reference `workspace/specs/current_spec.md`
+- **Traceability**: Track via `spec_ref` / `request_id` / `task_id`
+- **Role Boundaries**: Writing to files outside role scope is prohibited
 
-------------------------------------------------------------------------
+---
+
+## Key Documents
+
+- `Spec.md`: System architecture, roles, workflow, and constraints
+- `docs/skill-guide.md`: Skill design guide for ixv-agents
+
+---
 
 ## License
 

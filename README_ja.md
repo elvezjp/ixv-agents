@@ -4,49 +4,14 @@
 
 **IXV-Agents** は、仕様主導のAI開発システムです。固定された役割ベースのチームとして複数のAIエージェントを編成し、アジャイルの役割とイベントを仕様主導開発に統合することで、ガバナンス・トレーサビリティ・実運用性を確保します。
 
-
----
-
-## 参照実装
-
-本プロジェクトは、このワークスペース内の `multi-agent-shogun-main/` を、スクリプト、tmuxレイアウト、指示書テンプレートの参照実装として明示的に参照します。
-
 ---
 
 ## ステータス
 
 | 項目 | 状態 |
 |------|------|
-| 仕様（Spec.md） | Draft v0.1.0 |
-| 実装計画（Plan.md） | Draft v0.1.0 |
-| 実装 | 進行中（Web UI + SSE デモ対応） |
-
-**次のステップ**: Phase 1 - Environment Setup
-
----
-
-## Web UI
-
-ダッシュボードとキューの状態を閲覧するローカルWeb UIを提供します。
-Markdown/YAMLが単一の真実であり、UIはそれを参照して表示するだけの **読み取り専用** です。
-フロントエンドは **React + Tailwind**、バックエンドは **ローカル読み取り専用サービス** を使用します。
-
-### デモモード（バックエンド不要）
-
-デモ用データでUIを起動できます。
-
-- 起動: `cd frontend && VITE_DEMO=1 npm run dev`
-- 画面右上の **Demo Mode / Live Mode** で切替可能
-
-### リアルタイムイベント（SSE）
-
-UIはエージェントイベントのストリームを表示できます。
-
-- **デモモード**: フロントエンドが疑似イベントを生成
-- **ライブモード**: バックエンドの `/api/events` (SSE) から受信
-
-バックエンド起動例:
-`cd backend && npm run dev`
+| 仕様（Spec.md） | Draft v0.2.0 |
+| 実装 | 基盤完成（tmux + AI CLI） |
 
 ---
 
@@ -55,57 +20,19 @@ UIはエージェントイベントのストリームを表示できます。
 **固定された役割、進化するスキル。**
 人間が意図と仕様を定義し、AIエージェントは構造化されたチームとして協働します。
 
+- **仕様（Specs）** が唯一の信頼できる情報源（Single Source of Truth）
+- **役割（Roles）** による責任分担
+- **イベント（Events）** によるリズム形成
+
 ---
 
 ## エージェント構成（固定）
 
-- Product Owner AI（1）
-- Scrum Master AI（1）
-- Development AI（8）
-
----
-
-## 役割
-
-PO AI は目標と優先順位を定義し、SM AI はワークフローを統制し、Dev AI は実装を行います。
-
----
-
-## アジャイルイベント
-
-Sprint Planning、Daily Scrum、Sprint Review、Retrospective をシステムの基本イベントとします。
-
----
-
-## 仕様主導開発
-
-仕様は単一の真実であり、実装は常に仕様に対して検証されます。
-
----
-
-## スキルシステム
-
-スキルは繰り返しの行動から生まれる再利用可能な判断単位です。
-
----
-
-## アーキテクチャ
-
-役割ベース、イベント駆動、完全なトレーサビリティを前提とします。
-
----
-
-## 哲学
-
-仕様は意図を定義し、役割は責任を定義し、スキルは能力を定義し、イベントはリズムを定義します。
-
----
-
-## 主要ドキュメント
-
-- `Spec.md`: システム構成、役割、ワークフロー、制約
-- `Plan.md`: 実装フェーズとタスク
-- `docs/skill-guide.md`: ixv-agents 向けスキル設計ガイド
+| 役割 | 人数 | 責任 |
+|------|------|------|
+| Product Owner (PO) | 1 | 目標と優先順位を定義、仕様策定 |
+| Scrum Master (SM) | 1 | ワークフロー統制、タスク分解・割り当て |
+| Development (Dev) | 3 | 実装 |
 
 ---
 
@@ -113,41 +40,128 @@ Sprint Planning、Daily Scrum、Sprint Review、Retrospective をシステムの
 
 - macOS / Linux
 - tmux
-- Claude Code CLI (`claude-code`)
+- AI CLI（以下のいずれか）
+  - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - デフォルト
+  - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
 - Bash 4.0+
 
 ---
 
-## はじめに
+## クイックスタート
 
-1. `Spec.md` を読み、システムアーキテクチャを理解します。
-2. `Plan.md` を確認し、実装ロードマップを把握します。
-3. （実装後）`scripts/ixv_boot.sh` を実行してエージェントチームを起動します。
+### 1. ワークスペースの初期化
+
+```bash
+./scripts/setup_workdir.sh
+```
+
+これにより `workspace/` ディレクトリが作成され、テンプレートから初期ファイルが配置されます。
+既存の `workspace/` がある場合は `backups/` にバックアップされます。
+
+### 2. エージェントの起動
+
+```bash
+# OpenCode（デフォルト）で起動
+./scripts/boot.sh
+
+# Claude Codeで起動
+./scripts/boot.sh --claude-code
+
+# モデルを指定して起動
+./scripts/boot.sh --model opus
+```
+
+起動すると以下のtmuxセッションが作成されます：
+- **ixv-po**: Product Owner用（1ペイン）
+- **ixv-agents**: SM + Dev1-Dev3用（2x2グリッド）
+
+### 3. POに接続して開発を開始
+
+```bash
+tmux attach-session -t ixv-po
+```
+
+POに要望を伝えると、SM経由でDevチームにタスクが割り当てられます。
+
+### 4. エージェントチームを確認
+
+```bash
+tmux attach-session -t ixv-agents
+```
+
+### 5. セッションの停止
+
+```bash
+# IXVセッションを停止
+./scripts/stop.sh
+
+# 全tmuxセッションを停止
+./scripts/stop.sh --all-tmux
+```
+
+### tmux操作メモ
+
+| 操作 | コマンド |
+|------|----------|
+| セッションをデタッチ | `Ctrl+b d` |
+| セッション一覧 | `tmux ls` |
+| ペイン間移動 | `Ctrl+b 矢印キー` |
 
 ---
 
-## ディレクトリ構成（予定）
+## ディレクトリ構成
 
 ```
 ixv-agents/
-├── config/             # プロジェクト設定
-├── frontend/           # React + Tailwind UI（ローカル・読み取り専用）
-├── backend/            # ローカル読み取り専用サービス
-├── instructions/       # 役割指示書（PO, SM, Dev）
-├── specs/              # 仕様（単一の真実）
-├── queue/              # 通信バッファ
+├── instructions/       # 各ロールへの指示書 (PO, SM, Dev)
+├── skills/             # AI CLIのスキル定義
+├── templates/          # ワークスペース初期化用テンプレート
+├── scripts/            # 起動・管理スクリプト
+│   ├── boot.sh         # エージェント起動
+│   ├── stop.sh         # エージェント停止
+│   └── setup_workdir.sh # ワークスペース初期化
+├── backups/            # ワークスペースのバックアップ [.gitignore]
+├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
+├── docs/               # ドキュメント
+├── Spec.md             # システム仕様書
+└── README.md
+```
+
+### workspace/ ディレクトリ
+
+`workspace/` はAIエディタが実際に作業を行うディレクトリです。
+リポジトリルートとは分離されており、AIエディタがツールのREADME等にアクセスすることを防ぎます。
+
+```
+workspace/
+├── instructions -> ../instructions  (symlink)
+├── .claude/skills -> ../../skills   (symlink)
+├── .opencode/skills -> ../../skills (symlink)
+├── specs/              # 仕様書 (Single Source of Truth)
+│   ├── current_spec.md
+│   └── backlog.md
+├── queue/              # エージェント間通信
+│   ├── po_to_sm.yaml   # PO -> SM
+│   ├── tasks/          # SM -> Dev
+│   └── reports/        # Dev -> SM
 ├── dashboard.md        # プロジェクト状況ボード
-├── memory/             # MCP Memory
-└── scripts/            # 起動スクリプト
+└── (成果物)            # 実装コード、テスト等
 ```
 
 ---
 
 ## 運用原則
 
-- **Single Source of Truth**: `specs/current_spec.md` を必ず参照
+- **Single Source of Truth**: `workspace/specs/current_spec.md` を必ず参照
 - **Traceability**: `spec_ref` / `request_id` / `task_id` で追跡
 - **Role Boundaries**: 役割外のファイル更新は禁止
+
+---
+
+## 主要ドキュメント
+
+- `Spec.md`: システム構成、役割、ワークフロー、制約
+- `docs/skill-guide.md`: ixv-agents 向けスキル設計ガイド
 
 ---
 

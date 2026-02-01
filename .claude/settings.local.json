@@ -1,8 +1,0 @@
-{
-  "permissions": {
-    "allow": [
-      "Bash(chmod:*)",
-      "Bash(/Users/hdkworks/Projects/ixv-agents/scripts/ixv_flow_check.sh:*)"
-    ]
-  }
-}
