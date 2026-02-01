@@ -113,90 +113,28 @@ echo "  ╚═══════════════════════
 echo ""
 
 # ============================================================
-# STEP 1: 前回記録のバックアップ（内容がある場合のみ）
+# STEP 1: 前回記録のバックアップ
 # ============================================================
+BACKUP_DIR=""
 if [ "$NO_BACKUP" = false ]; then
     log_step "STEP 1: 前回記録のバックアップ"
 
-    BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
-    NEED_BACKUP=false
-
-    # バックアップが必要かチェック（タスクファイルにデータがあるか）
-    for f in "${WORKSPACE_DIR}"/queue/tasks/*.yaml; do
-        if [ -f "$f" ]; then
-            if grep -q "task_id:" "$f" 2>/dev/null && ! grep -q "task_id: null" "$f" 2>/dev/null; then
-                NEED_BACKUP=true
-                break
-            fi
-        fi
-    done
-
-    # レポートファイルをチェック（TEMPLATE以外）
-    for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
-        if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
-            NEED_BACKUP=true
-            break
-        fi
-    done
-
-    # dashboard.mdにタスク記録があるかチェック
-    if [ -f "${WORKSPACE_DIR}/dashboard.md" ]; then
-        if grep -q "TASK-" "${WORKSPACE_DIR}/dashboard.md" 2>/dev/null || grep -q "REQ-" "${WORKSPACE_DIR}/dashboard.md" 2>/dev/null; then
-            NEED_BACKUP=true
-        fi
-    fi
-
-    # specs/current_spec.mdに内容があるかチェック
-    if [ -f "${WORKSPACE_DIR}/specs/current_spec.md" ]; then
-        if ! grep -q "^# TBD" "${WORKSPACE_DIR}/specs/current_spec.md" 2>/dev/null; then
-            NEED_BACKUP=true
-        fi
-    fi
-
-    if [ "$NEED_BACKUP" = true ]; then
-        mkdir -p "$BACKUP_DIR"
-
-        # dashboard.mdをバックアップ
-        if [ -f "${WORKSPACE_DIR}/dashboard.md" ]; then
-            cp "${WORKSPACE_DIR}/dashboard.md" "$BACKUP_DIR/"
-            log_info "dashboard.md をバックアップ"
-        fi
-
-        # queue/po_to_sm.yamlをバックアップ
-        if [ -f "${WORKSPACE_DIR}/queue/po_to_sm.yaml" ]; then
-            cp "${WORKSPACE_DIR}/queue/po_to_sm.yaml" "$BACKUP_DIR/"
-            log_info "queue/po_to_sm.yaml をバックアップ"
-        fi
-
-        # queue/tasksをバックアップ
-        if [ -d "${WORKSPACE_DIR}/queue/tasks" ]; then
-            cp -r "${WORKSPACE_DIR}/queue/tasks" "$BACKUP_DIR/"
-            log_info "queue/tasks/ をバックアップ"
-        fi
-
-        # queue/reportsをバックアップ（TEMPLATE以外）
-        if [ -d "${WORKSPACE_DIR}/queue/reports" ]; then
-            mkdir -p "$BACKUP_DIR/reports"
-            for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
-                if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
-                    cp "$f" "$BACKUP_DIR/reports/"
-                fi
-            done
-            log_info "queue/reports/ をバックアップ"
-        fi
-
-        # specsをバックアップ
-        if [ -d "${WORKSPACE_DIR}/specs" ]; then
-            cp -r "${WORKSPACE_DIR}/specs" "$BACKUP_DIR/"
-            log_info "specs/ をバックアップ"
-        fi
-
+    # workspaceディレクトリが存在する場合は全体をバックアップ
+    if [ -d "${WORKSPACE_DIR}" ]; then
+        mkdir -p "${BACKUP_BASE_DIR}"
+        BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
+        mv "${WORKSPACE_DIR}" "$BACKUP_DIR"
         log_success "バックアップ完了: $BACKUP_DIR"
     else
-        log_info "バックアップ対象のデータがありません（スキップ）"
+        log_info "workspaceが存在しません（スキップ）"
     fi
 else
     log_step "STEP 1: バックアップをスキップ (--no-backup)"
+    # --no-backup の場合は既存のworkspaceを削除
+    if [ -d "${WORKSPACE_DIR}" ]; then
+        rm -rf "${WORKSPACE_DIR}"
+        log_info "既存のworkspaceを削除"
+    fi
 fi
 
 # ============================================================
@@ -333,7 +271,7 @@ echo "    - workspace/instructions -> ../instructions"
 echo "    - workspace/.claude/skills -> ../../skills"
 echo "    - workspace/.opencode/skills -> ../../skills"
 echo ""
-if [ "$NO_BACKUP" = false ] && [ "$NEED_BACKUP" = true ]; then
+if [ "$NO_BACKUP" = false ] && [ -d "$BACKUP_DIR" ]; then
     echo "  バックアップ先: $BACKUP_DIR"
     echo ""
 fi
