@@ -440,79 +440,233 @@ workspace/
 - {Future ideas not yet prioritized}
 ```
 
-## 5. ワークフロー (Events)
+## 5. エージェントワークフロー
 
-### 5.1. Sprint Planning
+本セクションは PROCESS.md の7つの工程に対応する。
 
-1. **PO**: バックログから次スプリントの対象を選定し、仕様を明確化（`README.md`）。
-2. **SM**: 仕様を読み込み、タスクに分解。Devに割り当て。
+### 5.0. 参照順序（全エージェント共通）
 
-### 5.2. Implementation (Daily Loop)
+エージェントは以下の順序でドキュメントを参照する：
 
-1. **Dev**: 割り当てられたタスクを実行。完了後、SMに報告。
-2. **SM**: 報告を確認し、結果を統合。次のタスクがあれば割り当て。
+1. `CONSTITUTION.md` - プロジェクト憲章
+2. `README.md` - 仕様書（Single Source of Truth）
+3. `PROCESS.md` - 工程と運用フロー
+4. `roles/*` - 各ロールの詳細指示
 
-### 5.3. Sprint Review & Retrospective
+### 5.1. 原則決定フェーズ（Constitution）
 
-- スプリント終了時に、成果物を確認し、プロセスを改善する（PO/SM主導）。
+プロジェクト開始時に CONSTITUTION.md の「存在意義（Purpose）」が未記入の場合に実行する。
 
-### 5.4. Event 実行トリガー（最小）
+```
+[Human] プロジェクトの目的を伝える
+    ↓
+[PO] CONSTITUTION.md を確認
+    ↓
+    ├─ 目的が記載済み → スキップ（5.2へ）
+    │
+    └─ 目的が未記入（初期状態）
+           ↓
+       [PO] 目的をヒアリングし、po_to_sm.yaml に憲章更新タスクを記録
+           ↓
+       [SM] タスクを分解し tasks/dev{N}.yaml を作成
+           ↓
+       [Dev] CONSTITUTION.md を更新
+           ↓
+       [Human] ★ 憲章承認
+```
 
-- **Planning**: POが `README.md` を更新した時点で開始
-- **Daily**: SMが `queue/tasks/*.yaml` を更新した時点で開始
-- **Review**: 全タスクの `status: done` レポートが揃った時点で開始
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml` | - |
+| Dev | `CONSTITUTION.md` | Human |
 
-## 6. 技術スタック
+### 5.2. 企画・要件定義フェーズ（Specify）
 
-- **Base System**: `multi-agent-shogun` (Bash, tmux)
-- **Reference Implementation**: `multi-agent-shogun-main/`（本リポジトリ同梱）
-- **AI Model**: Claude 3.7 Sonnet (Main), Opus (PO/Planning if needed)
-- **CLI**: `claude-code`
-- **MCP**: Memory, Filesystem, etc.
+Human の要望を仕様（README.md）に反映し、承認を得るフェーズ。
 
-## 7. 運用・監査
+```
+[Human] 要望を伝える
+    ↓
+[PO] README.md を確認
+    ↓
+    ├─ 要望が仕様に反映済み → スキップ（5.3へ）
+    │
+    └─ 要望が未反映
+           ↓
+       [PO] 要望をヒアリングし、po_to_sm.yaml に仕様策定タスクを記録
+           ↓
+       [SM] タスクを分解し tasks/dev{N}.yaml を作成
+           ↓
+       [Dev] README.md を作成・更新（Why/What/Scope/Constraints/AC）
+           ↓
+       [Human] ★ 仕様承認
+```
 
-- **ログ**: すべての決定はYAMLまたはMarkdownで記録。
-- **監査**: `spec_ref` / `task_id` / `request_id` を追跡キーとして利用。
-- **バージョン**: `README.md` の更新履歴を残す（Git履歴を前提）。
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml` | - |
+| Dev | `README.md` | Human |
 
-## 8. セキュリティ / 権限
+### 5.3. 設計計画フェーズ（Plan）
 
-- 役割境界により書き込み先を制限し、意図しない仕様変更を防止。
-- 外部通信が必要な場合は明示的に許可（運用ポリシーで管理）。
+SMが段階的な実行計画を立てるフェーズ。タスクより大きな粒度で、段階的に実行する必要がない場合はスキップ可能。調査が必要な場合はDevを用いる。
 
-## 9. エラーハンドリング / リカバリー
+```
+[PO] po_to_sm.yaml に計画策定を依頼
+    ↓
+[SM] 段階的な実行計画が必要か判断
+    ↓
+    ├─ 不要（単純な要件） → スキップ（5.4へ）
+    │
+    └─ 必要（複雑な要件）
+           ↓
+       [SM] 調査が必要か判断
+           ↓
+           ├─ 調査不要 → 計画を策定
+           │
+           └─ 調査必要
+                  ↓
+              [SM] 調査タスクを tasks/dev{N}.yaml に記録
+                  ↓
+              [Dev] 調査を実施し、結果を reports/{task_id}.yaml に報告
+                  ↓
+              [SM] 調査結果を踏まえて計画を策定
+           ↓
+       [SM] 実行計画を docs/ に作成（設計メモ）
+           ↓
+       [SM] 重要な決定事項は README.md への反映を PO に依頼
+           ↓
+       [Human] ★ 計画承認（必要に応じて）
+```
 
-### 9.1. タスク失敗時
+*注: 設計メモは補助資料であり、**仕様（SSoT）は README.md のみ**。*
 
-1. **Dev**: `status: blocked` でレポートを送信。`issues` に原因を記載。
-2. **SM**: ブロッカーを確認し、以下のいずれかを実施：
-   - タスクの再割り当て
-   - タスクの分割・再定義
-   - POへのエスカレーション（仕様の問題の場合）
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml`（調査用） | - |
+| Dev | `queue/reports/{task_id}.yaml`（調査結果） | - |
+| SM | `docs/*`（実行計画・設計メモ） | Human（必要時） |
 
-### 9.2. エージェント無応答時
+### 5.4. タスク分割フェーズ（Tasks）
 
-1. **SM**: 該当エージェントのタスクを `status: blocked` に変更。
-2. **SM**: 別のエージェントにタスクを再割り当て。
-3. **運用者**: tmuxセッションを確認し、必要に応じてエージェントを再起動。
+POが計画に応じて実行を指示し、SMがタスクに分割するフェーズ。
 
-### 9.3. 仕様の不整合検出時
+```
+[PO] 計画に応じて、実行する旨を po_to_sm.yaml に記録
+    ↓
+[SM] po_to_sm.yaml を読み取り
+    ↓
+[SM] タスクを分解し queue/tasks/dev{N}.yaml を作成
+    ↓
+[SM] queue/dashboard.md を更新（Backlog Status）
+```
 
-1. **検出者**: SMに報告（`queue/reports/` 経由）。
-2. **SM**: POにエスカレーション。
-3. **PO**: 仕様を修正し、影響範囲を評価。必要に応じてタスクを再発行。
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml` | - |
+| SM | `queue/dashboard.md` | - |
 
-### 9.4. YAML破損・欠落時
+### 5.5. 実装フェーズ（Implement）
 
-1. **SM**: 直近のバックアップまたはGit履歴から復旧
-2. **SM**: 復旧内容を `queue/reports/` に記録
-3. **PO**: 仕様側に影響がある場合は修正し再通知
+```
+[Dev] queue/tasks/dev{N}.yaml を読み取り
+    ↓
+[Dev] 実装作業（コード、テスト等）
+    ↓
+[Dev] 仕様との乖離があれば README.md 更新を PO に依頼
+    ↓
+[Dev] queue/reports/{task_id}.yaml に結果を報告
+```
 
-## 10. 変更履歴
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| Dev | 実装コード、テスト等 | - |
+| Dev | `queue/reports/{task_id}.yaml` | - |
+
+**ブロッカー発生時：**
+
+```
+[Dev] 実装中にブロッカー発生
+    ↓
+[Dev] queue/reports/{task_id}.yaml に status: blocked で報告
+    ↓
+[SM] ブロッカー内容を確認
+    ↓
+[SM] queue/dashboard.md の Blockers セクションに記録
+    ↓
+[SM] 解決策を検討（タスク再割当て / PO相談）
+    ↓
+（解決後）[SM] 新タスク発行 or 既存タスク更新
+```
+
+### 5.6. 検証・受入フェーズ（Verify/Accept）
+
+```
+[SM] queue/reports/*.yaml を確認
+    ↓
+[SM] queue/dashboard.md を更新（Agent Status）
+    ↓
+[PO] 受入基準（Acceptance Criteria）に基づき検証
+    ↓
+[Human] ★ 最終承認
+    ↓
+[PO] Backlog更新を指示（po_to_sm.yaml）
+    ↓
+[SM] タスクを分解し tasks/dev{N}.yaml を作成
+    ↓
+[Dev] README.md の Backlog を更新（Status: done）
+```
+
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| SM | `queue/dashboard.md` | - |
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml` | - |
+| Dev | `README.md`（Backlog更新） | - |
+
+### 5.7. 移行・運用フェーズ（Migration/Operation）
+
+運用からの学びを仕様へ反映する。
+
+```
+[Human] 運用からのフィードバックを伝える
+    ↓
+[PO] フィードバックを分析し、po_to_sm.yaml に仕様更新タスクを記録
+    ↓
+[SM] タスクを分解し tasks/dev{N}.yaml を作成
+    ↓
+[Dev] README.md に改善点を反映
+    ↓
+[Human] ★ 仕様承認
+    ↓
+（必要に応じて 5.2〜5.6 を繰り返す）
+```
+
+| 担当 | 作成/更新ファイル | 承認 |
+|------|------------------|------|
+| PO | `queue/po_to_sm.yaml` | - |
+| SM | `queue/tasks/dev{N}.yaml` | - |
+| Dev | `README.md` | Human |
+
+### 5.8. 承認が必要なタイミング（まとめ）
+
+| フェーズ | 承認対象 | 承認者 |
+|---------|---------|--------|
+| 5.1 原則決定 | `CONSTITUTION.md` | Human |
+| 5.2 企画・要件定義 | `README.md` | Human |
+| 5.3 設計計画 | 設計内容（必要時） | Human |
+| 5.6 検証・受入 | 実装結果 | Human |
+| 5.7 移行・運用 | `README.md` | Human |
+
+## 6. 変更履歴
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 0.3.1 | 2026-02-01 | - | エージェントワークフロー（セクション5）をPROCESS.mdの7工程に対応させて追加 |
 | 0.3.0 | 2026-02-01 | - | specsディレクトリ廃止、README.mdを唯一の仕様書に統合 |
 | 0.2.1 | 2026-02-01 | - | workspaceをリポジトリとして見立て: README.md/.gitignore追加、dashboard.mdをqueue/配下に移動 |
 | 0.2.0 | 2026-02-01 | - | workspace/分離、templates/追加、ディレクトリ構成更新 |
