@@ -228,26 +228,6 @@ EOF
 done
 log_info "queue/tasks/dev1-dev8.yaml を初期化"
 
-# QA用タスクファイルを初期化 (qa1-qa2)
-for i in {1..2}; do
-    cat > ./queue/tasks/qa${i}.yaml << EOF
-schema_version: "1.0"
-created_at: "${TIMESTAMP}"
-updated_at: "${TIMESTAMP}"
-task_id: null
-spec_ref: null
-request_id: null
-assignee: "qa${i}"
-type: "qa"
-summary: null
-definition_of_done: []
-inputs: []
-outputs: []
-dependencies: []
-EOF
-done
-log_info "queue/tasks/qa1-qa2.yaml を初期化"
-
 # レポートファイルを削除（TEMPLATE以外）
 DELETED_COUNT=0
 for f in ./queue/reports/*.yaml; do
@@ -365,8 +345,6 @@ cat > ./dashboard.md << EOF
 | Dev6 | - | idle | - |
 | Dev7 | - | idle | - |
 | Dev8 | - | idle | - |
-| QA1 | - | idle | - |
-| QA2 | - | idle | - |
 
 ## Blockers
 - [ ] None
@@ -389,7 +367,6 @@ echo "  初期化されたファイル:"
 echo "    - dashboard.md"
 echo "    - queue/po_to_sm.yaml"
 echo "    - queue/tasks/dev1-dev8.yaml"
-echo "    - queue/tasks/qa1-qa2.yaml"
 echo "    - queue/reports/ (TEMPLATEを除き削除)"
 echo "    - specs/current_spec.md"
 echo "    - specs/backlog.md"

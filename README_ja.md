@@ -62,13 +62,12 @@ UIはエージェントイベントのストリームを表示できます。
 - Product Owner AI（1）
 - Scrum Master AI（1）
 - Development AI（8）
-- QA / Quality AI（2）
 
 ---
 
 ## 役割
 
-PO AI は目標と優先順位を定義し、SM AI はワークフローを統制し、Dev AI は実装を行い、QA AI は品質と適合性を保証します。
+PO AI は目標と優先順位を定義し、SM AI はワークフローを統制し、Dev AI は実装を行います。
 
 ---
 
@@ -134,7 +133,7 @@ ixv-agents/
 ├── config/             # プロジェクト設定
 ├── frontend/           # React + Tailwind UI（ローカル・読み取り専用）
 ├── backend/            # ローカル読み取り専用サービス
-├── instructions/       # 役割指示書（PO, SM, Dev, QA）
+├── instructions/       # 役割指示書（PO, SM, Dev）
 ├── specs/              # 仕様（単一の真実）
 ├── queue/              # 通信バッファ
 ├── dashboard.md        # プロジェクト状況ボード
