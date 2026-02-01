@@ -15,9 +15,10 @@ SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 cd "$ROOT_DIR"
 
-# ワークスペースとバックアップのディレクトリ
+# ディレクトリ定義
 WORKSPACE_DIR="./workspace"
 BACKUP_BASE_DIR="./backups"
+TEMPLATES_DIR="./templates"
 
 # 色定義
 RED='\033[0;31m'
@@ -49,6 +50,20 @@ log_step() {
     echo -e "\n${CYAN}${BOLD}━━━ $1 ━━━${NC}\n"
 }
 
+# テンプレートをコピーしてプレースホルダーを置換する関数
+apply_template() {
+    local src="$1"
+    local dst="$2"
+    local timestamp="$3"
+    local date="$4"
+    local assignee="$5"
+
+    sed -e "s|{{TIMESTAMP}}|${timestamp}|g" \
+        -e "s|{{DATE}}|${date}|g" \
+        -e "s|{{ASSIGNEE}}|${assignee}|g" \
+        "$src" > "$dst"
+}
+
 # オプション解析
 NO_BACKUP=false
 
@@ -72,7 +87,7 @@ while [[ $# -gt 0 ]]; do
             echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
             echo "  2. workspace/ ディレクトリを初期化"
             echo "  3. シンボリックリンクを作成（instructions, skills）"
-            echo "  4. キューファイル・specs・ダッシュボードを初期化"
+            echo "  4. テンプレートからキューファイル・specs・ダッシュボードを初期化"
             echo ""
             exit 0
             ;;
@@ -83,6 +98,12 @@ while [[ $# -gt 0 ]]; do
             ;;
     esac
 done
+
+# テンプレートディレクトリの存在確認
+if [ ! -d "$TEMPLATES_DIR" ]; then
+    log_error "テンプレートディレクトリが見つかりません: $TEMPLATES_DIR"
+    exit 1
+fi
 
 echo ""
 echo "  ╔══════════════════════════════════════════════════════════════╗"
@@ -224,44 +245,24 @@ fi
 log_success "シンボリックリンク OK"
 
 # ============================================================
-# STEP 4: キューファイルのリセット
+# STEP 4: キューファイルの初期化（テンプレートから）
 # ============================================================
 log_step "STEP 4: キューファイルの初期化"
 
 TIMESTAMP=$(date -u "+%Y-%m-%dT%H:%M:%SZ")
+CURRENT_DATE=$(date "+%Y-%m-%d")
 
 # po_to_sm.yaml を初期化
-cat > "${WORKSPACE_DIR}/queue/po_to_sm.yaml" << EOF
-schema_version: "1.0"
-created_at: "${TIMESTAMP}"
-updated_at: "${TIMESTAMP}"
-spec_ref: null
-request_id: null
-priority: null
-summary: null
-acceptance_criteria: []
-constraints: []
-notes: null
-EOF
+apply_template "${TEMPLATES_DIR}/queue/po_to_sm.yaml" \
+               "${WORKSPACE_DIR}/queue/po_to_sm.yaml" \
+               "$TIMESTAMP" "$CURRENT_DATE" ""
 log_info "queue/po_to_sm.yaml を初期化"
 
 # Dev用タスクファイルを初期化 (dev1-dev8)
 for i in {1..8}; do
-    cat > "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" << EOF
-schema_version: "1.0"
-created_at: "${TIMESTAMP}"
-updated_at: "${TIMESTAMP}"
-task_id: null
-spec_ref: null
-request_id: null
-assignee: "dev${i}"
-type: "dev"
-summary: null
-definition_of_done: []
-inputs: []
-outputs: []
-dependencies: []
-EOF
+    apply_template "${TEMPLATES_DIR}/queue/tasks/dev.yaml" \
+                   "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" \
+                   "$TIMESTAMP" "$CURRENT_DATE" "dev${i}"
 done
 log_info "queue/tasks/dev1-dev8.yaml を初期化"
 
@@ -279,116 +280,33 @@ else
     log_info "削除対象のレポートファイルなし"
 fi
 
-# TEMPLATEファイルが存在しない場合は作成
-if [ ! -f "${WORKSPACE_DIR}/queue/reports/TEMPLATE.yaml" ]; then
-    cat > "${WORKSPACE_DIR}/queue/reports/TEMPLATE.yaml" << 'EOF'
-schema_version: "1.0"
-created_at: "YYYY-MM-DDTHH:MM:SSZ"
-updated_at: "YYYY-MM-DDTHH:MM:SSZ"
-task_id: "TASK-YYYYMMDD-001"
-status: "done"
-summary: ""
-changes: []
-artifacts: []
-issues: []
-EOF
-    log_info "queue/reports/TEMPLATE.yaml を作成"
-fi
+# TEMPLATEファイルをコピー
+cp "${TEMPLATES_DIR}/queue/reports/TEMPLATE.yaml" "${WORKSPACE_DIR}/queue/reports/TEMPLATE.yaml"
+log_info "queue/reports/TEMPLATE.yaml を初期化"
 
 log_success "キューファイル初期化完了"
 
 # ============================================================
-# STEP 5: specsの初期化
+# STEP 5: specsの初期化（テンプレートから）
 # ============================================================
 log_step "STEP 5: specsの初期化"
 
-# specs/current_spec.md を初期化
-cat > "${WORKSPACE_DIR}/specs/current_spec.md" << 'EOF'
-# TBD
-
-## Metadata
-- Version: 0.0.0
-- Last Updated: TBD
-
-## Goal
-- TBD
-
-## Scope
-- 含める範囲
-  - TBD
-- 含めない範囲（Non-Goals）
-  - TBD
-
-## Requirements
-- TBD
-
-## Acceptance Criteria
-- TBD
-
-## Constraints
-- TBD
-
-## Dependencies
-- TBD
-EOF
+cp "${TEMPLATES_DIR}/specs/current_spec.md" "${WORKSPACE_DIR}/specs/current_spec.md"
 log_info "specs/current_spec.md を初期化"
 
-# specs/backlog.md を初期化
-cat > "${WORKSPACE_DIR}/specs/backlog.md" << 'EOF'
-# Product Backlog
-
-## Active Items
-| ID | Priority | Summary | Status | Spec Ref |
-|----|----------|---------|--------|----------|
-| - | - | - | - | - |
-
-## Icebox
-- TBD
-EOF
+cp "${TEMPLATES_DIR}/specs/backlog.md" "${WORKSPACE_DIR}/specs/backlog.md"
 log_info "specs/backlog.md を初期化"
 
 log_success "specs初期化完了"
 
 # ============================================================
-# STEP 6: ダッシュボードの初期化
+# STEP 6: ダッシュボードの初期化（テンプレートから）
 # ============================================================
 log_step "STEP 6: ダッシュボードの初期化"
 
-DASHBOARD_DATE=$(date "+%Y-%m-%d")
-
-cat > "${WORKSPACE_DIR}/dashboard.md" << EOF
-# IXV-Agents Dashboard
-
-## Sprint Info
-- Sprint: 0
-- Period: ${DASHBOARD_DATE} ~ TBD
-- Goal: TBD
-
-## Backlog Status
-| Priority | ID | Summary | Status | Assignee |
-|----------|-----|---------|--------|----------|
-| - | - | - | - | - |
-
-## Agent Status
-| Agent | Current Task | Status | Last Update |
-|-------|--------------|--------|-------------|
-| PO | - | idle | - |
-| SM | - | idle | - |
-| Dev1 | - | idle | - |
-| Dev2 | - | idle | - |
-| Dev3 | - | idle | - |
-| Dev4 | - | idle | - |
-| Dev5 | - | idle | - |
-| Dev6 | - | idle | - |
-| Dev7 | - | idle | - |
-| Dev8 | - | idle | - |
-
-## Blockers
-- [ ] None
-
-## Notes
-- TBD
-EOF
+apply_template "${TEMPLATES_DIR}/dashboard.md" \
+               "${WORKSPACE_DIR}/dashboard.md" \
+               "$TIMESTAMP" "$CURRENT_DATE" ""
 
 log_success "dashboard.md を初期化"
 
@@ -406,7 +324,7 @@ echo "  初期化されたファイル:"
 echo "    - workspace/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
 echo "    - workspace/queue/tasks/dev1-dev8.yaml"
-echo "    - workspace/queue/reports/ (TEMPLATEを除き削除)"
+echo "    - workspace/queue/reports/TEMPLATE.yaml"
 echo "    - workspace/specs/current_spec.md"
 echo "    - workspace/specs/backlog.md"
 echo ""

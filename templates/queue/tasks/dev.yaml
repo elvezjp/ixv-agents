@@ -1,0 +1,13 @@
+schema_version: "1.0"
+created_at: "{{TIMESTAMP}}"
+updated_at: "{{TIMESTAMP}}"
+task_id: null
+spec_ref: null
+request_id: null
+assignee: "{{ASSIGNEE}}"
+type: "dev"
+summary: null
+definition_of_done: []
+inputs: []
+outputs: []
+dependencies: []
