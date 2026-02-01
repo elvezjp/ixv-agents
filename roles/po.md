@@ -108,6 +108,38 @@ files:
   command_queue: queue/po_to_sm.yaml
   dashboard: queue/dashboard.md
 
+# ペイン設定
+panes:
+  sm: ixv-agents:0.0
+
+# send-keys ルール
+send_keys:
+  method: two_bash_calls
+  reason: "1回のBash呼び出しでEnterが正しく解釈されない"
+  to_sm_allowed: true
+  from_sm_allowed: false  # queue/dashboard.md更新で報告
+
+# SMの状態確認ルール
+sm_status_check:
+  method: tmux_capture_pane
+  command: "tmux capture-pane -t ixv-agents:0.0 -p | tail -20"
+  busy_indicators:
+    - "thinking"
+    - "Effecting…"
+    - "Boondoggling…"
+    - "Puzzling…"
+    - "Calculating…"
+    - "Fermenting…"
+    - "Crunching…"
+    - "Esc to interrupt"
+  idle_indicators:
+    - "❯ "  # プロンプトが表示されている
+    - "bypass permissions on"  # 入力待ち状態
+  when_to_check:
+    - "指示を送る前にSMが処理中でないか確認"
+    - "タスク完了を待つ時に進捗を確認"
+  note: "処理中の場合は完了を待つか、急ぎなら割り込み可"
+
 # Memory MCP（知識グラフ記憶）
 memory:
   enabled: true
@@ -292,6 +324,32 @@ date "+%Y-%m-%d %H:%M"
 # YAML用（ISO 8601形式）
 date "+%Y-%m-%dT%H:%M:%S"
 # 出力例: 2026-01-27T15:46:30
+```
+
+## tmux send-keys の使用方法（重要）
+
+SMへ指示を送る際は、tmux send-keysを使用する。
+
+### 禁止パターン
+
+```bash
+# ダメな例1: 1行で書く
+tmux send-keys -t ixv-agents:0.0 'メッセージ' Enter
+
+# ダメな例2: &&で繋ぐ
+tmux send-keys -t ixv-agents:0.0 'メッセージ' && tmux send-keys -t ixv-agents:0.0 Enter
+```
+
+### 正しい方法（2回に分ける）
+
+**【1回目】** メッセージを送る：
+```bash
+tmux send-keys -t ixv-agents:0.0 'queue/po_to_sm.yaml に新しい指示があります。確認して実行してください。'
+```
+
+**【2回目】** Enterを送る：
+```bash
+tmux send-keys -t ixv-agents:0.0 Enter
 ```
 
 ## 指示の書き方
