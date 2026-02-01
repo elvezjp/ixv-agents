@@ -113,7 +113,7 @@ tmux attach-session -t ixv-agents
 
 ```
 ixv-agents/
-├── instructions/       # Role instructions (PO, SM, Dev)
+├── roles/              # Role instructions (PO, SM, Dev)
 ├── skills/             # AI CLI skill definitions
 ├── templates/          # Workspace initialization templates
 ├── scripts/            # Startup and management scripts
@@ -134,7 +134,7 @@ It is isolated from the repository root, preventing AI editors from accessing to
 
 ```
 workspace/
-├── instructions -> ../instructions  (symlink)
+├── roles -> ../roles  (symlink)
 ├── .claude/skills -> ../../skills   (symlink)
 ├── .opencode/skills -> ../../skills (symlink)
 ├── specs/              # Specifications (Single Source of Truth)

@@ -86,7 +86,7 @@ while [[ $# -gt 0 ]]; do
             echo "動作内容:"
             echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
             echo "  2. workspace/ ディレクトリを初期化"
-            echo "  3. シンボリックリンクを作成（instructions, skills）"
+            echo "  3. シンボリックリンクを作成（roles, skills）"
             echo "  4. テンプレートからキューファイル・ダッシュボード・README.mdを初期化"
             echo ""
             exit 0
@@ -155,12 +155,12 @@ log_success "ディレクトリ構造 OK"
 # ============================================================
 log_step "STEP 3: シンボリックリンクの作成"
 
-# instructions へのシンボリックリンク
-if [ ! -L "${WORKSPACE_DIR}/instructions" ]; then
-    ln -sfn ../instructions "${WORKSPACE_DIR}/instructions"
-    log_info "workspace/instructions -> ../instructions を作成"
+# roles へのシンボリックリンク
+if [ ! -L "${WORKSPACE_DIR}/roles" ]; then
+    ln -sfn ../roles "${WORKSPACE_DIR}/roles"
+    log_info "workspace/roles -> ../roles を作成"
 else
-    log_info "workspace/instructions は既に存在"
+    log_info "workspace/roles は既に存在"
 fi
 
 # .claude/skills へのシンボリックリンク
@@ -280,7 +280,7 @@ echo "    - workspace/queue/tasks/dev1-dev3.yaml"
 echo "    - workspace/queue/reports/TEMPLATE.yaml"
 echo ""
 echo "  シンボリックリンク:"
-echo "    - workspace/instructions -> ../instructions"
+echo "    - workspace/roles -> ../roles"
 echo "    - workspace/.claude/skills -> ../../skills"
 echo "    - workspace/.opencode/skills -> ../../skills"
 echo ""

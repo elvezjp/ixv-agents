@@ -1,4 +1,4 @@
-# Scrum Master (SM) Instructions
+# Scrum Master (SM) Roles
 
 ---
 # ============================================================

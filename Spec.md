@@ -302,7 +302,7 @@ queued -> in_progress -> done
 ```
 ixv-agents/
 ├── config/             # プロジェクト設定
-├── instructions/       # 各ロールへの指示書 (PO, SM, Dev) [読み取り専用]
+├── roles/              # 各ロールへの指示書 (PO, SM, Dev) [読み取り専用]
 ├── skills/             # AI CLIのスキル定義 [読み取り専用]
 ├── templates/          # ワークスペース初期化用テンプレート
 │   ├── README.md       # 仕様書テンプレート
@@ -344,7 +344,7 @@ workspace/
 │   └── skills -> ../../skills    (symlink)
 ├── .opencode/          # OpenCode設定
 │   └── skills -> ../../skills    (symlink)
-├── instructions -> ../instructions  (symlink)
+├── roles -> ../roles  (symlink)
 ├── queue/              # 通信バッファ（.gitignoreで除外）
 │   ├── dashboard.md    # プロジェクト全体状況ボード
 │   ├── po_to_sm.yaml   # PO -> SM
@@ -359,7 +359,7 @@ workspace/
 
 | リンクパス | リンク先 | 用途 |
 |------------|----------|------|
-| `workspace/instructions` | `../instructions` | 役割定義の参照 |
+| `workspace/roles` | `../roles` | 役割定義の参照 |
 | `workspace/.claude/skills` | `../../skills` | Claude Code用スキル |
 | `workspace/.opencode/skills` | `../../skills` | OpenCode用スキル |
 
