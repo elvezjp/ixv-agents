@@ -39,7 +39,7 @@
 ## 前提条件
 
 - macOS / Linux
-- tmux
+- [tmux](https://github.com/tmux/tmux/wiki)
 - AI CLI（以下のいずれか）
   - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - デフォルト
   - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
@@ -49,16 +49,7 @@
 
 ## クイックスタート
 
-### 1. ワークスペースの初期化
-
-```bash
-./scripts/setup_workdir.sh
-```
-
-これにより `workspace/` ディレクトリが作成され、テンプレートから初期ファイルが配置されます。
-既存の `workspace/` がある場合は `backups/` にバックアップされます。
-
-### 2. エージェントの起動
+### 1. エージェントの起動
 
 ```bash
 # OpenCode（デフォルト）で起動
@@ -71,11 +62,12 @@
 ./scripts/boot.sh --model opus
 ```
 
+初回起動時は自動的にワークスペースが初期化されます。
 起動すると以下のtmuxセッションが作成されます：
 - **ixv-po**: Product Owner用（1ペイン）
 - **ixv-agents**: SM + Dev1-Dev3用（2x2グリッド）
 
-### 3. POに接続して開発を開始
+### 2. POに接続して開発を開始
 
 ```bash
 tmux attach-session -t ixv-po
@@ -83,13 +75,13 @@ tmux attach-session -t ixv-po
 
 POに要望を伝えると、SM経由でDevチームにタスクが割り当てられます。
 
-### 4. エージェントチームを確認
+### 3. エージェントチームを確認
 
 ```bash
 tmux attach-session -t ixv-agents
 ```
 
-### 5. セッションの停止
+### 4. セッションの停止
 
 ```bash
 # IXVセッションを停止
@@ -98,6 +90,14 @@ tmux attach-session -t ixv-agents
 # 全tmuxセッションを停止
 ./scripts/stop.sh --all-tmux
 ```
+
+### 5. 新しいワークスペースのセットアップ
+
+```bash
+./scripts/setup_workspace.sh
+```
+
+既存の `workspace/` がある場合は `backups/` にバックアップされ、新しいワークスペースが作成されます。
 
 ### tmux操作メモ
 
@@ -119,7 +119,7 @@ ixv-agents/
 ├── scripts/            # 起動・管理スクリプト
 │   ├── boot.sh         # エージェント起動
 │   ├── stop.sh         # エージェント停止
-│   └── setup_workdir.sh # ワークスペース初期化
+│   └── setup_workspace.sh # ワークスペース初期化
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
 ├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
 ├── docs/               # ドキュメント

@@ -32,14 +32,14 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 |------|-------|----------------|
 | Product Owner (PO) | 1 | Define goals and priorities, create specifications |
 | Scrum Master (SM) | 1 | Orchestrate workflow, decompose and assign tasks |
-| Development (Dev) | 8 | Implementation |
+| Development (Dev) | 3 | Implementation |
 
 ---
 
 ## Prerequisites
 
 - macOS / Linux
-- tmux
+- [tmux](https://github.com/tmux/tmux/wiki)
 - AI CLI (one of the following)
   - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - Default
   - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
@@ -49,16 +49,7 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 ## Quick Start
 
-### 1. Initialize Workspace
-
-```bash
-./scripts/setup_workspace.sh
-```
-
-This creates the `workspace/` directory and populates it with initial files from templates.
-If an existing `workspace/` exists, it will be backed up to `backups/`.
-
-### 2. Start Agents
+### 1. Start Agents
 
 ```bash
 # Start with OpenCode (default)
@@ -71,11 +62,12 @@ If an existing `workspace/` exists, it will be backed up to `backups/`.
 ./scripts/boot.sh --model opus
 ```
 
+On first run, the workspace is automatically initialized.
 This creates the following tmux sessions:
 - **ixv-po**: Product Owner (1 pane)
-- **ixv-agents**: SM + Dev1-Dev8 (3x3 grid)
+- **ixv-agents**: SM + Dev1-Dev3 (2x2 grid)
 
-### 3. Connect to PO and Start Development
+### 2. Connect to PO and Start Development
 
 ```bash
 tmux attach-session -t ixv-po
@@ -83,13 +75,13 @@ tmux attach-session -t ixv-po
 
 Communicate your requirements to PO, and tasks will be assigned to the Dev team via SM.
 
-### 4. Monitor Agent Team
+### 3. Monitor Agent Team
 
 ```bash
 tmux attach-session -t ixv-agents
 ```
 
-### 5. Stop Sessions
+### 4. Stop Sessions
 
 ```bash
 # Stop IXV sessions
@@ -98,6 +90,14 @@ tmux attach-session -t ixv-agents
 # Stop all tmux sessions
 ./scripts/stop.sh --all-tmux
 ```
+
+### 5. Setup New Workspace
+
+```bash
+./scripts/setup_workspace.sh
+```
+
+If an existing `workspace/` exists, it will be backed up to `backups/`, and a new workspace will be created.
 
 ### tmux Quick Reference
 
