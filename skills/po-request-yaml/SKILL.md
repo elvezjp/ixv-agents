@@ -1,18 +1,17 @@
 ---
 name: po-request-yaml
 description: |
-  ユーザーからの要望・リクエストを受け取り、SMへ伝達するためのYAMLファイルを作成する。
-  Use when user describes any feature request, bug fix, improvement, or task.
-  Triggers on: "〜してほしい", "〜を追加", "〜を修正", "〜が欲しい", "〜を実装",
-  "バグ", "機能追加", "改善", or any development request from user.
+  ユーザーの要望やPOの指示をSMへ伝達するためのqueue/po_to_sm.yamlを作成する。
+  task_typeに応じて適切なYAMLを生成する。
+  Use when: 「要望」「リクエスト」「タスク発行」「SMに指示」「機能追加」「バグ修正」「仕様策定」「計画策定」「実行指示」「Backlog更新」「フィードバック反映」と言われた時。
 metadata:
   author: IXV-Agents
-  version: 1.1.0
+  version: 2.0.0
 ---
 
 # PO Request YAML Generator
 
-ユーザーの要望を受け取り、`queue/po_to_sm.yaml` を作成してSMに伝達する。
+ユーザーの要望やPOの指示を受け取り、`queue/po_to_sm.yaml` を作成してSMに伝達する。
 
 ## When to Use
 
@@ -20,42 +19,81 @@ metadata:
 
 - 「〜機能を追加してほしい」
 - 「〜を修正して」
-- 「〜が動かない」
-- 「〜を改善したい」
-- 「〜を実装して」
-- その他、開発に関するあらゆる要望
+- 「仕様を更新して」
+- 「計画を立てて」
+- 「実行して」
+- 「Backlogを更新して」
+- 「フィードバックを反映して」
+
+## Task Types
+
+| task_type | 用途 | 対応フェーズ |
+|-----------|------|-------------|
+| constitution_update | 憲章更新タスク | 5.1 |
+| spec_update | 仕様策定・更新タスク | 5.2, 5.7 |
+| plan | 計画策定依頼 | 5.3 |
+| execute | 実行指示 | 5.4 |
+| backlog_update | Backlog更新指示 | 5.6 |
+| feature | 機能追加（デフォルト） | - |
+| bugfix | バグ修正 | - |
 
 ## Instructions
 
-### Step 1: 要望のヒアリング
+### Step 1: task_typeの判定
 
-ユーザーから以下の情報を収集する：
+ユーザー入力やコンテキストから適切なtask_typeを判定する。
 
+**判定基準**:
+
+| ユーザー入力 | task_type |
+|------------|-----------|
+| 「憲章更新」「目的を記入」「constitution」 | constitution_update |
+| 「仕様策定」「仕様更新」「READMEに追加」 | spec_update |
+| 「計画を立てて」「設計して」「plan」 | plan |
+| 「実行して」「開始して」「execute」 | execute |
+| 「Backlog更新」「完了にして」「ステータス変更」 | backlog_update |
+| 「バグ」「不具合」「動かない」 | bugfix |
+| 「機能追加」「〜したい」「〜してほしい」 | feature |
+
+### Step 2: 必要情報のヒアリング
+
+task_typeに応じて必要な情報をヒアリングする。
+
+**共通項目**:
 | 項目 | 質問例 |
 |------|--------|
 | **何を実現したいか** | 「具体的にどのような動作を期待しますか？」 |
 | **完了の定義** | 「どうなったらOKですか？」 |
 | **優先度** | 「急ぎですか？（P0:最優先 / P1:通常 / P2:低）」 |
-| **制約条件**（任意） | 「何か制約はありますか？」 |
 
-不足している情報があれば、ユーザーに質問して明確化する。
+**task_type別の追加項目**:
 
-### Step 2: request_id の採番
+| task_type | 追加ヒアリング |
+|-----------|---------------|
+| constitution_update | プロジェクトの目的・存在意義 |
+| spec_update | 追加/変更する仕様の詳細 |
+| plan | 対象範囲、段階的実行の必要性 |
+| execute | 実行対象の計画、優先順位 |
+| backlog_update | 対象ID、新ステータス |
+
+### Step 3: request_idの採番
 
 1. 既存の `queue/po_to_sm.yaml` を確認
 2. 今日の日付で `REQ-YYYYMMDD-###` 形式のIDを採番
 3. 同日に複数リクエストがある場合は連番をインクリメント
 
-### Step 3: YAML生成
+### Step 4: YAML生成
 
-以下のスキーマに従ってYAMLを生成：
+task_typeに応じたYAMLを生成する。
 
+**共通フォーマット**:
 ```yaml
 schema_version: "1.0"
 created_at: "YYYY-MM-DDTHH:MM:SSZ"
 updated_at: "YYYY-MM-DDTHH:MM:SSZ"
-spec_ref: specs/current_spec.md
+spec_ref: README.md
 request_id: "REQ-YYYYMMDD-###"
+task_type: "{task_type}"
 priority: "P1"
 summary: "120文字以内の要件サマリ"
 acceptance_criteria:
@@ -66,39 +104,114 @@ constraints:
 notes: "補足事項（任意）"
 ```
 
-詳細なスキーマ定義は `references/yaml-schema.md` を参照。
-
-### Step 4: ファイル書き込み
+### Step 5: ファイル書き込み
 
 生成したYAMLを `queue/po_to_sm.yaml` に書き込む。
 
-## Validation Rules
+## Task Type別 Examples
 
-| Field | Rule |
-|-------|------|
-| request_id | `REQ-YYYYMMDD-###` 形式 |
-| priority | P0 / P1 / P2 のいずれか |
-| summary | 120文字以内推奨 |
-| acceptance_criteria | 最低1件必須 |
-| created_at, updated_at | ISO-8601 UTC形式 |
+### constitution_update
 
-## Examples
-
-### Example 1: 機能追加
-
-**User**: 「ダッシュボードにリアルタイム更新機能を追加したい」
-
-**PO**: 「どのくらいの頻度で更新されればOKですか？」
-
-**User**: 「5秒以内に反映されればいい」
-
-**Generated YAML**:
 ```yaml
 schema_version: "1.0"
-created_at: "2026-01-31T10:00:00Z"
-updated_at: "2026-01-31T10:00:00Z"
-spec_ref: specs/current_spec.md
-request_id: "REQ-20260131-001"
+created_at: "2026-02-01T10:00:00Z"
+updated_at: "2026-02-01T10:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-001"
+task_type: "constitution_update"
+priority: "P0"
+summary: "CONSTITUTION.mdの存在意義セクションを記入"
+acceptance_criteria:
+  - "## 1. 存在意義（Purpose）に具体的な目的が記載されている"
+  - "テンプレート文言が置き換えられている"
+constraints: []
+notes: "目的: AIエージェントによる効率的なソフトウェア開発プロセスの実現"
+```
+
+### spec_update
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T11:00:00Z"
+updated_at: "2026-02-01T11:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-002"
+task_type: "spec_update"
+priority: "P1"
+summary: "README.mdにダークモード対応の要件を追加"
+acceptance_criteria:
+  - "Requirements セクションにダークモード対応が記載されている"
+  - "Acceptance Criteria にテスト観点が追加されている"
+  - "Backlog に REQ-20260201-002 がエントリされている"
+constraints: []
+notes: "ユーザー要望: ダークモードに切り替えられるようにしたい"
+```
+
+### plan
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T12:00:00Z"
+updated_at: "2026-02-01T12:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-003"
+task_type: "plan"
+priority: "P1"
+summary: "認証機能の実装計画を策定"
+acceptance_criteria:
+  - "段階的な実行計画が docs/ に作成されている"
+  - "各段階の成果物と完了条件が明確である"
+  - "依存関係が整理されている"
+constraints:
+  - "既存のセッション管理と互換性を保つこと"
+notes: "OAuth2.0とJWT認証の両方を検討すること"
+```
+
+### execute
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T13:00:00Z"
+updated_at: "2026-02-01T13:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-004"
+task_type: "execute"
+priority: "P0"
+summary: "認証機能フェーズ1の実行を開始"
+acceptance_criteria:
+  - "タスクが tasks/dev{N}.yaml に分解されている"
+  - "Devへの割り当てが完了している"
+  - "dashboard.md が更新されている"
+constraints: []
+notes: "計画: docs/auth-plan.md を参照"
+```
+
+### backlog_update
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T14:00:00Z"
+updated_at: "2026-02-01T14:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-005"
+task_type: "backlog_update"
+priority: "P1"
+summary: "REQ-20260131-001 のステータスを done に更新"
+acceptance_criteria:
+  - "README.md の Backlog テーブルで REQ-20260131-001 が done になっている"
+constraints: []
+notes: "Human承認済み"
+```
+
+### feature
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T15:00:00Z"
+updated_at: "2026-02-01T15:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-006"
+task_type: "feature"
 priority: "P1"
 summary: "ダッシュボードにリアルタイム更新機能を追加"
 acceptance_criteria:
@@ -108,17 +221,15 @@ constraints: []
 notes: ""
 ```
 
-### Example 2: バグ修正
+### bugfix
 
-**User**: 「タスク一覧が表示されない」
-
-**Generated YAML**:
 ```yaml
 schema_version: "1.0"
-created_at: "2026-01-31T14:30:00Z"
-updated_at: "2026-01-31T14:30:00Z"
-spec_ref: specs/current_spec.md
-request_id: "REQ-20260131-002"
+created_at: "2026-02-01T16:00:00Z"
+updated_at: "2026-02-01T16:00:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-007"
+task_type: "bugfix"
 priority: "P0"
 summary: "タスク一覧が表示されないバグの修正"
 acceptance_criteria:
@@ -127,16 +238,32 @@ constraints: []
 notes: "再現手順: localhost:3000 → Tasksタブ"
 ```
 
+## Validation Rules
+
+| Field | Rule |
+|-------|------|
+| request_id | `REQ-YYYYMMDD-###` 形式 |
+| task_type | 定義されたタイプのいずれか |
+| priority | P0 / P1 / P2 のいずれか |
+| summary | 120文字以内推奨 |
+| acceptance_criteria | 最低1件必須 |
+| created_at, updated_at | ISO-8601 UTC形式 |
+
 ## Error Handling
 
 | Issue | Action |
 |-------|--------|
+| task_typeが不明確 | ユーザーに確認、デフォルトは feature |
 | 完了条件が不明確 | 「どうなったらOKですか？」と質問 |
 | 優先度が不明 | P1をデフォルトとして提案 |
 | summaryが長すぎる | 120文字以内に要約を提案 |
+
+## References
+
+詳細なスキーマ定義は `references/yaml-schema.md` を参照。
 
 ## Notes
 
 - このスキルはPOロールのみが使用する
 - YAMLの詳細なスキーマは `references/yaml-schema.md` を参照
-- SMへの通知は po.md のワークフローに従う
+- SMへの通知は roles/po.md のワークフローに従う

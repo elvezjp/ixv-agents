@@ -13,6 +13,7 @@
 | updated_at | optional | string | 更新日時 (ISO-8601 UTC) |
 | spec_ref | **required** | string | 仕様書への参照 |
 | request_id | **required** | string | リクエストID |
+| task_type | **required** | string | タスクタイプ |
 | priority | **required** | string | 優先度 |
 | summary | **required** | string | 要件サマリ |
 | acceptance_criteria | **required** | string[] | 受入条件（1件以上） |
