@@ -1,6 +1,6 @@
 # IXV-Agents Specification (Spec.md)
 
-**Version**: 0.2.0 (Draft)
+**Version**: 0.2.1 (Draft)
 **Last Updated**: 2026-02-01
 **Status**: Initial Design
 
@@ -253,7 +253,7 @@ queued -> in_progress -> done
 | Role | Write | Read |
 |------|-------|------|
 | PO | `workspace/specs/*.md`, `workspace/queue/po_to_sm.yaml` | 全体 |
-| SM | `workspace/queue/tasks/*.yaml`, `workspace/dashboard.md` | 全体 |
+| SM | `workspace/queue/tasks/*.yaml`, `workspace/queue/dashboard.md` | 全体 |
 | Dev | `workspace/queue/reports/*.yaml`, 実装関連ファイル | 仕様/タスク/ダッシュボード |
 
 *注: すべてのパスは `workspace/` 配下を指す。実装関連ファイルも `workspace/` 内に作成される。*
@@ -277,7 +277,7 @@ queued -> in_progress -> done
   - スプリント計画の進行
   - **仕様から実装タスク（WBS）への分解**
   - Devへのタスク割り当て
-  - **ダッシュボード（dashboard.md）の更新**
+  - **ダッシュボード（queue/dashboard.md）の更新**
   - チーム間のブロッカー解決
 - **禁止事項**: 実装作業、POへの越権行為。
 
@@ -305,8 +305,10 @@ ixv-agents/
 ├── instructions/       # 各ロールへの指示書 (PO, SM, Dev) [読み取り専用]
 ├── skills/             # AI CLIのスキル定義 [読み取り専用]
 ├── templates/          # ワークスペース初期化用テンプレート
-│   ├── dashboard.md
+│   ├── README.md
+│   ├── .gitignore
 │   ├── queue/
+│   │   ├── dashboard.md
 │   │   ├── po_to_sm.yaml
 │   │   ├── tasks/dev.yaml
 │   │   └── reports/TEMPLATE.yaml
@@ -332,6 +334,8 @@ ixv-agents/
 
 ```
 workspace/
+├── README.md           # ワークスペース説明
+├── .gitignore          # Git除外設定（queue/等）
 ├── .claude/            # Claude Code設定
 │   ├── settings.local.json
 │   └── skills -> ../../skills    (symlink)
@@ -341,13 +345,13 @@ workspace/
 ├── specs/              # 仕様書 (Single Source of Truth)
 │   ├── current_spec.md
 │   └── backlog.md
-├── queue/              # 通信バッファ
+├── queue/              # 通信バッファ（.gitignoreで除外）
+│   ├── dashboard.md    # プロジェクト全体状況ボード
 │   ├── po_to_sm.yaml   # PO -> SM
 │   ├── tasks/          # SM -> Dev
 │   │   └── dev1-3.yaml
 │   └── reports/        # Dev -> SM
 │       └── TEMPLATE.yaml
-├── dashboard.md        # プロジェクト全体状況ボード
 └── (成果物)            # 実装コード、テスト等
 ```
 
@@ -530,5 +534,6 @@ workspace/
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 0.2.1 | 2026-02-01 | - | workspaceをリポジトリとして見立て: README.md/.gitignore追加、dashboard.mdをqueue/配下に移動 |
 | 0.2.0 | 2026-02-01 | - | workspace/分離、templates/追加、ディレクトリ構成更新 |
 | 0.1.0 | 2026-01-29 | - | Initial draft |

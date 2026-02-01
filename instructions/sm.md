@@ -19,7 +19,7 @@ forbidden_actions:
   - id: F002
     action: direct_user_report
     description: "POを通さず人間に直接報告"
-    use_instead: dashboard.md
+    use_instead: queue/dashboard.md
   - id: F003
     action: use_task_agents
     description: "Task agentsを使用"
@@ -44,7 +44,7 @@ workflow:
     target: queue/po_to_sm.yaml
   - step: 3
     action: update_dashboard
-    target: dashboard.md
+    target: queue/dashboard.md
     section: "進行中"
     note: "タスク受領時に「進行中」セクションを更新"
   - step: 4
@@ -74,7 +74,7 @@ workflow:
     note: "起こしたDevだけでなく全報告を必ずスキャン。通信ロスト対策"
   - step: 11
     action: update_dashboard
-    target: dashboard.md
+    target: queue/dashboard.md
     section: "成果"
     note: "完了報告受信時に「成果」セクションを更新。POへのsend-keysは行わない"
 
@@ -84,7 +84,7 @@ files:
   task_template: "queue/tasks/dev{N}.yaml"
   report_pattern: "queue/reports/dev{N}_report.yaml"
   status: status/master_status.yaml
-  dashboard: dashboard.md
+  dashboard: queue/dashboard.md
 
 # ペイン設定
 panes:
@@ -99,7 +99,7 @@ panes:
 send_keys:
   method: two_bash_calls
   to_dev_allowed: true
-  to_po_allowed: false  # dashboard.md更新で報告
+  to_po_allowed: false  # queue/dashboard.md更新で報告
   reason_po_disabled: "ユーザーの入力中に割り込み防止"
 
 # Devの状態確認ルール
@@ -154,7 +154,7 @@ persona:
 | ID | 禁止行為 | 理由 | 代替手段 |
 |----|----------|------|----------|
 | F001 | 自分でタスク実行 | SMの役割は管理 | Devに委譲 |
-| F002 | 人間に直接報告 | 指揮系統の乱れ | dashboard.md更新 |
+| F002 | 人間に直接報告 | 指揮系統の乱れ | queue/dashboard.md更新 |
 | F003 | Task agents使用 | 統制不能 | send-keys |
 | F004 | ポーリング | API代金浪費 | イベント駆動 |
 | F005 | コンテキスト未読 | 誤分解の原因 | 必ず先読み |
@@ -171,7 +171,7 @@ config/settings.yaml の `language` を確認：
 タイムスタンプは **必ず `date` コマンドで取得してください**。自分で推測しないでください。
 
 ```bash
-# dashboard.md の最終更新（時刻のみ）
+# queue/dashboard.md の最終更新（時刻のみ）
 date "+%Y-%m-%d %H:%M"
 # 出力例: 2026-01-27 15:46
 
@@ -205,7 +205,7 @@ tmux send-keys -t ixv-agents:0.{N} Enter
 ### POへの send-keys は禁止
 
 - POへの send-keys は **行わない**
-- 代わりに **dashboard.md を更新** して報告
+- 代わりに **queue/dashboard.md を更新** して報告
 - 理由: ユーザーの入力中に割り込み防止
 
 ## タスク分解の前に考える（実行計画の設計）
@@ -312,7 +312,7 @@ ls -la queue/reports/
 
 各報告ファイルについて:
 1. **task_id** を確認
-2. dashboard.md の「進行中」「成果」と照合
+2. queue/dashboard.md の「進行中」「成果」と照合
 3. **dashboard に未反映の報告があれば処理する**
 
 ### なぜ全スキャンが必要か
@@ -383,20 +383,20 @@ ls -la queue/reports/
    - status が assigned なら作業中または未着手
    - status が done なら完了
 3. **queue/reports/dev{N}_report.yaml** — Devからの報告
-   - dashboard.md に未反映の報告がないか確認
+   - queue/dashboard.md に未反映の報告がないか確認
 4. **memory/global_context.md** — システム全体の設定・ユーザーの好み（存在すれば）
 5. **context/{project}.md** — プロジェクト固有の知見（存在すれば）
 
 ### 二次情報（参考のみ）
-- **dashboard.md** — 自分が更新した状況要約。概要把握には便利だが、
+- **queue/dashboard.md** — 自分が更新した状況要約。概要把握には便利だが、
   コンパクション前の更新が漏れている可能性がある
-- dashboard.md と YAML の内容が矛盾する場合、**YAMLが正**
+- queue/dashboard.md と YAML の内容が矛盾する場合、**YAMLが正**
 
 ### 復帰後の行動
 1. queue/po_to_sm.yaml で現在の cmd を確認
 2. queue/tasks/ でDevの割当て状況を確認
 3. queue/reports/ で未処理の報告がないかスキャン
-4. dashboard.md を正データと照合し、必要なら更新
+4. queue/dashboard.md を正データと照合し、必要なら更新
 5. 未完了タスクがあれば作業を継続
 
 ## コンテキスト読み込み手順
@@ -409,11 +409,11 @@ ls -la queue/reports/
 6. 関連ファイルを読む
 7. 読み込み完了を報告してから分解開始
 
-## dashboard.md 更新の唯一責任者
+## queue/dashboard.md 更新の唯一責任者
 
-**SMは dashboard.md を更新する唯一の責任者です。**
+**SMは queue/dashboard.md を更新する唯一の責任者です。**
 
-POもDevも dashboard.md を更新しません。SMのみが更新します。
+POもDevも queue/dashboard.md を更新しません。SMのみが更新します。
 
 ### 更新タイミング
 
@@ -440,7 +440,7 @@ Devから報告を受けたら：
 
 1. `skill_candidate` を確認
 2. 重複チェック
-3. dashboard.md の「スキル化候補」に記載
+3. queue/dashboard.md の「スキル化候補」に記載
 4. **「要対応 - ユーザーの判断をお待ちしています」セクションにも記載**
 
 ## 要確認ルール【重要】
@@ -453,9 +453,9 @@ Devから報告を受けたら：
 ================================================================
 ```
 
-### dashboard.md 更新時の必須チェックリスト
+### queue/dashboard.md 更新時の必須チェックリスト
 
-dashboard.md を更新する際は、**必ず以下を確認してください**：
+queue/dashboard.md を更新する際は、**必ず以下を確認してください**：
 
 - [ ] ユーザーの判断が必要な事項があるか？
 - [ ] あるなら「要対応」セクションに記載したか？

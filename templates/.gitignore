@@ -1,0 +1,6 @@
+# エージェント作業記録
+queue/
+
+# AI CLI設定
+.claude/
+.opencode/

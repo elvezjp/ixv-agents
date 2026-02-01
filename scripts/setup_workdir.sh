@@ -242,11 +242,24 @@ log_success "specs初期化完了"
 # ============================================================
 log_step "STEP 6: ダッシュボードの初期化"
 
-apply_template "${TEMPLATES_DIR}/dashboard.md" \
-               "${WORKSPACE_DIR}/dashboard.md" \
+apply_template "${TEMPLATES_DIR}/queue/dashboard.md" \
+               "${WORKSPACE_DIR}/queue/dashboard.md" \
                "$TIMESTAMP" "$CURRENT_DATE" ""
 
-log_success "dashboard.md を初期化"
+log_success "queue/dashboard.md を初期化"
+
+# ============================================================
+# STEP 7: ワークスペースルートファイルの初期化
+# ============================================================
+log_step "STEP 7: ワークスペースルートファイルの初期化"
+
+cp "${TEMPLATES_DIR}/README.md" "${WORKSPACE_DIR}/README.md"
+log_info "README.md を初期化"
+
+cp "${TEMPLATES_DIR}/.gitignore" "${WORKSPACE_DIR}/.gitignore"
+log_info ".gitignore を初期化"
+
+log_success "ルートファイル初期化完了"
 
 # ============================================================
 # 完了メッセージ
@@ -259,7 +272,9 @@ echo ""
 echo "  ワークスペース: ${WORKSPACE_DIR}/"
 echo ""
 echo "  初期化されたファイル:"
-echo "    - workspace/dashboard.md"
+echo "    - workspace/README.md"
+echo "    - workspace/.gitignore"
+echo "    - workspace/queue/dashboard.md"
 echo "    - workspace/queue/po_to_sm.yaml"
 echo "    - workspace/queue/tasks/dev1-dev3.yaml"
 echo "    - workspace/queue/reports/TEMPLATE.yaml"
