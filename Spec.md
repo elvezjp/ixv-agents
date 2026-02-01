@@ -1,7 +1,7 @@
 # IXV-Agents Specification (Spec.md)
 
-**Version**: 0.1.0 (Draft)
-**Last Updated**: 2026-01-29
+**Version**: 0.2.0 (Draft)
+**Last Updated**: 2026-02-01
 **Status**: Initial Design
 
 ---
@@ -252,11 +252,11 @@ queued -> in_progress -> done
 
 | Role | Write | Read |
 |------|-------|------|
-| PO | `Spec.md`, `specs/*.md`, `queue/po_to_sm.yaml` | 全体 |
-| SM | `queue/tasks/*.yaml`, `dashboard.md` | 全体 |
-| Dev | `queue/reports/*.yaml`, 実装関連ファイル | 仕様/タスク/ダッシュボード |
+| PO | `workspace/specs/*.md`, `workspace/queue/po_to_sm.yaml` | 全体 |
+| SM | `workspace/queue/tasks/*.yaml`, `workspace/dashboard.md` | 全体 |
+| Dev | `workspace/queue/reports/*.yaml`, 実装関連ファイル | 仕様/タスク/ダッシュボード |
 
-*注: 実装関連ファイルは Phase 5 以降に作成予定。*
+*注: すべてのパスは `workspace/` 配下を指す。実装関連ファイルも `workspace/` 内に作成される。*
 
 ## 3. 役割定義 (Roles)
 
@@ -302,20 +302,77 @@ queued -> in_progress -> done
 ```
 ixv-agents/
 ├── config/             # プロジェクト設定
-├── instructions/       # 各ロールへの指示書 (PO, SM, Dev)
+├── instructions/       # 各ロールへの指示書 (PO, SM, Dev) [読み取り専用]
+├── skills/             # AI CLIのスキル定義 [読み取り専用]
+├── templates/          # ワークスペース初期化用テンプレート
+│   ├── dashboard.md
+│   ├── queue/
+│   │   ├── po_to_sm.yaml
+│   │   ├── tasks/dev.yaml
+│   │   └── reports/TEMPLATE.yaml
+│   └── specs/
+│       ├── current_spec.md
+│       └── backlog.md
+├── scripts/            # 起動・管理スクリプト
+│   ├── boot.sh         # エージェント起動
+│   └── setup_workdir.sh # ワークスペース初期化
+├── backups/            # ワークスペースのバックアップ [.gitignore]
+│   └── backup_YYYYMMDD_HHMMSS/
+├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
+│   └── (詳細は 4.1 参照)
+├── docs/               # ドキュメント
+├── Spec.md             # 本仕様書
+└── README.md
+```
+
+### 4.1. workspace/ ディレクトリ（AIエディタ作業領域）
+
+`workspace/` はAIエディタ（Claude Code / OpenCode）が実際に作業を行うディレクトリである。
+リポジトリルートとは分離されており、AIエディタがツールのREADME等にアクセスすることを防ぐ。
+
+```
+workspace/
+├── .claude/            # Claude Code設定
+│   ├── settings.local.json
+│   └── skills -> ../../skills    (symlink)
+├── .opencode/          # OpenCode設定
+│   └── skills -> ../../skills    (symlink)
+├── instructions -> ../instructions  (symlink)
 ├── specs/              # 仕様書 (Single Source of Truth)
 │   ├── current_spec.md
 │   └── backlog.md
 ├── queue/              # 通信バッファ
-│   ├── po_to_sm.yaml
+│   ├── po_to_sm.yaml   # PO -> SM
 │   ├── tasks/          # SM -> Dev
+│   │   └── dev1-8.yaml
 │   └── reports/        # Dev -> SM
+│       └── TEMPLATE.yaml
 ├── dashboard.md        # プロジェクト全体状況ボード
-├── memory/             # MCP Memory
-└── scripts/            # 起動スクリプト等
+└── (成果物)            # 実装コード、テスト等
 ```
 
-## 4.1. dashboard.md フォーマット
+#### シンボリックリンク
+
+| リンクパス | リンク先 | 用途 |
+|------------|----------|------|
+| `workspace/instructions` | `../instructions` | 役割定義の参照 |
+| `workspace/.claude/skills` | `../../skills` | Claude Code用スキル |
+| `workspace/.opencode/skills` | `../../skills` | OpenCode用スキル |
+
+#### 初期化
+
+ワークスペースは `scripts/setup_workdir.sh` で初期化される。
+初期化時に `templates/` 内のテンプレートがコピーされ、プレースホルダーが置換される。
+
+```bash
+# ワークスペースを初期化（既存データがあればバックアップ）
+./scripts/setup_workdir.sh
+
+# バックアップなしで初期化
+./scripts/setup_workdir.sh --no-backup
+```
+
+## 4.2. dashboard.md フォーマット
 
 ```markdown
 # IXV-Agents Dashboard
@@ -343,9 +400,9 @@ ixv-agents/
 - {Any relevant notes}
 ```
 
-## 4.2. backlog.md フォーマット
+## 4.3. backlog.md フォーマット
 
-プロダクトバックログは `specs/backlog.md` で管理する。
+プロダクトバックログは `workspace/specs/backlog.md` で管理する。
 
 ```markdown
 # Product Backlog
@@ -359,9 +416,9 @@ ixv-agents/
 - {Future ideas not yet prioritized}
 ```
 
-## 4.3. current_spec.md テンプレート
+## 4.4. current_spec.md テンプレート
 
-`specs/current_spec.md` は以下の最小構成を満たす。
+`workspace/specs/current_spec.md` は以下の最小構成を満たす。
 
 ```markdown
 # Spec Title
@@ -473,4 +530,5 @@ ixv-agents/
 
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
+| 0.2.0 | 2026-02-01 | - | workspace/分離、templates/追加、ディレクトリ構成更新 |
 | 0.1.0 | 2026-01-29 | - | Initial draft |
