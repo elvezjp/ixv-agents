@@ -1,5 +1,5 @@
 #!/bin/bash
-# Validate PO->SM->Dev/QA->SM flow files (read-only check)
+# Validate PO->SM->Dev->SM flow files (read-only check)
 
 set -e
 
