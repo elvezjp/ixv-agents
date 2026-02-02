@@ -66,25 +66,38 @@
 ```
 
 初回起動時は自動的にワークスペースが初期化されます。
-起動すると以下のtmuxセッションが作成されます：
-- **ixv-po**: Product Owner用（1ペイン）
-- **ixv-agents**: SM + Dev1-Dev3用（2x2グリッド）
 
-### 2. POに接続して開発を開始
+### 2. セッションに接続
 
-```bash
-tmux attach-session -t ixv-po
+起動すると以下の2つのtmuxセッションが作成されます：
+
+```
+【ixv-manage】管理層      【ixv-dev】開発層
+┌─────────────┐         ┌────┬────┬────┐
+│     PO      │         │    │    │    │
+├─────────────┤         │ D1 │ D2 │ D3 │
+│     SM      │         │    │    │    │
+└─────────────┘         └────┴────┴────┘
 ```
 
-POに要望を伝えると、SM経由でDevチームにタスクが割り当てられます。
-
-### 3. エージェントチームを確認
+**接続コマンド（別々のターミナルで実行）：**
 
 ```bash
-tmux attach-session -t ixv-agents
+# 管理層（PO + SM）に接続
+tmux attach-session -t ixv-manage
+
+# 開発層（Dev1-3）に接続
+tmux attach-session -t ixv-dev
 ```
 
-### 4. セッションの停止
+**使い方：**
+- **ixv-manage** の **PO**（上部ペイン）に要望を伝えると、SM経由でDevチームにタスクが割り当てられます
+- 他のペイン（SM, Dev1-3）は自動で動作するため、操作する必要はありません
+
+**セッションから抜ける：**
+- `Ctrl+b d` でセッションをデタッチ（バックグラウンドで動作継続）
+
+### 3. セッションの停止
 
 ```bash
 # IXVセッションを停止
@@ -94,7 +107,7 @@ tmux attach-session -t ixv-agents
 ./scripts/stop.sh --all-tmux
 ```
 
-### 5. 新しいワークスペースのセットアップ
+### 4. 新しいワークスペースのセットアップ
 
 ```bash
 ./scripts/setup_workspace.sh

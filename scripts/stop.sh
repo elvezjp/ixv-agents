@@ -41,7 +41,7 @@ while [[ $# -gt 0 ]]; do
       echo "Usage: ./scripts/stop.sh [--all-tmux]"
       echo "  --all-tmux  Stop all tmux sessions (kill-server)"
       echo ""
-      echo "By default, only ixv-po and ixv-agents sessions are stopped."
+      echo "By default, only ixv-manage and ixv-dev sessions are stopped."
       exit 0
       ;;
     *)
@@ -61,20 +61,20 @@ if [ "$KILL_ALL" = true ]; then
   log "Stopping all tmux sessions..."
   tmux kill-server 2>/dev/null && log_success "All tmux sessions stopped" || log_warn "No tmux server running"
 else
-  # Stop ixv-po session
-  if tmux has-session -t ixv-po 2>/dev/null; then
-    tmux kill-session -t ixv-po
-    log_success "ixv-po session stopped"
+  # Stop ixv-manage session (PO + SM)
+  if tmux has-session -t ixv-manage 2>/dev/null; then
+    tmux kill-session -t ixv-manage
+    log_success "ixv-manage session stopped"
   else
-    log_warn "ixv-po session not found"
+    log_warn "ixv-manage session not found"
   fi
 
-  # Stop ixv-agents session
-  if tmux has-session -t ixv-agents 2>/dev/null; then
-    tmux kill-session -t ixv-agents
-    log_success "ixv-agents session stopped"
+  # Stop ixv-dev session (Dev1-3)
+  if tmux has-session -t ixv-dev 2>/dev/null; then
+    tmux kill-session -t ixv-dev
+    log_success "ixv-dev session stopped"
   else
-    log_warn "ixv-agents session not found"
+    log_warn "ixv-dev session not found"
   fi
 fi
 
