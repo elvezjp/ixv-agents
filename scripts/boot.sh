@@ -4,7 +4,6 @@
 #   ./scripts/boot.sh                        # start tmux + agents (opencode)
 #   ./scripts/boot.sh --claude-code          # use Claude Code instead
 #   ./scripts/boot.sh --model <model_name>   # specify model
-#   ./scripts/boot.sh -s                     # setup only (no CLI)
 
 set -e
 
@@ -17,17 +16,12 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
 
-SETUP_ONLY=false
 CLI_NAME="opencode"
 CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":\"allow\"}}' opencode"
 MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -s|--setup-only)
-      SETUP_ONLY=true
-      shift
-      ;;
     --claude-code)
       CLI_NAME="claude"
       CLI_CMD="claude --dangerously-skip-permissions"
@@ -38,8 +32,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -h|--help)
-      echo "Usage: ./scripts/boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
-      echo "  --setup-only    Setup tmux sessions without launching CLI"
+      echo "Usage: ./scripts/boot.sh [--claude-code] [--model <model_name>]"
       echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
       echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
       exit 0
@@ -66,89 +59,104 @@ if [ ! -d "$WORKSPACE_DIR" ]; then
   "${SCRIPT_DIR}/setup_workspace.sh" --no-backup
 fi
 
-log "Stopping existing sessions if present..."
-tmux kill-session -t ixv-manage 2>/dev/null || true
-tmux kill-session -t ixv-dev 2>/dev/null || true
+log "Stopping existing session if present..."
+tmux kill-session -t ixv-agents 2>/dev/null || true
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# ixv-manage: 管理層（PO + SM、縦2分割）
+# ixv-agents: 全エージェント（PO, SM, Dev1-3）を1セッション5ペインで構成
 # ═══════════════════════════════════════════════════════════════════════════════
-log "Creating ixv-manage session (PO + SM, vertical split)..."
-tmux new-session -d -s ixv-manage -n "manage" -x 200 -y 50
+# レイアウト:
+# ┌─────────┬───────┬───────┬───────┐
+# │   PO    │ Dev1  │ Dev2  │ Dev3  │
+# │  (0.0)  │ (0.2) │ (0.3) │ (0.4) │
+# ├─────────┤       │       │       │
+# │   SM    │       │       │       │
+# │  (0.1)  │       │       │       │
+# └─────────┴───────┴───────┴───────┘
+# ═══════════════════════════════════════════════════════════════════════════════
 
-# Split vertically: PO (top) + SM (bottom)
-tmux split-window -v -t "ixv-manage:0"
+log "Creating ixv-agents session (5 panes)..."
+tmux new-session -d -s ixv-agents -n "agents" -x 200 -y 50
+
+# Step 1: 左右に分割（左50%, 右50%）
+tmux split-window -h -t "ixv-agents:0" -p 50
+
+# Step 2: 左側を上下に分割（PO / SM）
+tmux split-window -v -t "ixv-agents:0.0" -p 50
+
+# Step 3: 右側を横に3等分（Dev1 / Dev2 / Dev3）
+# ペイン2を分割 → 2(33%), 3(67%)
+tmux split-window -h -t "ixv-agents:0.2" -p 67
+# ペイン3を分割 → 3(50%), 4(50%)
+tmux split-window -h -t "ixv-agents:0.3" -p 50
 
 # Set titles and prompts
-# Pane layout: 0=PO (top), 1=SM (bottom)
-tmux select-pane -t "ixv-manage:0.0" -T "PO"
-tmux send-keys -t "ixv-manage:0.0" "cd $WORKSPACE_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
+# ペイン番号: 0=PO(左上), 1=SM(左下), 2=Dev1, 3=Dev2, 4=Dev3
+tmux select-pane -t "ixv-agents:0.0" -T "PO"
+tmux send-keys -t "ixv-agents:0.0" "cd $WORKSPACE_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
 
-tmux select-pane -t "ixv-manage:0.1" -T "SM"
-tmux send-keys -t "ixv-manage:0.1" "cd $WORKSPACE_DIR && export PS1='(SM) \\w\\$ ' && clear" Enter
+tmux select-pane -t "ixv-agents:0.1" -T "SM"
+tmux send-keys -t "ixv-agents:0.1" "cd $WORKSPACE_DIR && export PS1='(SM) \\w\\$ ' && clear" Enter
 
-# ═══════════════════════════════════════════════════════════════════════════════
-# ixv-dev: 開発層（Dev1-3、横3分割）
-# ═══════════════════════════════════════════════════════════════════════════════
-log "Creating ixv-dev session (Dev1-3, horizontal 3-split)..."
-tmux new-session -d -s ixv-dev -n "dev" -x 200 -y 50
-
-# Split horizontally into 3 panes
-tmux split-window -h -t "ixv-dev:0"
-tmux split-window -h -t "ixv-dev:0.1"
-
-# Make panes equal width
-tmux select-layout -t "ixv-dev:0" even-horizontal
-
-# Set titles and prompts
-# Pane layout: 0=Dev1, 1=Dev2, 2=Dev3
-DEV_TITLES=("Dev1" "Dev2" "Dev3")
+DEV_PANES=(2 3 4)
 for i in {0..2}; do
-  tmux select-pane -t "ixv-dev:0.$i" -T "${DEV_TITLES[$i]}"
-  tmux send-keys -t "ixv-dev:0.$i" "cd $WORKSPACE_DIR && export PS1='(${DEV_TITLES[$i]}) \\w\\$ ' && clear" Enter
+  DEV_NUM=$((i + 1))
+  PANE_NUM=${DEV_PANES[$i]}
+  tmux select-pane -t "ixv-agents:0.$PANE_NUM" -T "Dev$DEV_NUM"
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cd $WORKSPACE_DIR && export PS1='(Dev$DEV_NUM) \\w\\$ ' && clear" Enter
 done
 
-if [ "$SETUP_ONLY" = false ]; then
-  log "Launching $CLI_NAME in all panes..."
+# 各ペインにヘルプテキストを表示
+cp "${SCRIPT_DIR}/tmux-help.txt" "$WORKSPACE_DIR/.tmux-help.txt"
+for PANE_NUM in 0 1 2 3 4; do
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cat .tmux-help.txt"
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+done
 
-  # ixv-manage: PO + SM
-  tmux send-keys -t "ixv-manage:0.0" "$CLI_CMD"
-  tmux send-keys -t "ixv-manage:0.0" Enter
-  tmux send-keys -t "ixv-manage:0.1" "$CLI_CMD"
-  tmux send-keys -t "ixv-manage:0.1" Enter
+# ═══════════════════════════════════════════════════════════════════════════
+# バックグラウンドで CLI 起動と役割指示送信を実行
+# 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
+#       1行にまとめると Enter が正しく送信されない場合がある
+# ═══════════════════════════════════════════════════════════════════════════
+(
+  sleep 5  # attach が安定するまで待つ
 
-  # ixv-dev: Dev1-3
-  for i in {0..2}; do
-    tmux send-keys -t "ixv-dev:0.$i" "$CLI_CMD"
-    tmux send-keys -t "ixv-dev:0.$i" Enter
+  # PO + SM
+  tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
+  tmux send-keys -t "ixv-agents:0.0" Enter
+  tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
+  tmux send-keys -t "ixv-agents:0.1" Enter
+
+  # Dev1-3
+  for PANE_NUM in 2 3 4; do
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
   done
 
-  log "Waiting for $CLI_NAME to start..."
-  sleep 15
+  sleep 5  # CLI 起動待ち
 
-  log "Sending role instructions..."
+  # PO
+  tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.0" Enter
 
-  # PO (ixv-manage:0.0)
-  tmux send-keys -t "ixv-manage:0.0" "roles/po.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-manage:0.0" Enter
+  # SM
+  tmux send-keys -t "ixv-agents:0.1" "roles/sm.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.1" Enter
 
-  # SM (ixv-manage:0.1)
-  tmux send-keys -t "ixv-manage:0.1" "roles/sm.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-manage:0.1" Enter
-
-  # Dev1-Dev3 (ixv-dev:0.0-0.2)
-  for i in {0..2}; do
+  # Dev1-Dev3
+  for i in 0 1 2; do
     DEV_NUM=$((i + 1))
-    tmux send-keys -t "ixv-dev:0.$i" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
-    tmux send-keys -t "ixv-dev:0.$i" Enter
+    PANE_NUM=$((i + 2))
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
   done
-fi
+) &
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 完了メッセージ
+# 完了メッセージ（スクリプトを実行したターミナルに表示）
 # ═══════════════════════════════════════════════════════════════════════════════
 echo ""
-log "Sessions ready:"
+log "Session ready:"
 tmux list-sessions
 echo ""
 
@@ -158,55 +166,34 @@ echo "  └───────────────────────
 echo ""
 echo "    作業ディレクトリ: $WORKSPACE_DIR"
 echo ""
-echo "    【ixv-manage】管理層（PO + SM）"
-echo "    ┌─────────────────┐"
-echo "    │  0.0: PO        │"
-echo "    ├─────────────────┤"
-echo "    │  0.1: SM        │"
-echo "    └─────────────────┘"
-echo ""
-echo "    【ixv-dev】開発層（Dev1-3）"
-echo "    ┌───────┬───────┬───────┐"
-echo "    │  0.0  │  0.1  │  0.2  │"
-echo "    │ Dev1  │ Dev2  │ Dev3  │"
-echo "    └───────┴───────┴───────┘"
+echo "    【ixv-agents】全エージェント（5ペイン）"
+echo "    ┌─────────┬───────┬───────┬───────┐"
+echo "    │   PO    │ Dev1  │ Dev2  │ Dev3  │"
+echo "    │  (0.0)  │ (0.2) │ (0.3) │ (0.4) │"
+echo "    ├─────────┤       │       │       │"
+echo "    │   SM    │       │       │       │"
+echo "    │  (0.1)  │       │       │       │"
+echo "    └─────────┴───────┴───────┴───────┘"
 echo ""
 
-if [ "$SETUP_ONLY" = true ]; then
-  echo "  ⚠️  セットアップのみモード: CLIは未起動です"
-  echo ""
-  echo "  手動でCLIを起動するには:"
-  echo "  ┌──────────────────────────────────────────────────────────────┐"
-  echo "  │  # ixv-manage (PO + SM)                                     │"
-  echo "  │  tmux send-keys -t ixv-manage:0.0 '$CLI_CMD' Enter          │"
-  echo "  │  tmux send-keys -t ixv-manage:0.1 '$CLI_CMD' Enter          │"
-  echo "  │                                                              │"
-  echo "  │  # ixv-dev (Dev1-3)                                         │"
-  echo "  │  for i in {0..2}; do                                        │"
-  echo "  │    tmux send-keys -t ixv-dev:0.\$i '$CLI_CMD' Enter          │"
-  echo "  │  done                                                       │"
-  echo "  └──────────────────────────────────────────────────────────────┘"
-  echo ""
-fi
-
-echo "  次のステップ:"
+echo "  操作方法:"
 echo "  ┌──────────────────────────────────────────────────────────────┐"
-echo "  │  管理層にアタッチして開発を開始:                              │"
-echo "  │    tmux attach-session -t ixv-manage                         │"
-echo "  │                                                              │"
-echo "  │  開発チームを確認する:                                        │"
-echo "  │    tmux attach-session -t ixv-dev                            │"
-echo "  │                                                              │"
-echo "  │  セッション一覧を確認:                                        │"
-echo "  │    tmux ls                                                   │"
+echo "  │  ペイン間移動:                                                │"
+echo "  │    Ctrl+b 矢印キー                                           │"
 echo "  │                                                              │"
 echo "  │  セッションをデタッチ:                                        │"
 echo "  │    Ctrl+b d                                                  │"
 echo "  │                                                              │"
+echo "  │  セッションに再アタッチ:                                      │"
+echo "  │    tmux attach-session -t ixv-agents                         │"
+echo "  │                                                              │"
 echo "  │  IXVセッションを停止:                                          │"
 echo "  │    ./scripts/stop.sh                                         │"
 echo "  │                                                              │"
-echo "  │  全tmuxセッションを停止:                                      │"
-echo "  │    ./scripts/stop.sh --all-tmux                              │"
+echo "  │  プロセスが残った場合の強制停止:                              │"
+echo "  │    ./scripts/stop.sh --force                                 │"
 echo "  └──────────────────────────────────────────────────────────────┘"
 echo ""
+
+log "Attaching to ixv-agents session..."
+exec tmux attach-session -t ixv-agents

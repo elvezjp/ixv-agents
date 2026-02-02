@@ -1,8 +1,8 @@
 #!/bin/bash
 # IXV-Agents stop script
 # Usage:
-#   ./scripts/stop.sh           # stop all ixv sessions
-#   ./scripts/stop.sh --all-tmux  # stop all tmux sessions (kill-server)
+#   ./scripts/stop.sh           # stop all ixv sessions (graceful)
+#   ./scripts/stop.sh --force   # force kill opencode processes + sessions
 #   ./scripts/stop.sh -h        # show help
 
 set -e
@@ -29,19 +29,20 @@ log_warn() {
   echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
-KILL_ALL=false
+FORCE_KILL=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    --all-tmux)
-      KILL_ALL=true
+    -f|--force)
+      FORCE_KILL=true
       shift
       ;;
     -h|--help)
-      echo "Usage: ./scripts/stop.sh [--all-tmux]"
-      echo "  --all-tmux  Stop all tmux sessions (kill-server)"
+      echo "Usage: ./scripts/stop.sh [--force]"
+      echo "  -f, --force  Force kill opencode/claude processes and sessions"
       echo ""
-      echo "By default, only ixv-manage and ixv-dev sessions are stopped."
+      echo "By default, sends Ctrl+C to gracefully stop CLI, then kills sessions."
+      echo "Use --force if processes remain after normal stop."
       exit 0
       ;;
     *)
@@ -57,25 +58,55 @@ echo "  │  IXV-Agents Stop                                             │"
 echo "  └──────────────────────────────────────────────────────────────┘"
 echo ""
 
-if [ "$KILL_ALL" = true ]; then
-  log "Stopping all tmux sessions..."
-  tmux kill-server 2>/dev/null && log_success "All tmux sessions stopped" || log_warn "No tmux server running"
-else
-  # Stop ixv-manage session (PO + SM)
-  if tmux has-session -t ixv-manage 2>/dev/null; then
-    tmux kill-session -t ixv-manage
-    log_success "ixv-manage session stopped"
-  else
-    log_warn "ixv-manage session not found"
+# Send Ctrl+C to all panes to gracefully stop CLI
+send_ctrl_c() {
+  log "Sending Ctrl+C to all panes..."
+
+  if tmux has-session -t ixv-agents 2>/dev/null; then
+    # PO (0.0), SM (0.1), Dev1 (0.2), Dev2 (0.3), Dev3 (0.4)
+    for i in {0..4}; do
+      tmux send-keys -t "ixv-agents:0.$i" C-c 2>/dev/null || true
+    done
   fi
 
-  # Stop ixv-dev session (Dev1-3)
-  if tmux has-session -t ixv-dev 2>/dev/null; then
-    tmux kill-session -t ixv-dev
-    log_success "ixv-dev session stopped"
+  log "Waiting for CLI to exit..."
+  sleep 3
+}
+
+# Kill sessions
+kill_sessions() {
+  if tmux has-session -t ixv-agents 2>/dev/null; then
+    tmux kill-session -t ixv-agents
+    log_success "ixv-agents session stopped"
   else
-    log_warn "ixv-dev session not found"
+    log_warn "ixv-agents session not found"
   fi
+}
+
+if [ "$FORCE_KILL" = true ]; then
+  log "Force killing opencode/claude processes..."
+
+  # Kill opencode processes
+  if pgrep -f "opencode" > /dev/null 2>&1; then
+    pkill -f "opencode" 2>/dev/null || true
+    log_success "opencode processes killed"
+  else
+    log_warn "No opencode processes found"
+  fi
+
+  # Kill claude processes (if using --claude-code)
+  if pgrep -f "claude --dangerously-skip-permissions" > /dev/null 2>&1; then
+    pkill -f "claude --dangerously-skip-permissions" 2>/dev/null || true
+    log_success "claude processes killed"
+  else
+    log_warn "No claude processes found"
+  fi
+
+  kill_sessions
+else
+  # Graceful stop: send Ctrl+C first, then kill sessions
+  send_ctrl_c
+  kill_sessions
 fi
 
 echo ""

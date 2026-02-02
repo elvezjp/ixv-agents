@@ -6,15 +6,6 @@
 
 ---
 
-## ステータス
-
-| 項目 | 状態 |
-|------|------|
-| 仕様（Spec.md） | Draft v0.3.0 |
-| 実装 | 基盤完成（tmux + AI CLI + ワークスペース初期化） |
-
----
-
 ## コアコンセプト
 
 **固定された役割、進化するスキル。**
@@ -59,43 +50,38 @@
 ./scripts/boot.sh --claude-code
 
 # モデルを指定して起動
-./scripts/boot.sh --model opus
-
-# tmuxのみセットアップ（CLIは起動しない）
-./scripts/boot.sh --setup-only
+./scripts/boot.sh --model anthropic/claude-opus-4-5
 ```
 
 初回起動時は自動的にワークスペースが初期化されます。
 
-### 2. セッションに接続
+### 2. セッション構成
 
-起動すると以下の2つのtmuxセッションが作成されます：
+起動すると1つのtmuxセッション（`ixv-agents`）が作成され、自動的に接続されます：
 
 ```
-【ixv-manage】管理層      【ixv-dev】開発層
-┌─────────────┐         ┌────┬────┬────┐
-│     PO      │         │    │    │    │
-├─────────────┤         │ D1 │ D2 │ D3 │
-│     SM      │         │    │    │    │
-└─────────────┘         └────┴────┴────┘
-```
-
-**接続コマンド（別々のターミナルで実行）：**
-
-```bash
-# 管理層（PO + SM）に接続
-tmux attach-session -t ixv-manage
-
-# 開発層（Dev1-3）に接続
-tmux attach-session -t ixv-dev
+【ixv-agents】全エージェント（5ペイン）
+┌─────────┬───────┬───────┬───────┐
+│   PO    │ Dev1  │ Dev2  │ Dev3  │
+│  (0.0)  │ (0.2) │ (0.3) │ (0.4) │
+├─────────┤       │       │       │
+│   SM    │       │       │       │
+│  (0.1)  │       │       │       │
+└─────────┴───────┴───────┴───────┘
 ```
 
 **使い方：**
-- **ixv-manage** の **PO**（上部ペイン）に要望を伝えると、SM経由でDevチームにタスクが割り当てられます
+- **PO**（左上ペイン）に要望を伝えると、SM経由でDevチームにタスクが割り当てられます
 - 他のペイン（SM, Dev1-3）は自動で動作するため、操作する必要はありません
 
 **セッションから抜ける：**
 - `Ctrl+b d` でセッションをデタッチ（バックグラウンドで動作継続）
+
+**セッションに再接続：**
+
+```bash
+tmux attach-session -t ixv-agents
+```
 
 ### 3. セッションの停止
 
@@ -103,8 +89,8 @@ tmux attach-session -t ixv-dev
 # IXVセッションを停止
 ./scripts/stop.sh
 
-# 全tmuxセッションを停止
-./scripts/stop.sh --all-tmux
+# プロセスが残った場合の強制停止
+./scripts/stop.sh --force
 ```
 
 ### 4. 新しいワークスペースのセットアップ
@@ -123,8 +109,8 @@ tmux attach-session -t ixv-dev
 | 操作 | コマンド |
 |------|----------|
 | セッションをデタッチ | `Ctrl+b d` |
+| セッションに再接続 | `tmux attach-session -t ixv-agents` |
 | セッション一覧 | `tmux ls` |
-| ペイン間移動 | `Ctrl+b 矢印キー` |
 
 ---
 

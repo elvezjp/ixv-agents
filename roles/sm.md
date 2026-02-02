@@ -58,9 +58,9 @@ workflow:
     note: "各Dev専用ファイル"
   - step: 7
     action: send_keys
-    target: "ixv-dev:0.{N-1}"
+    target: "ixv-agents:0.{N+1}"
     method: two_bash_calls
-    note: "Dev1=0.0, Dev2=0.1, Dev3=0.2"
+    note: "Dev1=0.2, Dev2=0.3, Dev3=0.4"
   - step: 8
     action: stop
     note: "処理を終了し、プロンプト待ちになる"
@@ -80,7 +80,7 @@ workflow:
     note: "完了報告受信時に「成果」セクションを更新"
   - step: 12
     action: send_keys
-    target: "ixv-manage:0.0"
+    target: "ixv-agents:0.0"
     method: two_bash_calls
     note: "POに完了を通知"
   - step: 13
@@ -97,12 +97,12 @@ files:
 
 # ペイン設定
 panes:
-  po: ixv-manage:0.0
-  self: ixv-manage:0.1
+  po: ixv-agents:0.0
+  self: ixv-agents:0.1
   dev:
-    - { id: 1, pane: "ixv-dev:0.0" }
-    - { id: 2, pane: "ixv-dev:0.1" }
-    - { id: 3, pane: "ixv-dev:0.2" }
+    - { id: 1, pane: "ixv-agents:0.2" }
+    - { id: 2, pane: "ixv-agents:0.3" }
+    - { id: 3, pane: "ixv-agents:0.4" }
 
 # send-keys ルール
 send_keys:
@@ -114,8 +114,8 @@ send_keys:
 # Devの状態確認ルール
 dev_status_check:
   method: tmux_capture_pane
-  command: "tmux capture-pane -t ixv-dev:0.{N-1} -p | tail -20"
-  note: "Dev1=0.0, Dev2=0.1, Dev3=0.2"
+  command: "tmux capture-pane -t ixv-agents:0.{N+1} -p | tail -20"
+  note: "Dev1=0.2, Dev2=0.3, Dev3=0.4"
   busy_indicators:
     - "thinking"
     - "Esc to interrupt"
@@ -197,20 +197,20 @@ date "+%Y-%m-%dT%H:%M:%S"
 ### 禁止パターン
 
 ```bash
-tmux send-keys -t ixv-dev:0.0 'メッセージ' Enter  # ダメ
+tmux send-keys -t ixv-agents:0.2 'メッセージ' Enter  # ダメ
 ```
 
 ### 正しい方法（2回に分ける）
 
 **【1回目】**
 ```bash
-tmux send-keys -t ixv-dev:0.{N-1} 'queue/tasks/dev{N}.yaml にタスクがあります。確認して実行してください。'
+tmux send-keys -t ixv-agents:0.{N+1} 'queue/tasks/dev{N}.yaml にタスクがあります。確認して実行してください。'
 ```
-※ Dev1=0.0, Dev2=0.1, Dev3=0.2
+※ Dev1=0.2, Dev2=0.3, Dev3=0.4
 
 **【2回目】**
 ```bash
-tmux send-keys -t ixv-dev:0.{N-1} Enter
+tmux send-keys -t ixv-agents:0.{N+1} Enter
 ```
 
 ### POへの send-keys（完了通知）
@@ -219,12 +219,12 @@ tmux send-keys -t ixv-dev:0.{N-1} Enter
 
 **【1回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.0 'タスクが完了しました。queue/dashboard.md を確認してください。'
+tmux send-keys -t ixv-agents:0.0 'タスクが完了しました。queue/dashboard.md を確認してください。'
 ```
 
 **【2回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.0 Enter
+tmux send-keys -t ixv-agents:0.0 Enter
 ```
 
 ## タスク分解の前に考える（実行計画の設計）

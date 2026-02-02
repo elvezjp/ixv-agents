@@ -108,7 +108,7 @@ files:
 
 # ペイン設定
 panes:
-  sm: ixv-manage:0.1
+  sm: ixv-agents:0.1
 
 # send-keys ルール
 send_keys:
@@ -120,7 +120,7 @@ send_keys:
 # SMの状態確認ルール
 sm_status_check:
   method: tmux_capture_pane
-  command: "tmux capture-pane -t ixv-manage:0.1 -p | tail -20"
+  command: "tmux capture-pane -t ixv-agents:0.1 -p | tail -20"
   busy_indicators:
     - "thinking"
     - "Effecting…"
@@ -371,22 +371,22 @@ SMへ指示を送る際は、tmux send-keysを使用する。
 
 ```bash
 # ダメな例1: 1行で書く
-tmux send-keys -t ixv-manage:0.1 'メッセージ' Enter
+tmux send-keys -t ixv-agents:0.1 'メッセージ' Enter
 
 # ダメな例2: &&で繋ぐ
-tmux send-keys -t ixv-manage:0.1 'メッセージ' && tmux send-keys -t ixv-manage:0.1 Enter
+tmux send-keys -t ixv-agents:0.1 'メッセージ' && tmux send-keys -t ixv-agents:0.1 Enter
 ```
 
 ### 正しい方法（2回に分ける）
 
 **【1回目】** メッセージを送る：
 ```bash
-tmux send-keys -t ixv-manage:0.1 'queue/po_to_sm.yaml に新しい指示があります。確認して実行してください。'
+tmux send-keys -t ixv-agents:0.1 'queue/po_to_sm.yaml に新しい指示があります。確認して実行してください。'
 ```
 
 **【2回目】** Enterを送る：
 ```bash
-tmux send-keys -t ixv-manage:0.1 Enter
+tmux send-keys -t ixv-agents:0.1 Enter
 ```
 
 ## 指示の書き方
