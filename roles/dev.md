@@ -54,7 +54,7 @@ workflow:
     value: done
   - step: 7
     action: send_keys
-    target: ixv-manage:0.1
+    target: ixv-agents:0.1
     method: two_bash_calls
     note: "SMへの完了通知"
     mandatory: true
@@ -70,9 +70,9 @@ files:
 
 # ペイン設定
 panes:
-  sm: ixv-manage:0.1
-  self_template: "ixv-dev:0.{N-1}"
-  note: "Dev1=0.0, Dev2=0.1, Dev3=0.2"
+  sm: ixv-agents:0.1
+  self_template: "ixv-agents:0.{N+1}"
+  note: "Dev1=0.2, Dev2=0.3, Dev3=0.4"
 
 # send-keys ルール
 send_keys:
@@ -176,19 +176,19 @@ queue/tasks/dev3.yaml  ← Dev3はこれだけ
 ### 禁止パターン
 
 ```bash
-tmux send-keys -t ixv-manage:0.1 'メッセージ' Enter  # ダメ
+tmux send-keys -t ixv-agents:0.1 'メッセージ' Enter  # ダメ
 ```
 
 ### 正しい方法（2回に分ける）
 
 **【1回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.1 'Dev{N}、タスク完了しました。報告書を確認してください。'
+tmux send-keys -t ixv-agents:0.1 'Dev{N}、タスク完了しました。報告書を確認してください。'
 ```
 
 **【2回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.1 Enter
+tmux send-keys -t ixv-agents:0.1 Enter
 ```
 
 ### 報告送信は義務（省略禁止）
@@ -206,7 +206,7 @@ tmux send-keys -t ixv-manage:0.1 Enter
 
 **STEP 1: SMの状態確認**
 ```bash
-tmux capture-pane -t ixv-manage:0.1 -p | tail -5
+tmux capture-pane -t ixv-agents:0.1 -p | tail -5
 ```
 
 **STEP 2: idle判定**
@@ -229,12 +229,12 @@ sleep 10
 
 **【1回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.1 'Dev{N}、タスク完了しました。報告書を確認してください。'
+tmux send-keys -t ixv-agents:0.1 'Dev{N}、タスク完了しました。報告書を確認してください。'
 ```
 
 **【2回目】**
 ```bash
-tmux send-keys -t ixv-manage:0.1 Enter
+tmux send-keys -t ixv-agents:0.1 Enter
 ```
 
 ## 報告の書き方
