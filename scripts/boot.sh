@@ -113,12 +113,19 @@ for i in {0..2}; do
   tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cd $WORKSPACE_DIR && export PS1='(Dev$DEV_NUM) \\w\\$ ' && clear" Enter
 done
 
+# 各ペインに操作方法を表示（opencode終了後に見える）
+cp "${SCRIPT_DIR}/tmux-help.txt" "$WORKSPACE_DIR/.tmux-help.txt"
+for PANE_NUM in 0 1 2 3 4; do
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cat .tmux-help.txt"
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+done
+
 if [ "$SETUP_ONLY" = false ]; then
   # バックグラウンドで CLI 起動と役割指示送信を実行
   # 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
   #       1行にまとめると Enter が正しく送信されない場合がある
   (
-    sleep 2  # attach が安定するまで待つ
+    sleep 5  # attach が安定するまで待つ
 
     # PO + SM
     tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
@@ -132,7 +139,7 @@ if [ "$SETUP_ONLY" = false ]; then
       tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
     done
 
-    sleep 15  # CLI 起動待ち
+    sleep 5  # CLI 起動待ち
 
     # PO
     tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
