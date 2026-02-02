@@ -124,7 +124,7 @@ if [ "$SETUP_ONLY" = false ]; then
   done
 
   log "Waiting for $CLI_NAME to start..."
-  sleep 8
+  sleep 15
 
   log "Sending role instructions..."
 
