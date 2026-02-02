@@ -317,6 +317,7 @@ ixv-agents/
 │       └── reports/TEMPLATE.yaml
 ├── scripts/            # 起動・管理スクリプト
 │   ├── boot.sh         # エージェント起動
+│   ├── stop.sh         # エージェント停止
 │   ├── banner.sh       # ASCIIアート表示
 │   └── setup_workspace.sh # ワークスペース初期化
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
@@ -503,6 +504,15 @@ workspace/
 - プレースホルダーの置換
 - シンボリックリンクの作成
 - 既存データのバックアップ（`--no-backup` オプションで無効化可能）
+
+### 4.5.4. stop.sh（エージェント停止）
+
+エージェントを停止するスクリプト。
+
+**機能**:
+- 各ペインに Ctrl+C を送信して CLI をグレースフル終了
+- tmuxセッション（`ixv-manage`, `ixv-dev`）を終了
+- プロセスが残った場合に備え、`--force`オプションでAIエディタとtmuxのプロセスを強制終了できるようにする
 
 ## 5. エージェントワークフロー
 

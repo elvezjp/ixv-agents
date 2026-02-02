@@ -103,8 +103,8 @@ tmux attach-session -t ixv-dev
 # Stop IXV sessions
 ./scripts/stop.sh
 
-# Stop all tmux sessions
-./scripts/stop.sh --all-tmux
+# Force stop if processes remain
+./scripts/stop.sh --force
 ```
 
 ### 4. Setup New Workspace
