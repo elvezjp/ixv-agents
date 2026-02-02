@@ -1,0 +1,4 @@
+# HTTP API dependencies (in addition to requirements.txt)
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.6

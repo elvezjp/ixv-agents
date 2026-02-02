@@ -1,0 +1,21 @@
+# PaddlePaddle (select GPU or CPU version)
+# GPU (CUDA 11.8): pip install paddlepaddle-gpu==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu118/
+# GPU (CUDA 12.6): pip install paddlepaddle-gpu==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cu126/
+# CPU: pip install paddlepaddle==3.0.0 -i https://www.paddlepaddle.org.cn/packages/stable/cpu/
+
+# PaddleOCR
+paddleocr>=2.7.0
+
+# PDF to image conversion
+PyMuPDF>=1.23.0
+
+# Image processing
+Pillow>=10.0.0
+numpy>=1.21.0
+
+# Configuration
+pyyaml>=6.0
+
+# CLI
+click>=8.0.0
+tqdm>=4.65.0
