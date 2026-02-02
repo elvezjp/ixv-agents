@@ -97,6 +97,9 @@ tmux new-session -d -s ixv-dev -n "dev" -x 200 -y 50
 tmux split-window -h -t "ixv-dev:0"
 tmux split-window -h -t "ixv-dev:0.1"
 
+# Make panes equal width
+tmux select-layout -t "ixv-dev:0" even-horizontal
+
 # Set titles and prompts
 # Pane layout: 0=Dev1, 1=Dev2, 2=Dev3
 DEV_TITLES=("Dev1" "Dev2" "Dev3")
