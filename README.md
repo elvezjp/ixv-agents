@@ -66,25 +66,38 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 ```
 
 On first run, the workspace is automatically initialized.
-This creates the following tmux sessions:
-- **ixv-po**: Product Owner (1 pane)
-- **ixv-agents**: SM + Dev1-Dev3 (2x2 grid)
 
-### 2. Connect to PO and Start Development
+### 2. Connect to Sessions
 
-```bash
-tmux attach-session -t ixv-po
+Two tmux sessions are created:
+
+```
+[ixv-manage] Management    [ixv-dev] Development
+┌─────────────┐            ┌────┬────┬────┐
+│     PO      │            │    │    │    │
+├─────────────┤            │ D1 │ D2 │ D3 │
+│     SM      │            │    │    │    │
+└─────────────┘            └────┴────┴────┘
 ```
 
-Communicate your requirements to PO, and tasks will be assigned to the Dev team via SM.
-
-### 3. Monitor Agent Team
+**Connect (run in separate terminals):**
 
 ```bash
-tmux attach-session -t ixv-agents
+# Connect to management layer (PO + SM)
+tmux attach-session -t ixv-manage
+
+# Connect to development layer (Dev1-3)
+tmux attach-session -t ixv-dev
 ```
 
-### 4. Stop Sessions
+**Usage:**
+- Communicate your requirements to **PO** (upper pane in **ixv-manage**), and tasks will be assigned to the Dev team via SM
+- Other panes (SM, Dev1-3) operate automatically; no manual interaction required
+
+**Detach from session:**
+- `Ctrl+b d` to detach (session continues in background)
+
+### 3. Stop Sessions
 
 ```bash
 # Stop IXV sessions
@@ -94,7 +107,7 @@ tmux attach-session -t ixv-agents
 ./scripts/stop.sh --all-tmux
 ```
 
-### 5. Setup New Workspace
+### 4. Setup New Workspace
 
 ```bash
 ./scripts/setup_workspace.sh
