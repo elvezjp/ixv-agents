@@ -4,7 +4,6 @@
 #   ./scripts/boot.sh                        # start tmux + agents (opencode)
 #   ./scripts/boot.sh --claude-code          # use Claude Code instead
 #   ./scripts/boot.sh --model <model_name>   # specify model
-#   ./scripts/boot.sh -s                     # setup only (no CLI)
 
 set -e
 
@@ -17,17 +16,12 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
 
-SETUP_ONLY=false
 CLI_NAME="opencode"
 CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":\"allow\"}}' opencode"
 MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -s|--setup-only)
-      SETUP_ONLY=true
-      shift
-      ;;
     --claude-code)
       CLI_NAME="claude"
       CLI_CMD="claude --dangerously-skip-permissions"
@@ -38,8 +32,7 @@ while [[ $# -gt 0 ]]; do
       shift 2
       ;;
     -h|--help)
-      echo "Usage: ./scripts/boot.sh [--setup-only] [--claude-code] [--model <model_name>]"
-      echo "  --setup-only    Setup tmux sessions without launching CLI"
+      echo "Usage: ./scripts/boot.sh [--claude-code] [--model <model_name>]"
       echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
       echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
       exit 0
@@ -113,54 +106,54 @@ for i in {0..2}; do
   tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cd $WORKSPACE_DIR && export PS1='(Dev$DEV_NUM) \\w\\$ ' && clear" Enter
 done
 
-# 各ペインに操作方法を表示（opencode終了後に見える）
+# 各ペインにヘルプテキストを表示
 cp "${SCRIPT_DIR}/tmux-help.txt" "$WORKSPACE_DIR/.tmux-help.txt"
 for PANE_NUM in 0 1 2 3 4; do
   tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cat .tmux-help.txt"
   tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
 done
 
-if [ "$SETUP_ONLY" = false ]; then
-  # バックグラウンドで CLI 起動と役割指示送信を実行
-  # 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
-  #       1行にまとめると Enter が正しく送信されない場合がある
-  (
-    sleep 5  # attach が安定するまで待つ
+# ═══════════════════════════════════════════════════════════════════════════
+# バックグラウンドで CLI 起動と役割指示送信を実行
+# 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
+#       1行にまとめると Enter が正しく送信されない場合がある
+# ═══════════════════════════════════════════════════════════════════════════
+(
+  sleep 5  # attach が安定するまで待つ
 
-    # PO + SM
-    tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
-    tmux send-keys -t "ixv-agents:0.0" Enter
-    tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
-    tmux send-keys -t "ixv-agents:0.1" Enter
+  # PO + SM
+  tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
+  tmux send-keys -t "ixv-agents:0.0" Enter
+  tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
+  tmux send-keys -t "ixv-agents:0.1" Enter
 
-    # Dev1-3
-    for PANE_NUM in 2 3 4; do
-      tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
-      tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
-    done
+  # Dev1-3
+  for PANE_NUM in 2 3 4; do
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+  done
 
-    sleep 5  # CLI 起動待ち
+  sleep 5  # CLI 起動待ち
 
-    # PO
-    tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
-    tmux send-keys -t "ixv-agents:0.0" Enter
+  # PO
+  tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.0" Enter
 
-    # SM
-    tmux send-keys -t "ixv-agents:0.1" "roles/sm.md を読んで役割を理解してください。"
-    tmux send-keys -t "ixv-agents:0.1" Enter
+  # SM
+  tmux send-keys -t "ixv-agents:0.1" "roles/sm.md を読んで役割を理解してください。"
+  tmux send-keys -t "ixv-agents:0.1" Enter
 
-    # Dev1-Dev3
-    for i in 0 1 2; do
-      DEV_NUM=$((i + 1))
-      PANE_NUM=$((i + 2))
-      tmux send-keys -t "ixv-agents:0.$PANE_NUM" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
-      tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
-    done
-  ) &
-fi
+  # Dev1-Dev3
+  for i in 0 1 2; do
+    DEV_NUM=$((i + 1))
+    PANE_NUM=$((i + 2))
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
+    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+  done
+) &
 
 # ═══════════════════════════════════════════════════════════════════════════════
-# 完了メッセージ
+# 完了メッセージ（スクリプトを実行したターミナルに表示）
 # ═══════════════════════════════════════════════════════════════════════════════
 echo ""
 log "Session ready:"
@@ -182,23 +175,6 @@ echo "    │   SM    │       │       │       │"
 echo "    │  (0.1)  │       │       │       │"
 echo "    └─────────┴───────┴───────┴───────┘"
 echo ""
-
-if [ "$SETUP_ONLY" = true ]; then
-  echo "  セットアップのみモード: CLIは未起動です"
-  echo ""
-  echo "  手動でCLIを起動するには:"
-  echo "  ┌──────────────────────────────────────────────────────────────┐"
-  echo "  │  # PO + SM                                                  │"
-  echo "  │  tmux send-keys -t ixv-agents:0.0 '$CLI_CMD' Enter          │"
-  echo "  │  tmux send-keys -t ixv-agents:0.1 '$CLI_CMD' Enter          │"
-  echo "  │                                                              │"
-  echo "  │  # Dev1-3                                                   │"
-  echo "  │  for i in 2 3 4; do                                         │"
-  echo "  │    tmux send-keys -t ixv-agents:0.\$i '$CLI_CMD' Enter       │"
-  echo "  │  done                                                       │"
-  echo "  └──────────────────────────────────────────────────────────────┘"
-  echo ""
-fi
 
 echo "  操作方法:"
 echo "  ┌──────────────────────────────────────────────────────────────┐"
