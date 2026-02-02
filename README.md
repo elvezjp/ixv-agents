@@ -6,15 +6,6 @@
 
 ---
 
-## Status
-
-| Item | Status |
-|------|--------|
-| Specification (Spec.md) | Draft v0.3.0 |
-| Implementation | Foundation Complete (tmux + AI CLI + workspace bootstrap) |
-
----
-
 ## Core Concept
 
 **Fixed roles, evolving skills.**
@@ -59,43 +50,38 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 ./scripts/boot.sh --claude-code
 
 # Specify model
-./scripts/boot.sh --model opus
-
-# Setup tmux only (do not launch CLI)
-./scripts/boot.sh --setup-only
+./scripts/boot.sh --model anthropic/claude-opus-4-5
 ```
 
 On first run, the workspace is automatically initialized.
 
-### 2. Connect to Sessions
+### 2. Session Layout
 
-Two tmux sessions are created:
+A single tmux session (`ixv-agents`) is created and automatically attached:
 
 ```
-[ixv-manage] Management    [ixv-dev] Development
-┌─────────────┐            ┌────┬────┬────┐
-│     PO      │            │    │    │    │
-├─────────────┤            │ D1 │ D2 │ D3 │
-│     SM      │            │    │    │    │
-└─────────────┘            └────┴────┴────┘
-```
-
-**Connect (run in separate terminals):**
-
-```bash
-# Connect to management layer (PO + SM)
-tmux attach-session -t ixv-manage
-
-# Connect to development layer (Dev1-3)
-tmux attach-session -t ixv-dev
+[ixv-agents] All Agents (5 panes)
+┌─────────┬───────┬───────┬───────┐
+│   PO    │ Dev1  │ Dev2  │ Dev3  │
+│  (0.0)  │ (0.2) │ (0.3) │ (0.4) │
+├─────────┤       │       │       │
+│   SM    │       │       │       │
+│  (0.1)  │       │       │       │
+└─────────┴───────┴───────┴───────┘
 ```
 
 **Usage:**
-- Communicate your requirements to **PO** (upper pane in **ixv-manage**), and tasks will be assigned to the Dev team via SM
+- Communicate your requirements to **PO** (upper-left pane), and tasks will be assigned to the Dev team via SM
 - Other panes (SM, Dev1-3) operate automatically; no manual interaction required
 
 **Detach from session:**
 - `Ctrl+b d` to detach (session continues in background)
+
+**Reattach to session:**
+
+```bash
+tmux attach-session -t ixv-agents
+```
 
 ### 3. Stop Sessions
 
@@ -123,8 +109,8 @@ If an existing `workspace/` exists, it will be backed up to `backups/`, and a ne
 | Action | Command |
 |--------|---------|
 | Detach from session | `Ctrl+b d` |
+| Reattach to session | `tmux attach-session -t ixv-agents` |
 | List sessions | `tmux ls` |
-| Navigate between panes | `Ctrl+b Arrow keys` |
 
 ---
 
