@@ -62,16 +62,10 @@ echo ""
 send_ctrl_c() {
   log "Sending Ctrl+C to all panes..."
 
-  # ixv-manage: PO + SM
-  if tmux has-session -t ixv-manage 2>/dev/null; then
-    tmux send-keys -t "ixv-manage:0.0" C-c 2>/dev/null || true
-    tmux send-keys -t "ixv-manage:0.1" C-c 2>/dev/null || true
-  fi
-
-  # ixv-dev: Dev1-3
-  if tmux has-session -t ixv-dev 2>/dev/null; then
-    for i in {0..2}; do
-      tmux send-keys -t "ixv-dev:0.$i" C-c 2>/dev/null || true
+  if tmux has-session -t ixv-agents 2>/dev/null; then
+    # PO (0.0), SM (0.1), Dev1 (0.2), Dev2 (0.3), Dev3 (0.4)
+    for i in {0..4}; do
+      tmux send-keys -t "ixv-agents:0.$i" C-c 2>/dev/null || true
     done
   fi
 
@@ -81,20 +75,11 @@ send_ctrl_c() {
 
 # Kill sessions
 kill_sessions() {
-  # Stop ixv-manage session (PO + SM)
-  if tmux has-session -t ixv-manage 2>/dev/null; then
-    tmux kill-session -t ixv-manage
-    log_success "ixv-manage session stopped"
+  if tmux has-session -t ixv-agents 2>/dev/null; then
+    tmux kill-session -t ixv-agents
+    log_success "ixv-agents session stopped"
   else
-    log_warn "ixv-manage session not found"
-  fi
-
-  # Stop ixv-dev session (Dev1-3)
-  if tmux has-session -t ixv-dev 2>/dev/null; then
-    tmux kill-session -t ixv-dev
-    log_success "ixv-dev session stopped"
-  else
-    log_warn "ixv-dev session not found"
+    log_warn "ixv-agents session not found"
   fi
 }
 
