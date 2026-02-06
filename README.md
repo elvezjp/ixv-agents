@@ -17,6 +17,33 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 ---
 
+## 4 Principles
+
+1. Specs are living documents
+2. Specs are the Single Source of Truth (SSoT)
+3. Change and iteration are assumed
+4. AI reduces cost, humans decide
+
+---
+
+## 7 Processes
+
+| # | Process | Output | Approval |
+|---|---------|--------|----------|
+| 1 | Constitution | CONSTITUTION.md | Human |
+| 2 | Specify | README.md (SSoT) | Human |
+| 3 | Plan | docs/* | Human(*) |
+| 4 | Tasks | queue/tasks/, dashboard.md | - |
+| 5 | Implement | Code + Tests, reports/*.yaml | - |
+| 6 | Verify/Accept | dashboard.md, Backlog update | Human |
+| 7 | Migration/Op | → Process 2 or 4 | - |
+
+(*) = when needed
+
+> See `templates/PROCESS.md` for details.
+
+---
+
 ## Agent Team Composition (Fixed)
 
 | Role | Count | Responsibility |
