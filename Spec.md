@@ -383,6 +383,9 @@ workspace/
 ```markdown
 # IXV-Agents Dashboard
 
+## Current Phase
+> **工程1 Constitution** — 原則決定
+
 ## Sprint Info
 - Sprint: {N}
 - Period: YYYY-MM-DD ~ YYYY-MM-DD

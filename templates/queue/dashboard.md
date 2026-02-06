@@ -1,5 +1,8 @@
 # IXV-Agents Dashboard
 
+## Current Phase
+> **工程1 Constitution** — 原則決定
+
 ## Sprint Info
 - Sprint: 0
 - Period: {{DATE}} ~ TBD
