@@ -17,6 +17,33 @@
 
 ---
 
+## 4つの原則
+
+1. 仕様は「生きたドキュメント」である
+2. 仕様は「信頼できる唯一の情報源（SSoT）」とする
+3. 仕様は「変更と反復が前提」とする
+4. AIでコストを抑えて実現する（人間が最終判断）
+
+---
+
+## 7つの工程
+
+| # | 工程 | 成果物 | 承認 |
+|---|------|--------|------|
+| 1 | Constitution（原則決定） | CONSTITUTION.md | Human |
+| 2 | Specify（企画・要件定義） | README.md (SSoT) | Human |
+| 3 | Plan（設計計画） | docs/* | Human(*) |
+| 4 | Tasks（タスク分割） | queue/tasks/, dashboard.md | - |
+| 5 | Implement（実装） | コード + テスト, reports/*.yaml | - |
+| 6 | Verify/Accept（検証・受入） | dashboard.md, Backlog更新 | Human |
+| 7 | Migration/Op（移行・運用） | → 工程2 または 工程4 | - |
+
+(*) = 必要時のみ
+
+> 詳細は `templates/PROCESS.md` を参照。
+
+---
+
 ## エージェント構成（固定）
 
 | 役割 | 人数 | 責任 |
