@@ -9,9 +9,12 @@ set -e
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
-# Display banner
+# バナーを表示
 "${SCRIPT_DIR}/banner.sh"
+# バナーがすぐ見えなくならないように待機
+sleep 5
 echo ""
+
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
