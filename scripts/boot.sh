@@ -56,6 +56,19 @@ log() {
   echo "[ixv] $1"
 }
 
+# Check if tmux is installed
+if ! command -v tmux &> /dev/null; then
+  echo ""
+  echo "  ERROR: tmux not found."
+  echo ""
+  echo "  コマンドでインストール: brew install tmux"
+  echo "  その他のインストール方法は https://github.com/tmux/tmux/wiki/Installing を参照"
+  echo ""
+  echo "  詳細は README_ja.md の「セットアップ」を参照してください。"
+  echo ""
+  exit 1
+fi
+
 # Check if workspace exists
 if [ ! -d "$WORKSPACE_DIR" ]; then
   log "Workspace not found. Running setup_workspace.sh first..."
