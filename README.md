@@ -101,7 +101,7 @@ Install one of the following.
 
 ### 1. Start Agents
 
-**macOS / Linux:**
+**macOS:**
 
 ```bash
 # Start with OpenCode (default)
@@ -160,7 +160,7 @@ tmux attach-session -t ixv-agents
 ### 3. Stop Sessions
 
 ```bash
-# macOS / Linux
+# macOS
 ./scripts/stop.sh
 ./scripts/stop.sh --force    # Force stop if processes remain
 ```
@@ -173,11 +173,22 @@ tmux attach-session -t ixv-agents
 
 ### 4. Setup New Workspace
 
+**macOS:**
+
 ```bash
 ./scripts/setup_workspace.sh
 
 # Skip backup and reinitialize only
 ./scripts/setup_workspace.sh --no-backup
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\scripts\setup_workspace.ps1
+
+# Skip backup and reinitialize only
+.\scripts\setup_workspace.ps1 -NoBackup
 ```
 
 If an existing `workspace/` exists, it will be backed up to `backups/`, and a new workspace will be created.
@@ -201,13 +212,11 @@ ixv-agents/
 ├── templates/          # Workspace initialization templates
 │   └── queue/          # Queue and report templates
 ├── scripts/            # Startup and management scripts
-│   ├── banner.sh       # Display banner
-│   ├── boot.sh         # Start agents (macOS/Linux)
-│   ├── boot.ps1        # Start agents (Windows)
-│   ├── flow_check.sh   # Flow check utility
-│   ├── stop.sh         # Stop agents (macOS/Linux)
-│   ├── stop.ps1        # Stop agents (Windows)
-│   └── setup_workspace.sh # Initialize workspace
+│   ├── banner.sh / .ps1           # Display banner
+│   ├── boot.sh / .ps1             # Start agents
+│   ├── stop.sh / .ps1             # Stop agents
+│   ├── setup_workspace.sh / .ps1  # Initialize workspace
+│   └── tmux-help.txt              # In-pane help text
 ├── OLD/                # Legacy assets (kept for reference)
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]

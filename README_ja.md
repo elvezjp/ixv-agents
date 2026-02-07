@@ -101,7 +101,7 @@
 
 ### 1. エージェントの起動
 
-**macOS / Linux:**
+**macOS:**
 
 ```bash
 # OpenCode（デフォルト）で起動
@@ -160,7 +160,7 @@ tmux attach-session -t ixv-agents
 ### 3. セッションの停止
 
 ```bash
-# macOS / Linux
+# macOS
 ./scripts/stop.sh
 ./scripts/stop.sh --force    # プロセスが残った場合
 ```
@@ -173,11 +173,22 @@ tmux attach-session -t ixv-agents
 
 ### 4. 新しいワークスペースのセットアップ
 
+**macOS:**
+
 ```bash
 ./scripts/setup_workspace.sh
 
 # バックアップをスキップして初期化のみ
 ./scripts/setup_workspace.sh --no-backup
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\scripts\setup_workspace.ps1
+
+# バックアップをスキップして初期化のみ
+.\scripts\setup_workspace.ps1 -NoBackup
 ```
 
 既存の `workspace/` がある場合は `backups/` にバックアップされ、新しいワークスペースが作成されます。
@@ -201,13 +212,11 @@ ixv-agents/
 ├── templates/          # ワークスペース初期化用テンプレート
 │   └── queue/          # キュー・レポートのテンプレート
 ├── scripts/            # 起動・管理スクリプト
-│   ├── banner.sh       # バナー表示
-│   ├── boot.sh         # エージェント起動 (macOS/Linux)
-│   ├── boot.ps1        # エージェント起動 (Windows)
-│   ├── flow_check.sh   # フローチェック
-│   ├── stop.sh         # エージェント停止 (macOS/Linux)
-│   ├── stop.ps1        # エージェント停止 (Windows)
-│   └── setup_workspace.sh # ワークスペース初期化
+│   ├── banner.sh / .ps1           # バナー表示
+│   ├── boot.sh / .ps1             # エージェント起動
+│   ├── stop.sh / .ps1             # エージェント停止
+│   ├── setup_workspace.sh / .ps1  # ワークスペース初期化
+│   └── tmux-help.txt              # ペイン内ヘルプテキスト
 ├── OLD/                # 旧資産（参考用）
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
 ├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
