@@ -56,18 +56,52 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 ## Prerequisites
 
-- macOS / Linux
-- [tmux](https://github.com/tmux/tmux/wiki)
-- AI CLI (one of the following)
-  - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - Default
+- macOS / Windows
+- Terminal multiplexer ([tmux](https://github.com/tmux/tmux/wiki) / [psmux](https://github.com/marlocarlo/psmux))
+- AI Editor (one of the following)
+  - [OpenCode](https://github.com/anomalyco/opencode) (`opencode`) - Default
   - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
-- Bash 4.0+
 
 ---
 
-## Quick Start
+## Setup
+
+### AI Editor
+
+Install one of the following.
+
+**[OpenCode](https://github.com/anomalyco/opencode)** (Default)
+
+- Desktop app: Download from [opencode.ai/download](https://opencode.ai/download)
+- Command install: `curl -fsSL https://opencode.ai/install | bash`
+- Other installation methods: See [official site](https://opencode.ai)
+
+**[Claude Code](https://github.com/anthropics/claude-code)**
+
+- Desktop app: Download from [claude.ai/download](https://claude.ai/download)
+- Command install: `curl -fsSL https://claude.ai/install.sh | bash`
+- Other installation methods: See [official documentation](https://code.claude.com/docs/en/overview)
+
+### Terminal Multiplexer
+
+**macOS: [tmux](https://github.com/tmux/tmux/wiki)**
+
+- Command install: `brew install tmux`
+- Other installation methods: See [official Wiki](https://github.com/tmux/tmux/wiki/Installing)
+
+**Windows: [psmux](https://github.com/marlocarlo/psmux)** (tmux-compatible)
+
+- Command install: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
+- Other installation methods: See [official repository](https://github.com/marlocarlo/psmux)
+- PowerShell 7+ required
+
+---
+
+## Usage
 
 ### 1. Start Agents
+
+**macOS:**
 
 ```bash
 # Start with OpenCode (default)
@@ -78,6 +112,19 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 # Specify model
 ./scripts/boot.sh --model anthropic/claude-opus-4-5
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# Start with OpenCode (default)
+.\scripts\boot.ps1
+
+# Start with Claude Code
+.\scripts\boot.ps1 -ClaudeCode
+
+# Specify model
+.\scripts\boot.ps1 -Model anthropic/claude-opus-4-5
 ```
 
 On first run, the workspace is automatically initialized.
@@ -113,20 +160,35 @@ tmux attach-session -t ixv-agents
 ### 3. Stop Sessions
 
 ```bash
-# Stop IXV sessions
+# macOS
 ./scripts/stop.sh
+./scripts/stop.sh --force    # Force stop if processes remain
+```
 
-# Force stop if processes remain
-./scripts/stop.sh --force
+```powershell
+# Windows
+.\scripts\stop.ps1
+.\scripts\stop.ps1 -Force    # Force stop if processes remain
 ```
 
 ### 4. Setup New Workspace
+
+**macOS:**
 
 ```bash
 ./scripts/setup_workspace.sh
 
 # Skip backup and reinitialize only
 ./scripts/setup_workspace.sh --no-backup
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\scripts\setup_workspace.ps1
+
+# Skip backup and reinitialize only
+.\scripts\setup_workspace.ps1 -NoBackup
 ```
 
 If an existing `workspace/` exists, it will be backed up to `backups/`, and a new workspace will be created.
@@ -150,11 +212,11 @@ ixv-agents/
 ├── templates/          # Workspace initialization templates
 │   └── queue/          # Queue and report templates
 ├── scripts/            # Startup and management scripts
-│   ├── banner.sh       # Display banner
-│   ├── boot.sh         # Start agents
-│   ├── flow_check.sh   # Flow check utility
-│   ├── stop.sh         # Stop agents
-│   └── setup_workspace.sh # Initialize workspace
+│   ├── banner.sh / .ps1           # Display banner
+│   ├── boot.sh / .ps1             # Start agents
+│   ├── stop.sh / .ps1             # Stop agents
+│   ├── setup_workspace.sh / .ps1  # Initialize workspace
+│   └── tmux-help.txt              # In-pane help text
 ├── OLD/                # Legacy assets (kept for reference)
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]

@@ -56,18 +56,52 @@
 
 ## 前提条件
 
-- macOS / Linux
-- [tmux](https://github.com/tmux/tmux/wiki)
-- AI CLI（以下のいずれか）
-  - [OpenCode](https://github.com/opencode-ai/opencode) (`opencode`) - デフォルト
+- macOS / Windows
+- ターミナルマルチプレクサ（[tmux](https://github.com/tmux/tmux/wiki) / [psmux](https://github.com/marlocarlo/psmux)）
+- AIエディタ（以下のいずれか）
+  - [OpenCode](https://github.com/anomalyco/opencode) (`opencode`) - デフォルト
   - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
-- Bash 4.0+
 
 ---
 
-## クイックスタート
+## セットアップ
+
+### AIエディタ
+
+以下のいずれかをインストールしてください。
+
+**[OpenCode](https://github.com/anomalyco/opencode)**（デフォルト）
+
+- デスクトップアプリ: [opencode.ai/download](https://opencode.ai/download) からダウンロード
+- コマンドでインストール: `curl -fsSL https://opencode.ai/install | bash`
+- その他のインストール方法は [公式サイト](https://opencode.ai) を参照
+
+**[Claude Code](https://github.com/anthropics/claude-code)**
+
+- デスクトップアプリ: [claude.ai/download](https://claude.ai/download) からダウンロード
+- コマンドでインストール: `curl -fsSL https://claude.ai/install.sh | bash`
+- その他のインストール方法は [公式ドキュメント](https://code.claude.com/docs/en/overview) を参照
+
+### ターミナルマルチプレクサ
+
+**macOS: [tmux](https://github.com/tmux/tmux/wiki)**
+
+- コマンドでインストール: `brew install tmux`
+- その他のインストール方法は [公式Wiki](https://github.com/tmux/tmux/wiki/Installing) を参照
+
+**Windows: [psmux](https://github.com/marlocarlo/psmux)**（tmux 互換）
+
+- コマンドでインストール: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
+- その他のインストール方法は [公式リポジトリ](https://github.com/marlocarlo/psmux) を参照
+- PowerShell 7+ が必要です
+
+---
+
+## 使い方
 
 ### 1. エージェントの起動
+
+**macOS:**
 
 ```bash
 # OpenCode（デフォルト）で起動
@@ -78,6 +112,19 @@
 
 # モデルを指定して起動
 ./scripts/boot.sh --model anthropic/claude-opus-4-5
+```
+
+**Windows (PowerShell):**
+
+```powershell
+# OpenCode（デフォルト）で起動
+.\scripts\boot.ps1
+
+# Claude Codeで起動
+.\scripts\boot.ps1 -ClaudeCode
+
+# モデルを指定して起動
+.\scripts\boot.ps1 -Model anthropic/claude-opus-4-5
 ```
 
 初回起動時は自動的にワークスペースが初期化されます。
@@ -113,20 +160,35 @@ tmux attach-session -t ixv-agents
 ### 3. セッションの停止
 
 ```bash
-# IXVセッションを停止
+# macOS
 ./scripts/stop.sh
+./scripts/stop.sh --force    # プロセスが残った場合
+```
 
-# プロセスが残った場合の強制停止
-./scripts/stop.sh --force
+```powershell
+# Windows
+.\scripts\stop.ps1
+.\scripts\stop.ps1 -Force    # プロセスが残った場合
 ```
 
 ### 4. 新しいワークスペースのセットアップ
+
+**macOS:**
 
 ```bash
 ./scripts/setup_workspace.sh
 
 # バックアップをスキップして初期化のみ
 ./scripts/setup_workspace.sh --no-backup
+```
+
+**Windows (PowerShell):**
+
+```powershell
+.\scripts\setup_workspace.ps1
+
+# バックアップをスキップして初期化のみ
+.\scripts\setup_workspace.ps1 -NoBackup
 ```
 
 既存の `workspace/` がある場合は `backups/` にバックアップされ、新しいワークスペースが作成されます。
@@ -150,11 +212,11 @@ ixv-agents/
 ├── templates/          # ワークスペース初期化用テンプレート
 │   └── queue/          # キュー・レポートのテンプレート
 ├── scripts/            # 起動・管理スクリプト
-│   ├── banner.sh       # バナー表示
-│   ├── boot.sh         # エージェント起動
-│   ├── flow_check.sh   # フローチェック
-│   ├── stop.sh         # エージェント停止
-│   └── setup_workspace.sh # ワークスペース初期化
+│   ├── banner.sh / .ps1           # バナー表示
+│   ├── boot.sh / .ps1             # エージェント起動
+│   ├── stop.sh / .ps1             # エージェント停止
+│   ├── setup_workspace.sh / .ps1  # ワークスペース初期化
+│   └── tmux-help.txt              # ペイン内ヘルプテキスト
 ├── OLD/                # 旧資産（参考用）
 ├── backups/            # ワークスペースのバックアップ [.gitignore]
 ├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
