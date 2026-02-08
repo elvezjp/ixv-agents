@@ -1,4 +1,4 @@
-# IXV-Agents stop script for Windows (psmux)
+﻿# IXV-Agents stop script for Windows (psmux)
 # Usage:
 #   .\scripts\stop.ps1           # stop all ixv sessions (graceful)
 #   .\scripts\stop.ps1 --force   # force kill opencode/claude processes + sessions

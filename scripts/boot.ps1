@@ -1,4 +1,4 @@
-# IXV-Agents bootstrap script for Windows (psmux)
+﻿# IXV-Agents bootstrap script for Windows (psmux)
 # Usage:
 #   .\scripts\boot.ps1                        # start psmux + agents (opencode)
 #   .\scripts\boot.ps1 -ClaudeCode            # use Claude Code instead
