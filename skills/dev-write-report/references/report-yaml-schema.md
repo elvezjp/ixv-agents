@@ -19,17 +19,6 @@ Spec.md 2.3.4 に準拠。Devが報告書を生成する際に使用する。
 | artifacts | optional | string[] | 変更ファイル/成果物 |
 | issues | optional | string[] | ブロッカーや不具合 |
 
-## 拡張フィールド: skill_candidate
-
-Spec.md 2.3.4 の基本スキーマに加え、以下の拡張フィールドを **毎回必ず** 記入する。
-
-| Field | Required | Type | Description |
-|-------|----------|------|-------------|
-| skill_candidate.found | **required** | boolean | スキル化候補の有無 (`true` / `false`) |
-| skill_candidate.name | conditional | string | スキル名（`found: true` の場合） |
-| skill_candidate.description | conditional | string | スキルの説明（`found: true` の場合） |
-| skill_candidate.reason | conditional | string | スキル化の理由（`found: true` の場合） |
-
 ## Field Details
 
 ### task_id
@@ -101,23 +90,6 @@ issues:
   - "接続設定の仕様がREADME.mdに記載されていない"
 ```
 
-### skill_candidate
-
-スキル化候補の検討結果。**全報告で必須**。
-
-```yaml
-# 候補なしの場合
-skill_candidate:
-  found: false
-
-# 候補ありの場合
-skill_candidate:
-  found: true
-  name: "wiki-page-generator"
-  description: "仕様書からWikiページのひな型を自動生成"
-  reason: "同じ構成パターンを3回繰り返した"
-```
-
 ## Complete Template
 
 ```yaml
@@ -132,11 +104,6 @@ changes:
 artifacts:
   - ""
 issues: []
-skill_candidate:
-  found: false
-  name: null
-  description: null
-  reason: null
 ```
 
 ## Validation Checklist
@@ -147,6 +114,4 @@ skill_candidate:
 - [ ] `summary` が存在し、200文字以内である
 - [ ] `status: blocked` の場合、`issues` にブロッカー詳細がある
 - [ ] `created_at`, `updated_at` が `date` コマンドで取得した値である
-- [ ] `skill_candidate.found` が `true` または `false` である
-- [ ] `skill_candidate.found: true` の場合、`name`, `description`, `reason` が記入されている
 - [ ] ファイル名が `queue/reports/{task_id}.yaml` である

@@ -146,15 +146,6 @@ persona:
       - オペレーションスペシャリスト
       - プロジェクトコーディネーター
 
-# スキル化候補
-skill_candidate:
-  criteria:
-    - 他プロジェクトでも使えそう
-    - 2回以上同じパターン
-    - 手順や知識が必要
-    - 他Devにも有用
-  action: report_to_sm
-
 ---
 
 # Dev（開発者）指示書
@@ -321,11 +312,6 @@ changes:
 artifacts:
   - "ファイルパス"
 issues: []
-skill_candidate:
-  found: false
-  name: null
-  description: null
-  reason: null
 ```
 
 ### ファイル名
@@ -343,19 +329,6 @@ skill_candidate:
 | `done` | definition_of_done の全項目を満たした |
 | `blocked` | ブロッカーにより作業を継続できない |
 | `needs_review` | 作業は完了したがレビューが必要 |
-
-### スキル化候補の検討（毎回必須）
-
-全ての報告で `skill_candidate` セクションを必ず記入する。
-
-| 基準 | 該当したら `found: true` |
-|------|------------------------|
-| 他プロジェクトでも使えそう | yes |
-| 同じパターンを2回以上実行 | yes |
-| 他のDevにも有用 | yes |
-| 手順や知識が必要な作業 | yes |
-
-**`skill_candidate` の記入を忘れた報告は不完全とみなす。**
 
 ## 同一ファイル書き込み禁止（RACE-001）
 
