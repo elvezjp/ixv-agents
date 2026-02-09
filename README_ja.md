@@ -17,6 +17,34 @@
 
 ---
 
+## センチネル構成（計画）
+
+Mac Studio（512GB）1台に1つ、24時間稼働のローカルエージェント **Sentinel** を導入する計画です。Sentinel はローカル LLM（Brain）で自律的に動作し、既存の API エージェント（PO/SM/Dev）を必要な時だけ起動します。Sentinel は独立した Python アプリケーションであり、フレームワークやクラス階層は導入しません。
+
+```
+Mac Studio 512GB（24時間稼働）
+│
+├── Sentinel（ローカル LLM、常時起動、API コスト $0）
+│   ├── Brain: MLX で 70B クラスを常時ロード
+│   ├── Heartbeat: 全エージェントの生存確認・同期
+│   ├── Doc Triage: ドキュメント構造解析・重要ページ特定
+│   └── Machine Monitor: マシン全体の監視（プロセス/リソース/FS）
+│
+├── PO Agent  (Claude Code CLI / API)  ← オンデマンド
+├── SM Agent  (Claude Code CLI / API)  ← オンデマンド
+├── Dev1〜3   (Claude Code CLI / API)  ← オンデマンド
+│
+├── Cursor (リポジトリ A)  ← Sentinel が監視
+├── Cursor (リポジトリ B)  ← Sentinel が監視
+└── その他プロセス          ← Sentinel が監視
+```
+
+既存の動作（`roles/*.md`, YAML キュー, `scripts/*.sh`, tmux）は変更しない。Sentinel は追加であり、なくても従来通り運用可能。Heartbeat は全エージェント共通の YAML スキーマで、Sentinel が読み取り、PO/SM/Dev が書き込みます。
+
+計画書: `docs/20260209-baseagent-plan.md`
+
+---
+
 ## 4つの原則
 
 1. 仕様は「生きたドキュメント」である
@@ -46,11 +74,12 @@
 
 ## エージェント構成（固定）
 
-| 役割 | 人数 | 責任 |
-|------|------|------|
-| Product Owner (PO) | 1 | 目標と優先順位を定義、仕様策定 |
-| Scrum Master (SM) | 1 | ワークフロー統制、タスク分解・割り当て |
-| Development (Dev) | 3 | 実装 |
+| 役割 | 人数 | ランタイム | 責任 |
+|------|------|-----------|------|
+| Sentinel | 1 | ローカル LLM（24時間） | 監視、トリアージ、ルーティング、API エージェント起動 |
+| Product Owner (PO) | 1 | API（オンデマンド） | 目標と優先順位を定義、仕様策定 |
+| Scrum Master (SM) | 1 | API（オンデマンド） | ワークフロー統制、タスク分解・割り当て |
+| Development (Dev) | 3 | API（オンデマンド） | 実装 |
 
 ---
 

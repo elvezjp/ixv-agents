@@ -17,6 +17,34 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 ---
 
+## Sentinel Architecture (Planned)
+
+We will introduce a 24/7 local agent **Sentinel** on a single Mac Studio (512GB). Sentinel runs with a local LLM (Brain) and wakes the existing API agents (PO/SM/Dev) only when needed. Sentinel is a standalone Python application; no framework or class hierarchy is introduced.
+
+```
+Mac Studio 512GB (24/7)
+│
+├── Sentinel (local LLM, always on, API cost $0)
+│   ├── Brain: MLX 70B-class model always loaded
+│   ├── Heartbeat monitoring: liveness + sync for all agents
+│   ├── Doc Triage: document structure analysis + key pages
+│   └── Machine Monitor: system-wide monitoring (process/resource/FS)
+│
+├── PO Agent  (Claude Code CLI / API + Heartbeat)  ← on-demand
+├── SM Agent  (Claude Code CLI / API + Heartbeat)  ← on-demand
+├── Dev1-3    (Claude Code CLI / API + Heartbeat)  ← on-demand
+│
+├── Cursor (Repo A)  ← monitored by Sentinel
+├── Cursor (Repo B)  ← monitored by Sentinel
+└── Other processes  ← monitored by Sentinel
+```
+
+Existing behavior (`roles/*.md`, YAML queues, `scripts/*.sh`, tmux) remains unchanged. Sentinel is additive and optional. Heartbeat is a shared YAML schema: Sentinel reads; PO/SM/Dev write.
+
+Plan document: `docs/20260209-baseagent-plan.md`
+
+---
+
 ## 4 Principles
 
 1. Specs are living documents
@@ -46,11 +74,12 @@ Humans define intent and specifications, while AI agents collaborate as a struct
 
 ## Agent Team Composition (Fixed)
 
-| Role | Count | Responsibility |
-|------|-------|----------------|
-| Product Owner (PO) | 1 | Define goals and priorities, create specifications |
-| Scrum Master (SM) | 1 | Orchestrate workflow, decompose and assign tasks |
-| Development (Dev) | 3 | Implementation |
+| Role | Count | Runtime | Responsibility |
+|------|-------|---------|----------------|
+| Sentinel | 1 | Local LLM (24h) | Monitor, triage, route, wake API agents |
+| Product Owner (PO) | 1 | API (on-demand) | Define goals and priorities, create specifications |
+| Scrum Master (SM) | 1 | API (on-demand) | Orchestrate workflow, decompose and assign tasks |
+| Development (Dev) | 3 | API (on-demand) | Implementation |
 
 ---
 
@@ -207,7 +236,17 @@ If an existing `workspace/` exists, it will be backed up to `backups/`, and a ne
 
 ```
 ixv-agents/
-├── roles/              # Role instructions (PO, SM, Dev)
+├── src/sentinel/       # Sentinel local agent (Python)
+│   ├── main.py         # Entrypoint and event loop
+│   ├── brain.py        # Local LLM interface (MLX)
+│   ├── heartbeat.py    # Heartbeat reader
+│   ├── machine.py      # Machine monitoring (psutil)
+│   ├── queue_watcher.py # Queue change detection
+│   ├── router.py       # Routing decisions
+│   ├── tmux.py         # tmux send-keys adapter
+│   └── config.py       # Configuration loader
+├── tests/              # Sentinel tests
+├── roles/              # Role instructions (Sentinel, PO, SM, Dev)
 ├── skills/             # AI CLI skill definitions
 ├── templates/          # Workspace initialization templates
 │   └── queue/          # Queue and report templates
@@ -260,6 +299,7 @@ workspace/
 ## Key Documents
 
 - `Spec.md`: System architecture, roles, workflow, and constraints
+- `docs/20260209-baseagent-plan.md`: Sentinel introduction plan
 - `docs/20260129implementation-plan.md`: Implementation plan
 - `docs/20260201directory-restructure-plan.md`: Directory restructure plan
 

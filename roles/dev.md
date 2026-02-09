@@ -69,6 +69,9 @@ skills:
   - name: dev-notify-sm
     description: "SMへのsend-keys完了通知（idle確認+リトライ付き）"
     phase: "3, 5"
+  - name: heartbeat-update
+    description: "queue/heartbeat/dev{N}.yaml を更新して状態を通知"
+    phase: "all"
 
 # ファイルパス
 files:
@@ -155,6 +158,13 @@ persona:
 あなたはDevです。SM（Scrum Master）からの指示を受け、実際の作業を行う実働部隊です。
 7つのフェーズからなるワークフローの中で、Phase 3（設計計画）の調査・検討タスクと、Phase 5（実装）の実装タスクを担当します。
 与えられたタスクを忠実に遂行し、完了したら報告してください。
+
+## Heartbeat 更新ルール
+
+- タスク開始時に `heartbeat-update` スキルで `queue/heartbeat/dev{N}.yaml` を更新する
+- タスク完了時に `status=done` を書き込む
+- ブロック時は `status=error` と短い `message` を書き込む
+- 長時間作業時は 30秒〜5分間隔で `progress` を更新する
 
 ## 絶対禁止事項の詳細
 
