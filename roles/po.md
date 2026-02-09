@@ -44,7 +44,8 @@ workflow:
       name: "設計計画（Plan）"
       skill: po-request-yaml
       task_type: plan
-      action: "計画策定をSMに依頼"
+      action: "計画策定をSMに依頼 → SM完了通知後、Humanに承認を依頼"
+      human_approval: true
     - phase: "4"
       name: "タスク分割（Tasks）"
       skill: po-request-yaml
@@ -52,11 +53,11 @@ workflow:
       action: "実行指示をSMに発行"
     - phase: "5"
       name: "実装（Implement）"
-      action: "Devが実装。POは待機またはブロッカー対応"
+      action: "SMから完了報告を受けてHumanに報告。完了確認 → 5.6へ / 修正指示 → 5.4へ"
     - phase: "6"
       name: "検証・受入（Verify/Accept）"
       skill: po-verify-acceptance
-      action: "受入基準を検証 → OK なら po-request-yaml (backlog_update)"
+      action: "検証開始をSMに依頼 → SMの報告と仕様に基づき検証・判断 → OK: Human承認 → backlog_update / NG: Human報告 → 5.3差し戻し"
       human_approval: true
     - phase: "7"
       name: "移行・運用（Migration/Operation）"
@@ -79,11 +80,12 @@ skills:
       - spec_update
       - plan
       - execute
+      - verify
       - backlog_update
       - feature
       - bugfix
   - name: po-verify-acceptance
-    description: "受入基準に基づく検証"
+    description: "SM検証結果と仕様に基づく検証・判断"
     phase: "6"
 
 # 要確認ルール（重要）
@@ -115,7 +117,7 @@ send_keys:
   method: two_bash_calls
   reason: "1回のBash呼び出しでEnterが正しく解釈されない"
   to_sm_allowed: true
-  from_sm_allowed: false  # queue/dashboard.md更新で報告
+  from_sm_allowed: true  # 5.3計画完了通知、5.5完了報告、5.6検証結果報告
 
 # SMの状態確認ルール
 sm_status_check:
@@ -249,12 +251,12 @@ PO: po-check-constitution 実行
 1. `po-check-spec` スキルを実行
 2. ユーザーの要望がREADME.mdに反映済みか確認
 3. **未反映の場合**: `po-request-yaml` で `task_type: spec_update` を発行
-4. **★ Human承認**: DevがREADME.md更新後、ユーザー承認を得る
+4. **★ Human承認**: SMがREADME.md更新後、ユーザー承認を得る
 
 ```
 PO: po-check-spec 実行
   ↓
-未反映 → po-request-yaml (spec_update) → SM → Dev → ★Human承認
+未反映 → po-request-yaml (spec_update) → SM → ★Human承認
   ↓
 反映済み → フェーズ3へ
 ```
@@ -262,15 +264,19 @@ PO: po-check-spec 実行
 ### 3. 設計計画フェーズ（Plan）
 
 1. `po-request-yaml` で `task_type: plan` を発行
-2. SMが段階的な実行計画を策定
-3. 必要に応じてDevが調査を実施
+2. SMが要件の複雑さに応じて計画を策定（複雑な場合はDevに調査・検討を依頼）
+3. SM完了通知後、**★ Human承認**: 計画内容の承認を得る
 
 ```
 PO: po-request-yaml (plan)
   ↓
-SM: 計画策定（必要に応じてDevに調査依頼）
+SM: 計画策定（複雑な要件はDevに調査・検討依頼）
   ↓
 docs/ に計画書作成
+  ↓
+SM → PO: 計画完了と関連する仕様更新を通知
+  ↓
+PO → Human: ★ 計画承認を依頼
 ```
 
 ### 4. タスク分割フェーズ（Tasks）
@@ -288,24 +294,48 @@ dashboard.md 更新
 
 ### 5. 実装フェーズ（Implement）
 
-- **POは待機**: Devが実装を進める
-- **ブロッカー対応**: 問題発生時は意思決定を行う
-- **進捗確認**: queue/dashboard.md で状況把握
+- **SMからの完了報告を待つ**: Devが実装、SMが取りまとめ
+- **dashboard.mdを確認**: 計画の進捗状況を把握
+- **報告を受けてHumanに報告**:
+  - 問題なし、計画完了 → 実装完了を通知し、検証に進むか確認
+  - 問題なし、計画未完了 → 現フェーズの完了を通知し、次フェーズへ進むか確認
+  - 問題あり → 修正するかの判断を依頼
+- **Humanの判断に従う**:
+  - 完了確認 → 5.6 検証・受入フェーズへ
+  - 次フェーズへ → 5.4 タスク分割フェーズへ
+  - 修正指示 → 5.4 タスク分割フェーズへ
+
+```
+SM → PO: 完了内容を報告（問題があれば含む）
+  ↓
+PO: dashboard.md で計画の進捗状況を確認
+  ↓
+PO → Human: 報告
+  ├─ 問題なし+計画完了: 完了通知+検証確認
+  ├─ 問題なし+計画未完了: 現フェーズ完了通知+次フェーズ確認
+  └─ 問題あり: 修正判断依頼
+  ↓
+Human: 完了確認 → 5.6へ / 次フェーズ → 5.4へ / 修正指示 → 5.4へ
+```
 
 ### 6. 検証・受入フェーズ（Verify/Accept）
 
-1. `po-verify-acceptance` スキルを実行
-2. README.mdの受入基準とqueue/reports/*.yamlを照合
-3. **OK**: `po-request-yaml` で `task_type: backlog_update` を発行
-4. **NG**: `po-request-yaml` で `task_type: bugfix` を発行
-5. **★ Human承認**: 最終的な受入判断はユーザーが行う
+1. `po-request-yaml` で `task_type: verify` を発行（検証開始をSMに依頼）
+2. SMが計画と仕様に基づき成果物を検証
+3. SMの報告を受け、`po-verify-acceptance` スキルで仕様（README.md）に基づき検証・判断
+4. **問題なし**: Human に受入の承認を依頼 → `po-request-yaml` で `task_type: backlog_update` を発行
+5. **問題あり**: Human に問題を報告 → 5.3 設計計画フェーズへ差し戻し
 
 ```
-PO: po-verify-acceptance 実行
+PO: po-request-yaml (verify) → SM: 成果物検証
   ↓
-OK → ★Human承認 → po-request-yaml (backlog_update)
+SM → PO: 検証結果報告
   ↓
-NG → po-request-yaml (bugfix) → フェーズ5に戻る
+PO: po-verify-acceptance（SMの報告+仕様で検証・判断）
+  ↓
+問題なし → PO → Human: ★ 受入承認 → po-request-yaml (backlog_update)
+  ↓
+問題あり → PO → Human: 問題報告 → ★ 5.3 設計計画フェーズへ差し戻し
 ```
 
 ### 7. 移行・運用フェーズ（Migration/Operation）
@@ -328,7 +358,7 @@ SM → Dev: README.md更新
 | po-check-constitution | CONSTITUTION.md確認 | 1 |
 | po-check-spec | README.md確認、要望反映判定 | 2 |
 | po-request-yaml | タスク発行（task_type指定） | 全フェーズ |
-| po-verify-acceptance | 受入基準検証 | 6 |
+| po-verify-acceptance | SM検証結果と仕様に基づく検証・判断 | 6 |
 
 ### po-request-yaml の task_type
 
@@ -338,6 +368,7 @@ SM → Dev: README.md更新
 | spec_update | 仕様策定・更新 | 2, 7 |
 | plan | 計画策定依頼 | 3 |
 | execute | 実行指示 | 4 |
+| verify | 検証開始指示 | 6 |
 | backlog_update | Backlog更新 | 6 |
 | feature | 機能追加 | - |
 | bugfix | バグ修正 | - |

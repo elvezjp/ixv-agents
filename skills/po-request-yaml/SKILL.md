@@ -33,6 +33,7 @@ metadata:
 | spec_update | 仕様策定・更新タスク | 2, 7 |
 | plan | 計画策定依頼 | 3 |
 | execute | 実行指示 | 4 |
+| verify | 検証開始指示 | 6 |
 | backlog_update | Backlog更新指示 | 6 |
 | feature | 機能追加（デフォルト） | - |
 | bugfix | バグ修正 | - |
@@ -79,6 +80,7 @@ metadata:
 | 「仕様策定」「仕様更新」「READMEに追加」 | spec_update |
 | 「計画を立てて」「設計して」「plan」 | plan |
 | 「実行して」「開始して」「execute」 | execute |
+| 「検証して」「検証開始」「verify」 | verify |
 | 「Backlog更新」「完了にして」「ステータス変更」 | backlog_update |
 | 「バグ」「不具合」「動かない」 | bugfix |
 | 「機能追加」「〜したい」「〜してほしい」 | feature |
@@ -102,6 +104,7 @@ task_typeに応じて必要な情報をヒアリングする。
 | spec_update | 追加/変更する仕様の詳細 |
 | plan | 対象範囲、段階的実行の必要性 |
 | execute | 実行対象の計画、優先順位 |
+| verify | 検証対象のリクエストID |
 | backlog_update | 対象ID、新ステータス |
 
 ### Step 3: request_idの採番
@@ -212,6 +215,24 @@ acceptance_criteria:
   - "dashboard.md が更新されている"
 constraints: []
 notes: "計画: docs/auth-plan.md を参照"
+```
+
+### verify
+
+```yaml
+schema_version: "1.0"
+created_at: "2026-02-01T13:30:00Z"
+updated_at: "2026-02-01T13:30:00Z"
+spec_ref: README.md
+request_id: "REQ-20260201-004"
+task_type: "verify"
+priority: "P1"
+summary: "認証機能の実装結果を計画と仕様に基づき検証"
+acceptance_criteria:
+  - "SMが計画（docs/）と仕様（README.md）に基づき成果物を検証している"
+  - "検証結果がPOに報告されている"
+constraints: []
+notes: "実装完了後の検証フェーズ"
 ```
 
 ### backlog_update
