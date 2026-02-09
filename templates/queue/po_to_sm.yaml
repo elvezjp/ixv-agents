@@ -3,6 +3,7 @@ created_at: "{{TIMESTAMP}}"
 updated_at: "{{TIMESTAMP}}"
 spec_ref: null
 request_id: null
+task_type: null
 priority: null
 summary: null
 acceptance_criteria: []
