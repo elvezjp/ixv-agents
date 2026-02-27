@@ -86,8 +86,8 @@ Spec.md 2.3.3 スキーマに準拠したYAMLを生成する。
 
 ```yaml
 schema_version: "1.0"
-created_at: "YYYY-MM-DDTHH:MM:SS"
-updated_at: "YYYY-MM-DDTHH:MM:SS"
+created_at: "YYYY-MM-DDTHH:MM:SSZ"
+updated_at: "YYYY-MM-DDTHH:MM:SSZ"
 task_id: "TASK-YYYYMMDD-###"
 spec_ref: README.md
 request_id: "REQ-YYYYMMDD-###"
