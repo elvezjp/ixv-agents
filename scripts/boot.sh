@@ -5,7 +5,7 @@
 #   ./scripts/boot.sh --claude-code          # use Claude Code instead
 #   ./scripts/boot.sh --model <model_name>   # specify model
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -47,9 +47,14 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-# Append model option if specified
+# Validate and append model option if specified
 if [ -n "$MODEL" ]; then
-  CLI_CMD="$CLI_CMD --model $MODEL"
+  if [[ ! "$MODEL" =~ ^[a-zA-Z0-9/_.:@-]+$ ]]; then
+    echo "ERROR: Invalid model name: $MODEL" >&2
+    echo "Model name must contain only alphanumeric characters, '/', '_', '.', ':', '@', '-'" >&2
+    exit 1
+  fi
+  CLI_CMD="$CLI_CMD --model '${MODEL}'"
 fi
 
 log() {
@@ -109,17 +114,17 @@ tmux split-window -h -t "ixv-agents:0.3" -p 50
 # Set titles and prompts
 # ペイン番号: 0=PO(左上), 1=SM(左下), 2=Dev1, 3=Dev2, 4=Dev3
 tmux select-pane -t "ixv-agents:0.0" -T "PO"
-tmux send-keys -t "ixv-agents:0.0" "cd $WORKSPACE_DIR && export PS1='(PO) \\w\\$ ' && clear" Enter
+tmux send-keys -t "ixv-agents:0.0" "cd \"$WORKSPACE_DIR\" && export PS1='(PO) \\w\\$ ' && clear" Enter
 
 tmux select-pane -t "ixv-agents:0.1" -T "SM"
-tmux send-keys -t "ixv-agents:0.1" "cd $WORKSPACE_DIR && export PS1='(SM) \\w\\$ ' && clear" Enter
+tmux send-keys -t "ixv-agents:0.1" "cd \"$WORKSPACE_DIR\" && export PS1='(SM) \\w\\$ ' && clear" Enter
 
 DEV_PANES=(2 3 4)
 for i in {0..2}; do
   DEV_NUM=$((i + 1))
   PANE_NUM=${DEV_PANES[$i]}
   tmux select-pane -t "ixv-agents:0.$PANE_NUM" -T "Dev$DEV_NUM"
-  tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cd $WORKSPACE_DIR && export PS1='(Dev$DEV_NUM) \\w\\$ ' && clear" Enter
+  tmux send-keys -t "ixv-agents:0.$PANE_NUM" "cd \"$WORKSPACE_DIR\" && export PS1='(Dev$DEV_NUM) \\w\\$ ' && clear" Enter
 done
 
 # 各ペインにヘルプテキストを表示

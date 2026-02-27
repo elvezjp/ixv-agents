@@ -42,8 +42,13 @@ if ($ClaudeCode) {
     $CliCmd = "claude --dangerously-skip-permissions"
 }
 
-# Append model option if specified
+# Validate and append model option if specified
 if ($Model) {
+    if ($Model -notmatch '^[a-zA-Z0-9/_.:@-]+$') {
+        Write-Host "ERROR: Invalid model name: $Model" -ForegroundColor Red
+        Write-Host "Model name must contain only alphanumeric characters, '/', '_', '.', ':', '@', '-'"
+        exit 1
+    }
     $CliCmd = "$CliCmd --model $Model"
 }
 

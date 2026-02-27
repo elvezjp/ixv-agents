@@ -8,7 +8,7 @@
 #   ./scripts/setup_workspace.sh -h        # ヘルプ表示
 # ============================================================
 
-set -e
+set -euo pipefail
 
 # スクリプトのディレクトリを取得
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
@@ -50,13 +50,21 @@ log_step() {
     echo -e "\n${CYAN}${BOLD}━━━ $1 ━━━${NC}\n"
 }
 
+# sed 置換用エスケープ関数
+escape_sed_replacement() {
+    printf '%s\n' "$1" | sed 's:[&\\/]:\\&:g'
+}
+
 # テンプレートをコピーしてプレースホルダーを置換する関数
 apply_template() {
     local src="$1"
     local dst="$2"
-    local timestamp="$3"
-    local date="$4"
-    local assignee="$5"
+    local timestamp
+    local date
+    local assignee
+    timestamp=$(escape_sed_replacement "$3")
+    date=$(escape_sed_replacement "$4")
+    assignee=$(escape_sed_replacement "$5")
 
     sed -e "s|{{TIMESTAMP}}|${timestamp}|g" \
         -e "s|{{DATE}}|${date}|g" \
@@ -123,7 +131,7 @@ if [ "$NO_BACKUP" = false ]; then
     if [ -d "${WORKSPACE_DIR}" ]; then
         mkdir -p "${BACKUP_BASE_DIR}"
         BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
-        mv "${WORKSPACE_DIR}" "$BACKUP_DIR"
+        mv "${WORKSPACE_DIR}" "${BACKUP_DIR}"
         log_success "バックアップ完了: $BACKUP_DIR"
     else
         log_info "workspaceが存在しません（スキップ）"
@@ -205,12 +213,14 @@ log_info "queue/tasks/dev1-dev3.yaml を初期化"
 
 # レポートファイルを削除（TEMPLATE以外）
 DELETED_COUNT=0
+shopt -s nullglob
 for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
     if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
         rm "$f"
         DELETED_COUNT=$((DELETED_COUNT + 1))
     fi
 done
+shopt -u nullglob
 if [ $DELETED_COUNT -gt 0 ]; then
     log_info "${DELETED_COUNT} 件のレポートファイルを削除"
 else

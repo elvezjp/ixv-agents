@@ -5,7 +5,7 @@
 #   ./scripts/stop.sh --force   # force kill opencode processes + sessions
 #   ./scripts/stop.sh -h        # show help
 
-set -e
+set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
@@ -86,17 +86,17 @@ kill_sessions() {
 if [ "$FORCE_KILL" = true ]; then
   log "Force killing opencode/claude processes..."
 
-  # Kill opencode processes
-  if pgrep -f "opencode" > /dev/null 2>&1; then
-    pkill -f "opencode" 2>/dev/null || true
+  # Kill opencode processes (exact name match to avoid killing unrelated processes)
+  if pgrep -x "opencode" > /dev/null 2>&1; then
+    pkill -x "opencode" 2>/dev/null || true
     log_success "opencode processes killed"
   else
     log_warn "No opencode processes found"
   fi
 
-  # Kill claude processes (if using --claude-code)
-  if pgrep -f "claude --dangerously-skip-permissions" > /dev/null 2>&1; then
-    pkill -f "claude --dangerously-skip-permissions" 2>/dev/null || true
+  # Kill claude processes (exact name match)
+  if pgrep -x "claude" > /dev/null 2>&1; then
+    pkill -x "claude" 2>/dev/null || true
     log_success "claude processes killed"
   else
     log_warn "No claude processes found"

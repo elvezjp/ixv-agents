@@ -62,9 +62,9 @@ function Apply-Template {
         [string]$Assignee
     )
     $content = Get-Content -Path $Src -Raw -Encoding UTF8
-    $content = $content -replace '\{\{TIMESTAMP\}\}', $Timestamp
-    $content = $content -replace '\{\{DATE\}\}', $Date
-    $content = $content -replace '\{\{ASSIGNEE\}\}', $Assignee
+    $content = $content.Replace('{{TIMESTAMP}}', $Timestamp)
+    $content = $content.Replace('{{DATE}}', $Date)
+    $content = $content.Replace('{{ASSIGNEE}}', $Assignee)
     Set-Content -Path $Dst -Value $content -Encoding UTF8 -NoNewline
 }
 
