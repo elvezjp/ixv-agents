@@ -84,24 +84,8 @@ kill_sessions() {
 }
 
 if [ "$FORCE_KILL" = true ]; then
-  log "Force killing opencode/claude processes..."
-
-  # Kill opencode processes (exact name match to avoid killing unrelated processes)
-  if pgrep -x "opencode" > /dev/null 2>&1; then
-    pkill -x "opencode" 2>/dev/null || true
-    log_success "opencode processes killed"
-  else
-    log_warn "No opencode processes found"
-  fi
-
-  # Kill claude processes (exact name match)
-  if pgrep -x "claude" > /dev/null 2>&1; then
-    pkill -x "claude" 2>/dev/null || true
-    log_success "claude processes killed"
-  else
-    log_warn "No claude processes found"
-  fi
-
+  # opencode/claude プロセスは ixv-agents tmux セッション上で起動されるため、
+  # セッションを kill すれば子プロセスも終了する。pgrep/pkill による個別 kill は不要。
   kill_sessions
 else
   # Graceful stop: send Ctrl+C first, then kill sessions

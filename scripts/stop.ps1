@@ -75,26 +75,8 @@ function Kill-Sessions {
 }
 
 if ($Force) {
-    Log "Force killing opencode/claude processes..."
-
-    # Kill opencode processes
-    $opencodeProcs = Get-Process -Name "opencode" -ErrorAction SilentlyContinue
-    if ($opencodeProcs) {
-        $opencodeProcs | Stop-Process -Force
-        Log-Success "opencode processes killed"
-    } else {
-        Log-Warn "No opencode processes found"
-    }
-
-    # Kill claude processes
-    $claudeProcs = Get-Process -Name "claude" -ErrorAction SilentlyContinue
-    if ($claudeProcs) {
-        $claudeProcs | Stop-Process -Force
-        Log-Success "claude processes killed"
-    } else {
-        Log-Warn "No claude processes found"
-    }
-
+    # opencode/claude プロセスは ixv-agents tmux セッション上で起動されるため、
+    # セッションを kill すれば子プロセスも終了する。Get-Process/Stop-Process による個別 kill は不要。
     Kill-Sessions
 } else {
     Send-CtrlC
