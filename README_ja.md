@@ -9,6 +9,8 @@
 
 仕様駆動型AI開発システム。複数のAIエージェントを固定されたロールベースのチームとして編成します。アジャイルのロールとイベントを仕様駆動開発と統合し、ガバナンス、トレーサビリティ、実用的なエンタープライズ利用を実現します。
 
+[![IXV-Agents紹介動画](https://img.youtube.com/vi/LzGsj21opGI/maxresdefault.jpg)](https://www.youtube.com/watch?v=LzGsj21opGI)
+
 ## 特徴
 
 - **固定ロール、進化するスキル**: 人間が意図と仕様を定義し、AIエージェントが構造化されたチームとして協働

@@ -9,6 +9,8 @@
 
 Specification-driven AI development system that organizes multiple AI agents into a fixed, role-based team. Integrates agile roles and events with specification-driven development to ensure governance, traceability, and practical enterprise usage.
 
+[![IXV-Agents紹介動画](https://img.youtube.com/vi/LzGsj21opGI/maxresdefault.jpg)](https://www.youtube.com/watch?v=LzGsj21opGI)
+
 ## Features
 
 - **Fixed Roles, Evolving Skills**: Humans define intent and specifications, while AI agents collaborate as a structured team
