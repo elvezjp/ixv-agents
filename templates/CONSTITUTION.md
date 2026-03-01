@@ -1,6 +1,6 @@
 <!--
 IMPORTANT:
-This file is a project Ccnstitution.
+This file is a project Constitution.
 Do NOT modify this file unless explicitly instructed.
 -->
 
