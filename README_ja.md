@@ -1,101 +1,72 @@
 # IXV-Agents
 
-## 概要
+[English](./README.md) | [日本語](./README_ja.md)
 
-**IXV-Agents** は、仕様駆動開発を実現するAI開発システムです。固定された役割ベースのチームとして複数のAIエージェントを編成し、アジャイルの役割とイベントを仕様駆動開発に統合することで、ガバナンス・トレーサビリティ・実運用性を確保します。
+[![Elvez](https://img.shields.io/badge/Elvez-Product-3F61A7?style=flat-square)](https://elvez.co.jp/)
+[![IXV Ecosystem](https://img.shields.io/badge/IXV-Ecosystem-3F61A7?style=flat-square)](https://elvez.co.jp/ixv/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Stars](https://img.shields.io/github/stars/elvezjp/ixv-agents?style=social)](https://github.com/elvezjp/ixv-agents/stargazers)
 
----
+仕様駆動型AI開発システム。複数のAIエージェントを固定されたロールベースのチームとして編成します。アジャイルのロールとイベントを仕様駆動開発と統合し、ガバナンス、トレーサビリティ、実用的なエンタープライズ利用を実現します。
 
-## コアコンセプト
+## 特徴
 
-**固定された役割、進化するスキル。**
-人間が意図と仕様を定義し、AIエージェントは構造化されたチームとして協働します。
+- **固定ロール、進化するスキル**: 人間が意図と仕様を定義し、AIエージェントが構造化されたチームとして協働
+- **仕様が唯一の信頼できる情報源**: 仕様（Spec）はリビングドキュメントであり、すべての開発のSSoT
+- **ロールベースのエージェントチーム**: プロダクトオーナー、スクラムマスター、3名の開発エージェントが明確な責任境界を持つ
+- **自動化されたワークフロー**: POからSMを経てDevエージェントへタスクが自動的に分解・配布
+- **クロスプラットフォーム対応**: macOS（tmux）とWindows（psmux）に対応
+- **複数AIエディタ対応**: OpenCodeとClaude Codeをサポート
 
-- **仕様（Specs）** が唯一の信頼できる情報源（Single Source of Truth）
-- **役割（Roles）** による責任分担
-- **イベント（Events）** によるリズム形成
+## ユースケース
 
----
+- **エンタープライズAI開発**: ガバナンスとトレーサビリティを備えた構造化されたAI駆動開発
+- **仕様駆動プロジェクト**: 仕様を唯一の信頼できる情報源とするプロジェクト
+- **マルチエージェント協働**: 分解されたタスクに対して複数のAIエージェントが並行開発
+- **アジャイルAIワークフロー**: AIエージェントがスクラムロールを担うアジャイルスタイルの開発
 
-## 4つの原則
+## ドキュメント
 
-1. 仕様は「生きたドキュメント」である
-2. 仕様は「信頼できる唯一の情報源（SSoT）」とする
-3. 仕様は「変更と反復が前提」とする
-4. AIでコストを抑えて実現する（人間が最終判断）
+- [Spec.md](Spec.md) - システムアーキテクチャ、ロール、ワークフロー、制約
+- [docs/20260129implementation-plan.md](docs/20260129implementation-plan.md) - 実装計画
+- [docs/20260201directory-restructure-plan.md](docs/20260201directory-restructure-plan.md) - ディレクトリ再構成計画
 
----
+## セットアップ
 
-## 7つの工程
-
-| # | 工程 | 成果物 | 承認 |
-|---|------|--------|------|
-| 1 | Constitution（原則決定） | CONSTITUTION.md | Human |
-| 2 | Specify（企画・要件定義） | README.md (SSoT) | Human |
-| 3 | Plan（設計計画） | docs/* | Human(*) |
-| 4 | Tasks（タスク分割） | queue/tasks/, dashboard.md | - |
-| 5 | Implement（実装） | コード + テスト, reports/*.yaml | - |
-| 6 | Verify/Accept（検証・受入） | dashboard.md, Backlog更新 | Human |
-| 7 | Migration/Op（移行・運用） | → 工程2 または 工程4 | - |
-
-(*) = 必要時のみ
-
-> 詳細は `templates/PROCESS.md` を参照。
-
----
-
-## エージェント構成（固定）
-
-| 役割 | 人数 | 責任 |
-|------|------|------|
-| Product Owner (PO) | 1 | 目標と優先順位を定義、仕様策定 |
-| Scrum Master (SM) | 1 | ワークフロー統制、タスク分解・割り当て |
-| Development (Dev) | 3 | 実装 |
-
----
-
-## 前提条件
+### 必要環境
 
 - macOS / Windows
 - ターミナルマルチプレクサ（[tmux](https://github.com/tmux/tmux/wiki) / [psmux](https://github.com/marlocarlo/psmux)）
 - AIエディタ（以下のいずれか）
-  - [OpenCode](https://github.com/anomalyco/opencode) (`opencode`) - デフォルト
-  - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
+  - [OpenCode](https://github.com/anomalyco/opencode)（`opencode`）- デフォルト
+  - [Claude Code](https://github.com/anthropics/claude-code)（`claude`）
 
----
-
-## セットアップ
-
-### AIエディタ
-
-以下のいずれかをインストールしてください。
+### AIエディタのインストール
 
 **[OpenCode](https://github.com/anomalyco/opencode)**（デフォルト）
 
 - デスクトップアプリ: [opencode.ai/download](https://opencode.ai/download) からダウンロード
-- コマンドでインストール: `curl -fsSL https://opencode.ai/install | bash`
-- その他のインストール方法は [公式サイト](https://opencode.ai) を参照
+- コマンドインストール: `curl -fsSL https://opencode.ai/install | bash`
+- その他のインストール方法: [公式サイト](https://opencode.ai) を参照
 
 **[Claude Code](https://github.com/anthropics/claude-code)**
 
 - デスクトップアプリ: [claude.ai/download](https://claude.ai/download) からダウンロード
-- コマンドでインストール: `curl -fsSL https://claude.ai/install.sh | bash`
-- その他のインストール方法は [公式ドキュメント](https://code.claude.com/docs/en/overview) を参照
+- コマンドインストール: `curl -fsSL https://claude.ai/install.sh | bash`
+- その他のインストール方法: [公式ドキュメント](https://code.claude.com/docs/en/overview) を参照
 
-### ターミナルマルチプレクサ
+### ターミナルマルチプレクサのインストール
 
 **macOS: [tmux](https://github.com/tmux/tmux/wiki)**
 
-- コマンドでインストール: `brew install tmux`
-- その他のインストール方法は [公式Wiki](https://github.com/tmux/tmux/wiki/Installing) を参照
+- コマンドインストール: `brew install tmux`
+- その他のインストール方法: [公式Wiki](https://github.com/tmux/tmux/wiki/Installing) を参照
 
-**Windows: [psmux](https://github.com/marlocarlo/psmux)**（tmux 互換）
+**Windows: [psmux](https://github.com/marlocarlo/psmux)**（tmux互換）
 
-- コマンドでインストール: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
-- その他のインストール方法は [公式リポジトリ](https://github.com/marlocarlo/psmux) を参照
-- PowerShell 7+ が必要です
-
----
+- コマンドインストール: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
+- その他のインストール方法: [公式リポジトリ](https://github.com/marlocarlo/psmux) を参照
+- PowerShell 7以上が必要
 
 ## 使い方
 
@@ -104,37 +75,37 @@
 **macOS:**
 
 ```bash
-# OpenCode（デフォルト）で起動
+# OpenCodeで起動（デフォルト）
 ./scripts/boot.sh
 
 # Claude Codeで起動
 ./scripts/boot.sh --claude-code
 
-# モデルを指定して起動
+# モデルを指定
 ./scripts/boot.sh --model anthropic/claude-opus-4-5
 ```
 
 **Windows (PowerShell):**
 
 ```powershell
-# OpenCode（デフォルト）で起動
+# OpenCodeで起動（デフォルト）
 .\scripts\boot.ps1
 
 # Claude Codeで起動
 .\scripts\boot.ps1 -ClaudeCode
 
-# モデルを指定して起動
+# モデルを指定
 .\scripts\boot.ps1 -Model anthropic/claude-opus-4-5
 ```
 
-初回起動時は自動的にワークスペースが初期化されます。
+初回実行時、ワークスペースは自動的に初期化されます。
 
-### 2. セッション構成
+### 2. セッションレイアウト
 
-起動すると1つのtmuxセッション（`ixv-agents`）が作成され、自動的に接続されます：
+単一のtmuxセッション（`ixv-agents`）が作成され、自動的にアタッチされます：
 
 ```
-【ixv-agents】全エージェント（5ペイン）
+[ixv-agents] All Agents (5 panes)
 ┌─────────┬───────┬───────┬───────┐
 │   PO    │ Dev1  │ Dev2  │ Dev3  │
 │  (0.0)  │ (0.2) │ (0.3) │ (0.4) │
@@ -145,13 +116,13 @@
 ```
 
 **使い方：**
-- **PO**（左上ペイン）に要望を伝えると、SM経由でDevチームにタスクが割り当てられます
-- 他のペイン（SM, Dev1-3）は自動で動作するため、操作する必要はありません
+- **PO**（左上のペイン）に要件を伝えると、SMを経由してDevチームにタスクが割り当てられます
+- その他のペイン（SM、Dev1-3）は自動で動作し、手動操作は不要です
 
-**セッションから抜ける：**
-- `Ctrl+b d` でセッションをデタッチ（バックグラウンドで動作継続）
+**セッションからデタッチ：**
+- `Ctrl+b d` でデタッチ（セッションはバックグラウンドで継続）
 
-**セッションに再接続：**
+**セッションに再アタッチ：**
 
 ```bash
 tmux attach-session -t ixv-agents
@@ -162,13 +133,13 @@ tmux attach-session -t ixv-agents
 ```bash
 # macOS
 ./scripts/stop.sh
-./scripts/stop.sh --force    # プロセスが残った場合
+./scripts/stop.sh --force    # プロセスが残っている場合は強制停止
 ```
 
 ```powershell
 # Windows
 .\scripts\stop.ps1
-.\scripts\stop.ps1 -Force    # プロセスが残った場合
+.\scripts\stop.ps1 -Force    # プロセスが残っている場合は強制停止
 ```
 
 ### 4. 新しいワークスペースのセットアップ
@@ -178,7 +149,7 @@ tmux attach-session -t ixv-agents
 ```bash
 ./scripts/setup_workspace.sh
 
-# バックアップをスキップして初期化のみ
+# バックアップをスキップして再初期化のみ
 ./scripts/setup_workspace.sh --no-backup
 ```
 
@@ -187,39 +158,68 @@ tmux attach-session -t ixv-agents
 ```powershell
 .\scripts\setup_workspace.ps1
 
-# バックアップをスキップして初期化のみ
+# バックアップをスキップして再初期化のみ
 .\scripts\setup_workspace.ps1 -NoBackup
 ```
 
-既存の `workspace/` がある場合は `backups/` にバックアップされ、新しいワークスペースが作成されます。
+既存の `workspace/` がある場合、`backups/` にバックアップされ、新しいワークスペースが作成されます。
 
-### tmux操作メモ
+### tmux クイックリファレンス
 
-| 操作 | コマンド |
-|------|----------|
-| セッションをデタッチ | `Ctrl+b d` |
-| セッションに再接続 | `tmux attach-session -t ixv-agents` |
+| アクション | コマンド |
+|-----------|---------|
+| セッションからデタッチ | `Ctrl+b d` |
+| セッションに再アタッチ | `tmux attach-session -t ixv-agents` |
 | セッション一覧 | `tmux ls` |
 
----
+## エージェントチーム構成
+
+| ロール | 人数 | 責務 |
+|--------|------|------|
+| プロダクトオーナー (PO) | 1 | ゴールと優先順位の定義、仕様の作成 |
+| スクラムマスター (SM) | 1 | ワークフローの調整、タスクの分解と割り当て |
+| 開発 (Dev) | 3 | 実装 |
+
+## 4つの原則
+
+1. 仕様はリビングドキュメントである
+2. 仕様は唯一の信頼できる情報源（SSoT）である
+3. 変更と反復を前提とする
+4. AIがコストを削減し、人間が判断する
+
+## 7つのプロセス
+
+| # | プロセス | 出力 | 承認 |
+|---|---------|------|------|
+| 1 | 憲章策定 | CONSTITUTION.md | 人間 |
+| 2 | 仕様策定 | README.md (SSoT) | 人間 |
+| 3 | 計画 | docs/* | 人間(*) |
+| 4 | タスク | queue/tasks/, dashboard.md | - |
+| 5 | 実装 | コード + テスト, reports/*.yaml | - |
+| 6 | 検証/受入 | dashboard.md, バックログ更新 | 人間 |
+| 7 | 移行/運用 | → プロセス 2 or 4 | - |
+
+(*) = 必要に応じて
+
+> 詳細は `templates/PROCESS.md` を参照してください。
 
 ## ディレクトリ構成
 
 ```
 ixv-agents/
-├── roles/              # 各ロールへの指示書 (PO, SM, Dev)
-├── skills/             # AI CLIのスキル定義
-├── templates/          # ワークスペース初期化用テンプレート
-│   └── queue/          # キュー・レポートのテンプレート
+├── roles/              # ロール指示書（PO、SM、Dev）
+├── skills/             # AI CLIスキル定義
+├── templates/          # ワークスペース初期化テンプレート
+│   └── queue/          # キューとレポートのテンプレート
 ├── scripts/            # 起動・管理スクリプト
 │   ├── banner.sh / .ps1           # バナー表示
 │   ├── boot.sh / .ps1             # エージェント起動
 │   ├── stop.sh / .ps1             # エージェント停止
 │   ├── setup_workspace.sh / .ps1  # ワークスペース初期化
 │   └── tmux-help.txt              # ペイン内ヘルプテキスト
-├── OLD/                # 旧資産（参考用）
-├── backups/            # ワークスペースのバックアップ [.gitignore]
-├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
+├── OLD/                # レガシー資産（参照用）
+├── backups/            # ワークスペースバックアップ [.gitignore]
+├── workspace/          # AIエディタ作業ディレクトリ [.gitignore]
 ├── docs/               # ドキュメント
 ├── Spec.md             # システム仕様書
 └── README.md
@@ -228,43 +228,56 @@ ixv-agents/
 ### workspace/ ディレクトリ
 
 `workspace/` はAIエディタが実際に作業を行うディレクトリです。
-リポジトリルートとは分離されており、AIエディタがツールのREADME等にアクセスすることを防ぎます。
+リポジトリルートから分離されており、AIエディタがツールのREADMEやその他の無関係なファイルにアクセスすることを防ぎます。
 
 ```
 workspace/
-├── README.md           # 仕様書（Single Source of Truth）
+├── README.md           # プロジェクト仕様（唯一の信頼できる情報源）
 ├── CONSTITUTION.md     # プロジェクト憲章
-├── PROCESS.md          # 工程と運用フロー
+├── PROCESS.md          # プロセスと運用
 ├── AGENTS.md           # AI行動規範
-├── roles -> ../roles  (symlink)
-├── .claude/skills -> ../../skills   (symlink)
-├── .opencode/skills -> ../../skills (symlink)
+├── roles -> ../roles   (シンボリックリンク)
+├── .claude/skills -> ../../skills   (シンボリックリンク)
+├── .opencode/skills -> ../../skills (シンボリックリンク)
 ├── queue/              # エージェント間通信
-│   ├── dashboard.md    # プロジェクト状況ボード
+│   ├── dashboard.md    # プロジェクトステータスボード
 │   ├── po_to_sm.yaml   # PO -> SM
 │   ├── tasks/          # SM -> Dev
 │   └── reports/        # Dev -> SM
-└── (成果物)            # 実装コード、テスト等
+└── (artifacts)         # 実装コード、テスト等
 ```
-
----
 
 ## 運用原則
 
-- **Single Source of Truth**: `workspace/README.md` を必ず参照
-- **Traceability**: `spec_ref` / `request_id` / `task_id` で追跡
-- **Role Boundaries**: 役割外のファイル更新は禁止
+- **唯一の信頼できる情報源**: 常に `workspace/README.md` を参照
+- **トレーサビリティ**: `spec_ref` / `request_id` / `task_id` で追跡
+- **ロール境界**: ロール範囲外のファイルへの書き込みは禁止
 
----
+## コントリビューション
 
-## 主要ドキュメント
+コントリビューションを歓迎します！
 
-- `Spec.md`: システム構成、役割、ワークフロー、制約
-- `docs/20260129implementation-plan.md`: 実装計画
-- `docs/20260201directory-restructure-plan.md`: ディレクトリ再編計画
+- バグ報告は [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues) から
+- 改善のプルリクエストを提出してください
+- 既存のコードスタイルに従ってください
 
----
+## セキュリティ
+
+**主なセキュリティに関する注意事項：**
+- AIエージェントは定義されたロール境界内で動作します
+- ロール範囲外のファイルへの書き込みは禁止されています
+- すべての変更は仕様参照とタスクIDで追跡可能です
+- ワークスペースはリポジトリルートから分離されています
+
+## 背景
+
+このプロジェクトは、株式会社Elvezが開発するAI開発支援ツールスイート **IXV** エコシステムの一部です。IXV-Agentsは、仕様駆動型AI開発のためのマルチエージェントオーケストレーションレイヤーを提供します。
 
 ## ライセンス
 
-TBD
+MIT License - 詳細は [LICENSE](LICENSE) を参照してください。
+
+## お問い合わせ
+
+- **メール**: info@elvez.co.jp
+- **会社**: [株式会社Elvez](https://elvez.co.jp/)

@@ -1,60 +1,39 @@
 # IXV-Agents
 
-## Overview
+[English](./README.md) | [日本語](./README_ja.md)
 
-**IXV-Agents** is a specification-driven AI development system that organizes multiple AI agents into a fixed, role-based team. It integrates agile roles and events with specification-driven development to ensure governance, traceability, and practical enterprise usage.
+[![Elvez](https://img.shields.io/badge/Elvez-Product-3F61A7?style=flat-square)](https://elvez.co.jp/)
+[![IXV Ecosystem](https://img.shields.io/badge/IXV-Ecosystem-3F61A7?style=flat-square)](https://elvez.co.jp/ixv/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Stars](https://img.shields.io/github/stars/elvezjp/ixv-agents?style=social)](https://github.com/elvezjp/ixv-agents/stargazers)
 
----
+Specification-driven AI development system that organizes multiple AI agents into a fixed, role-based team. Integrates agile roles and events with specification-driven development to ensure governance, traceability, and practical enterprise usage.
 
-## Core Concept
+## Features
 
-**Fixed roles, evolving skills.**
-Humans define intent and specifications, while AI agents collaborate as a structured team.
+- **Fixed Roles, Evolving Skills**: Humans define intent and specifications, while AI agents collaborate as a structured team
+- **Specification as Single Source of Truth**: Specifications (Specs) are living documents and the SSoT for all development
+- **Role-Based Agent Team**: Product Owner, Scrum Master, and 3 Development agents with clear responsibility boundaries
+- **Automated Workflow**: Tasks are decomposed and distributed automatically from PO through SM to Dev agents
+- **Cross-Platform Support**: Works on macOS (tmux) and Windows (psmux)
+- **Multiple AI Editors**: Supports OpenCode and Claude Code
 
-- **Specifications (Specs)** are the single source of truth
-- **Roles** define responsibility boundaries
-- **Events** establish development rhythm
+## Use Cases
 
----
+- **Enterprise AI Development**: Structured AI-driven development with governance and traceability
+- **Specification-Driven Projects**: Projects that require specs as the single source of truth
+- **Multi-Agent Collaboration**: Parallel development with multiple AI agents working on decomposed tasks
+- **Agile AI Workflow**: Agile-style development with AI agents filling scrum roles
 
-## 4 Principles
+## Documentation
 
-1. Specs are living documents
-2. Specs are the Single Source of Truth (SSoT)
-3. Change and iteration are assumed
-4. AI reduces cost, humans decide
+- [Spec.md](Spec.md) - System architecture, roles, workflow, and constraints
+- [docs/20260129implementation-plan.md](docs/20260129implementation-plan.md) - Implementation plan
+- [docs/20260201directory-restructure-plan.md](docs/20260201directory-restructure-plan.md) - Directory restructure plan
 
----
+## Setup
 
-## 7 Processes
-
-| # | Process | Output | Approval |
-|---|---------|--------|----------|
-| 1 | Constitution | CONSTITUTION.md | Human |
-| 2 | Specify | README.md (SSoT) | Human |
-| 3 | Plan | docs/* | Human(*) |
-| 4 | Tasks | queue/tasks/, dashboard.md | - |
-| 5 | Implement | Code + Tests, reports/*.yaml | - |
-| 6 | Verify/Accept | dashboard.md, Backlog update | Human |
-| 7 | Migration/Op | → Process 2 or 4 | - |
-
-(*) = when needed
-
-> See `templates/PROCESS.md` for details.
-
----
-
-## Agent Team Composition (Fixed)
-
-| Role | Count | Responsibility |
-|------|-------|----------------|
-| Product Owner (PO) | 1 | Define goals and priorities, create specifications |
-| Scrum Master (SM) | 1 | Orchestrate workflow, decompose and assign tasks |
-| Development (Dev) | 3 | Implementation |
-
----
-
-## Prerequisites
+### Requirements
 
 - macOS / Windows
 - Terminal multiplexer ([tmux](https://github.com/tmux/tmux/wiki) / [psmux](https://github.com/marlocarlo/psmux))
@@ -62,13 +41,7 @@ Humans define intent and specifications, while AI agents collaborate as a struct
   - [OpenCode](https://github.com/anomalyco/opencode) (`opencode`) - Default
   - [Claude Code](https://github.com/anthropics/claude-code) (`claude`)
 
----
-
-## Setup
-
-### AI Editor
-
-Install one of the following.
+### Install AI Editor
 
 **[OpenCode](https://github.com/anomalyco/opencode)** (Default)
 
@@ -82,7 +55,7 @@ Install one of the following.
 - Command install: `curl -fsSL https://claude.ai/install.sh | bash`
 - Other installation methods: See [official documentation](https://code.claude.com/docs/en/overview)
 
-### Terminal Multiplexer
+### Install Terminal Multiplexer
 
 **macOS: [tmux](https://github.com/tmux/tmux/wiki)**
 
@@ -94,8 +67,6 @@ Install one of the following.
 - Command install: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
 - Other installation methods: See [official repository](https://github.com/marlocarlo/psmux)
 - PowerShell 7+ required
-
----
 
 ## Usage
 
@@ -201,7 +172,36 @@ If an existing `workspace/` exists, it will be backed up to `backups/`, and a ne
 | Reattach to session | `tmux attach-session -t ixv-agents` |
 | List sessions | `tmux ls` |
 
----
+## Agent Team Composition
+
+| Role | Count | Responsibility |
+|------|-------|----------------|
+| Product Owner (PO) | 1 | Define goals and priorities, create specifications |
+| Scrum Master (SM) | 1 | Orchestrate workflow, decompose and assign tasks |
+| Development (Dev) | 3 | Implementation |
+
+## 4 Principles
+
+1. Specs are living documents
+2. Specs are the Single Source of Truth (SSoT)
+3. Change and iteration are assumed
+4. AI reduces cost, humans decide
+
+## 7 Processes
+
+| # | Process | Output | Approval |
+|---|---------|--------|----------|
+| 1 | Constitution | CONSTITUTION.md | Human |
+| 2 | Specify | README.md (SSoT) | Human |
+| 3 | Plan | docs/* | Human(*) |
+| 4 | Tasks | queue/tasks/, dashboard.md | - |
+| 5 | Implement | Code + Tests, reports/*.yaml | - |
+| 6 | Verify/Accept | dashboard.md, Backlog update | Human |
+| 7 | Migration/Op | → Process 2 or 4 | - |
+
+(*) = when needed
+
+> See `templates/PROCESS.md` for details.
 
 ## Directory Structure
 
@@ -247,24 +247,37 @@ workspace/
 └── (artifacts)         # Implementation code, tests, etc.
 ```
 
----
-
 ## Operational Principles
 
 - **Single Source of Truth**: Always reference `workspace/README.md`
 - **Traceability**: Track via `spec_ref` / `request_id` / `task_id`
 - **Role Boundaries**: Writing to files outside role scope is prohibited
 
----
+## Contributing
 
-## Key Documents
+Contributions are welcome!
 
-- `Spec.md`: System architecture, roles, workflow, and constraints
-- `docs/20260129implementation-plan.md`: Implementation plan
-- `docs/20260201directory-restructure-plan.md`: Directory restructure plan
+- Report bugs via [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
+- Submit pull requests for improvements
+- Follow existing code style
 
----
+## Security
+
+**Key security notes:**
+- AI agents operate within defined role boundaries
+- Writing to files outside role scope is prohibited
+- All changes are traceable via spec references and task IDs
+- The workspace is isolated from the repository root
+
+## Background
+
+This project is part of the **IXV** ecosystem, an AI development support tool suite by Elvez, Inc. IXV-Agents provides the multi-agent orchestration layer for specification-driven AI development.
 
 ## License
 
-TBD
+MIT License - See [LICENSE](LICENSE) for details.
+
+## Contact
+
+- **Email**: info@elvez.co.jp
+- **Company**: [Elvez, Inc.](https://elvez.co.jp/)
