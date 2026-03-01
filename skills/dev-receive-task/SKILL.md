@@ -105,8 +105,8 @@ queue/tasks/dev3.yaml  ← Dev3はこれだけ
 **queue/tasks/dev1.yaml**:
 ```yaml
 schema_version: "1.0"
-created_at: "2026-02-01T14:00:00"
-updated_at: "2026-02-01T14:00:00"
+created_at: "2026-02-01T14:00:00Z"
+updated_at: "2026-02-01T14:00:00Z"
 task_id: "TASK-20260201-010"
 spec_ref: README.md
 request_id: "REQ-20260201-004"
@@ -142,8 +142,8 @@ dependencies: []
 **queue/tasks/dev2.yaml**:
 ```yaml
 schema_version: "1.0"
-created_at: "2026-02-01T10:30:00"
-updated_at: "2026-02-01T10:30:00"
+created_at: "2026-02-01T10:30:00Z"
+updated_at: "2026-02-01T10:30:00Z"
 task_id: "TASK-20260201-001"
 spec_ref: README.md
 request_id: "REQ-20260201-003"
