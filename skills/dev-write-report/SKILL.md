@@ -46,8 +46,8 @@ Spec.md 2.3.4 スキーマに準拠した YAML を生成する：
 
 ```yaml
 schema_version: "1.0"
-created_at: "YYYY-MM-DDTHH:MM:SS"
-updated_at: "YYYY-MM-DDTHH:MM:SS"
+created_at: "YYYY-MM-DDTHH:MM:SSZ"
+updated_at: "YYYY-MM-DDTHH:MM:SSZ"
 task_id: "TASK-YYYYMMDD-###"
 status: "done"
 summary: "200文字以内の結果概要"
@@ -95,8 +95,8 @@ issues:
 
 ```yaml
 schema_version: "1.0"
-created_at: "2026-02-01T15:30:00"
-updated_at: "2026-02-01T15:30:00"
+created_at: "2026-02-01T15:30:00Z"
+updated_at: "2026-02-01T15:30:00Z"
 task_id: "TASK-20260201-010"
 status: "done"
 summary: "認証APIエンドポイント（/auth/login, /auth/logout）の実装完了。全テストパス。"
@@ -114,8 +114,8 @@ issues: []
 
 ```yaml
 schema_version: "1.0"
-created_at: "2026-02-01T14:45:00"
-updated_at: "2026-02-01T14:45:00"
+created_at: "2026-02-01T14:45:00Z"
+updated_at: "2026-02-01T14:45:00Z"
 task_id: "TASK-20260201-011"
 status: "blocked"
 summary: "セッション管理の実装中にRedis接続エラーが発生。環境変数の設定が不足。"
