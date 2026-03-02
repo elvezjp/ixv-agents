@@ -7,6 +7,7 @@ description: |
 metadata:
   author: IXV-Agents
   version: 1.0.0
+  phase: "1, 2, 3, 4, 6, 7"
 ---
 
 # SM Receive Request
@@ -208,9 +209,20 @@ request_id: REQ-20260201-004
   2. 検証結果をPOに報告（send-keys）
 ```
 
+## Error Recovery
+
+| 異常パターン | 検知方法 | 対応 |
+|-------------|---------|------|
+| po_to_sm.yaml が存在しない | ファイル読み取り失敗 | PO に確認を求める（send-keys） |
+| po_to_sm.yaml の YAML 構文エラー | パース失敗 | PO に再作成を依頼（send-keys） |
+| task_type が未知の値 | ルーティングテーブルに該当なし | dashboard.md の Notes に記録し、PO に確認（send-keys） |
+| request_id が欠落 | フィールド検証 | PO に確認を求める（send-keys） |
+| Dev が全員 busy（工程3,4） | tmux capture-pane で確認 | dashboard.md の Blockers に記録し、PO に報告 |
+
 ## References
 
 詳細なルーティングロジックは `references/task-type-routing.md` を参照。
+フェーズ遷移条件は `../references/phase-gate.md` を参照。
 
 ## Notes
 

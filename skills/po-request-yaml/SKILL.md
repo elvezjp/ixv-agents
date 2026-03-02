@@ -7,6 +7,7 @@ description: |
 metadata:
   author: IXV-Agents
   version: 2.0.0
+  phase: "1, 2, 3, 4, 6, 7"
 ---
 
 # PO Request YAML Generator

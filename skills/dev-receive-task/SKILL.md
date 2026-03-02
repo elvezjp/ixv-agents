@@ -184,7 +184,7 @@ dependencies: []
 
 ## References
 
-詳細なスキーマ定義は `references/task-yaml-schema.md` を参照。
+詳細なスキーマ定義は `../references/task-yaml-schema.md`（共有リファレンス）を参照。
 
 ## Notes
 
