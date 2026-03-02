@@ -155,7 +155,7 @@ $AbsWorkspaceDir = Join-Path $AbsRootDir "workspace"
 $RolesLink = Join-Path $AbsWorkspaceDir "roles"
 if (-not (Test-Path $RolesLink)) {
     $RolesTarget = Join-Path $AbsRootDir "roles"
-    cmd /c mklink /J "$RolesLink" "$RolesTarget" | Out-Null
+    New-Item -ItemType Junction -Path $RolesLink -Target $RolesTarget | Out-Null
     Log-Info "workspace\roles -> roles を作成"
 } else {
     Log-Info "workspace\roles は既に存在"
@@ -165,7 +165,7 @@ if (-not (Test-Path $RolesLink)) {
 $ClaudeSkillsLink = Join-Path $AbsWorkspaceDir ".claude\skills"
 if (-not (Test-Path $ClaudeSkillsLink)) {
     $SkillsTarget = Join-Path $AbsRootDir "skills"
-    cmd /c mklink /J "$ClaudeSkillsLink" "$SkillsTarget" | Out-Null
+    New-Item -ItemType Junction -Path $ClaudeSkillsLink -Target $SkillsTarget | Out-Null
     Log-Info "workspace\.claude\skills -> skills を作成"
 } else {
     Log-Info "workspace\.claude\skills は既に存在"
@@ -175,7 +175,7 @@ if (-not (Test-Path $ClaudeSkillsLink)) {
 $OpencodeSkillsLink = Join-Path $AbsWorkspaceDir ".opencode\skills"
 if (-not (Test-Path $OpencodeSkillsLink)) {
     $SkillsTarget = Join-Path $AbsRootDir "skills"
-    cmd /c mklink /J "$OpencodeSkillsLink" "$SkillsTarget" | Out-Null
+    New-Item -ItemType Junction -Path $OpencodeSkillsLink -Target $SkillsTarget | Out-Null
     Log-Info "workspace\.opencode\skills -> skills を作成"
 } else {
     Log-Info "workspace\.opencode\skills は既に存在"

@@ -35,6 +35,20 @@ We will acknowledge receipt within 3 business days and provide a timeline for a 
 - User inputs (e.g., model names) are validated before use
 - Process management uses exact-match patterns to avoid affecting unrelated processes
 
+### AI Editor Permissions
+
+The boot scripts grant AI editors broad permissions to enable autonomous agent operation:
+
+- **Claude Code**: `--dangerously-skip-permissions` (all tool calls allowed without user approval)
+- **OpenCode**: `OPENCODE_PERMISSION='{"permission":{"*":"allow"}}'` (all operations allowed)
+
+These permissions are **required** for the multi-agent workflow (agents must operate without manual confirmation). The risks are mitigated by:
+
+- **Workspace isolation**: Agents operate within `workspace/`, separated from the repository root
+- **Role boundaries**: Each agent can only access files defined in its role (`roles/*.md`)
+- **Audit trail**: All agent communication is logged in YAML files (`queue/`)
+- **Controlled environment**: IXV-Agents should only be run on trusted machines in trusted environments
+
 ## Supported Versions
 
 | Version | Supported |
