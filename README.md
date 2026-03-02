@@ -271,6 +271,8 @@ Contributions are welcome!
 - All changes are traceable via spec references and task IDs
 - The workspace is isolated from the repository root
 
+> **⚠ Warning:** The boot scripts grant AI editors broad permissions for autonomous operation (`--dangerously-skip-permissions` for Claude Code, all-allow permission for OpenCode). Run only in isolated/trusted environments. See [SECURITY.md](SECURITY.md) for details and mitigations.
+
 ## Background
 
 This project is part of the **IXV** ecosystem, an AI development support tool suite by Elvez, Inc. IXV-Agents provides the multi-agent orchestration layer for specification-driven AI development.
