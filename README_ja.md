@@ -239,7 +239,7 @@ ixv-agents/
 │   ├── stop.sh / .ps1             # エージェント停止
 │   ├── setup_workspace.sh / .ps1  # ワークスペース初期化
 │   └── tmux-help.txt              # ペイン内ヘルプテキスト
-├── OLD/                # レガシー資産（参照用）
+├── OLD/                # レガシー資産（参照用・保守対象外）
 ├── backups/            # ワークスペースバックアップ [.gitignore]
 ├── workspace/          # AIエディタ作業ディレクトリ [.gitignore]
 ├── docs/               # ドキュメント

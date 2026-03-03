@@ -239,7 +239,7 @@ ixv-agents/
 │   ├── stop.sh / .ps1             # Stop agents
 │   ├── setup_workspace.sh / .ps1  # Initialize workspace
 │   └── tmux-help.txt              # In-pane help text
-├── OLD/                # Legacy assets (kept for reference)
+├── OLD/                # Legacy assets (reference only; not maintained)
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]
 ├── docs/               # Documentation
