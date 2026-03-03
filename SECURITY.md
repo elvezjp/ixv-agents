@@ -42,12 +42,14 @@ The boot scripts grant AI editors broad permissions to enable autonomous agent o
 - **Claude Code**: `--dangerously-skip-permissions` (all tool calls allowed without user approval)
 - **OpenCode**: `OPENCODE_PERMISSION='{"permission":{"*":"allow"}}'` (all operations allowed)
 
-These permissions are **required** for the multi-agent workflow (agents must operate without manual confirmation). The risks are mitigated by:
+These permissions are **required** for the multi-agent workflow (agents must operate without manual confirmation). The following operational guidelines are in place to mitigate risk:
 
-- **Workspace isolation**: Agents operate within `workspace/`, separated from the repository root
-- **Role boundaries**: Each agent can only access files defined in its role (`roles/*.md`)
+- **Workspace isolation**: Agents are instructed to operate within `workspace/`, separated from the repository root
+- **Role boundaries**: Each agent is instructed via `roles/*.md` to only access files within its role scope
 - **Audit trail**: All agent communication is logged in YAML files (`queue/`)
-- **Controlled environment**: IXV-Agents should only be run on trusted machines in trusted environments
+- **Controlled environment**: IXV-Agents should **only** be run on trusted machines in isolated environments
+
+> **Note:** Workspace isolation and role boundaries are prompt-based operational guidelines, not technically enforced security boundaries. AI editors operate with full system permissions, so these controls rely on the AI model following its instructions and do not completely prevent access outside the intended scope.
 
 ## Supported Versions
 
