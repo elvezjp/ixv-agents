@@ -24,6 +24,12 @@ Thumbs.db
 *.log
 .cache/
 
+# Python
+__pycache__/
+*.pyc
+.venv/
+.pytest_cache/
+
 # AI editor directories
 .claude/*
 .opencode/*

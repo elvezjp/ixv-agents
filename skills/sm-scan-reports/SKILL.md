@@ -190,9 +190,20 @@ artifacts:
   3. PO に状況報告（send-keys）
 ```
 
+## Error Recovery
+
+| 異常パターン | 検知方法 | 対応 |
+|-------------|---------|------|
+| queue/reports/ ディレクトリが存在しない | `ls` 失敗 | ディレクトリを作成。未報告タスクがないか dashboard.md で確認 |
+| 報告 YAML の構文エラー | パース失敗 | 該当ファイル名を記録し、担当 Dev に再作成を依頼（send-keys） |
+| task_id が dashboard.md に存在しない | 照合失敗 | 新規タスクの可能性。dashboard.md に追加して処理続行 |
+| dashboard.md が存在しない | ファイル読み取り失敗 | テンプレートから再作成し、全報告ファイルから状態を復元 |
+| Dev がタイムアウト（長時間 idle なし） | 報告なし + Agent Status が working のまま | dashboard.md の Blockers に記録し、PO に報告。タスク再割当てを検討 |
+
 ## References
 
 詳細な処理フローは `references/report-processing-guide.md` を参照。
+フェーズ遷移条件は `../references/phase-gate.md` を参照。
 
 ## Notes
 

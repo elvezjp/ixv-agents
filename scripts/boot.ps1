@@ -78,8 +78,8 @@ if (-not (Test-Path $WorkspaceDir)) {
 }
 
 Log "Stopping existing session if present..."
-tmux kill-session -t ixv-agents 2>$null
-# Ignore error if session doesn't exist
+$StopScript = Join-Path $ScriptDir "stop.ps1"
+& $StopScript *>&1 | Out-Null
 
 # ===============================================================================
 # ixv-agents: 全エージェント（PO, SM, Dev1-3）を1セッション5ペインで構成
@@ -113,6 +113,8 @@ tmux split-window -h -t "ixv-agents:0.3"
 
 # PO
 tmux select-pane -t "ixv-agents:0.0" -T "PO"
+tmux send-keys -t "ixv-agents:0.0" "chcp 65001 > `$null"
+tmux send-keys -t "ixv-agents:0.0" Enter
 tmux send-keys -t "ixv-agents:0.0" "cd `"$WorkspaceDir`""
 tmux send-keys -t "ixv-agents:0.0" Enter
 tmux send-keys -t "ixv-agents:0.0" "function prompt { '(PO) ' + (Get-Location) + '> ' }"
@@ -122,6 +124,8 @@ tmux send-keys -t "ixv-agents:0.0" Enter
 
 # SM
 tmux select-pane -t "ixv-agents:0.1" -T "SM"
+tmux send-keys -t "ixv-agents:0.1" "chcp 65001 > `$null"
+tmux send-keys -t "ixv-agents:0.1" Enter
 tmux send-keys -t "ixv-agents:0.1" "cd `"$WorkspaceDir`""
 tmux send-keys -t "ixv-agents:0.1" Enter
 tmux send-keys -t "ixv-agents:0.1" "function prompt { '(SM) ' + (Get-Location) + '> ' }"
@@ -135,6 +139,8 @@ for ($i = 0; $i -le 2; $i++) {
     $DevNum = $i + 1
     $PaneNum = $DevPanes[$i]
     tmux select-pane -t "ixv-agents:0.$PaneNum" -T "Dev$DevNum"
+    tmux send-keys -t "ixv-agents:0.$PaneNum" "chcp 65001 > `$null"
+    tmux send-keys -t "ixv-agents:0.$PaneNum" Enter
     tmux send-keys -t "ixv-agents:0.$PaneNum" "cd `"$WorkspaceDir`""
     tmux send-keys -t "ixv-agents:0.$PaneNum" Enter
     tmux send-keys -t "ixv-agents:0.$PaneNum" "function prompt { '(Dev$DevNum) ' + (Get-Location) + '> ' }"
@@ -157,19 +163,25 @@ if (Test-Path $HelpFile) {
 # バックグラウンドで CLI 起動と役割指示送信を実行
 # 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
 #       1行にまとめると Enter が正しく送信されない場合がある
+#
+# トークンリフレッシュの競合を防ぐため、最初の1エージェントを先に起動し
+# トークン更新を完了させてから残りを起動する（Issue #20 対策）
 # ===============================================================================
 Start-Job -ScriptBlock {
     param($CliCmd, $WorkspaceDir)
 
     Start-Sleep -Seconds 5  # attach が安定するまで待つ
 
-    # PO + SM
+    # Step 1: 最初に PO を起動してトークンリフレッシュを完了させる
     tmux send-keys -t "ixv-agents:0.0" "$CliCmd"
     tmux send-keys -t "ixv-agents:0.0" Enter
+
+    Start-Sleep -Seconds 5  # トークンリフレッシュ完了を待つ
+
+    # Step 2: 残りのエージェントを起動（トークンはリフレッシュ済み）
     tmux send-keys -t "ixv-agents:0.1" "$CliCmd"
     tmux send-keys -t "ixv-agents:0.1" Enter
 
-    # Dev1-3
     for ($PaneNum = 2; $PaneNum -le 4; $PaneNum++) {
         tmux send-keys -t "ixv-agents:0.$PaneNum" "$CliCmd"
         tmux send-keys -t "ixv-agents:0.$PaneNum" Enter

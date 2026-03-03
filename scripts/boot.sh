@@ -138,17 +138,23 @@ done
 # バックグラウンドで CLI 起動と役割指示送信を実行
 # 注意: send-keys はテキスト送信と Enter 送信を分けて実行すること
 #       1行にまとめると Enter が正しく送信されない場合がある
+#
+# トークンリフレッシュの競合を防ぐため、最初の1エージェントを先に起動し
+# トークン更新を完了させてから残りを起動する（Issue #20 対策）
 # ═══════════════════════════════════════════════════════════════════════════
 (
   sleep 5  # attach が安定するまで待つ
 
-  # PO + SM
+  # Step 1: 最初に PO を起動してトークンリフレッシュを完了させる
   tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
   tmux send-keys -t "ixv-agents:0.0" Enter
+
+  sleep 5  # トークンリフレッシュ完了を待つ
+
+  # Step 2: 残りのエージェントを起動（トークンはリフレッシュ済み）
   tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
   tmux send-keys -t "ixv-agents:0.1" Enter
 
-  # Dev1-3
   for PANE_NUM in 2 3 4; do
     tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
     tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter

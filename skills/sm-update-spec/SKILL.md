@@ -10,6 +10,7 @@ description: |
 metadata:
   author: IXV-Agents
   version: 1.0.0
+  phase: "1, 2, 3, 6"
 ---
 
 # SM Update Spec
@@ -205,9 +206,19 @@ summary: "REQ-20260201-002 のステータスを done に更新"
 | REQ-20260201-002 | P1 | ダークモード対応 | done |
 ```
 
+## Error Recovery
+
+| 異常パターン | 検知方法 | 対応 |
+|-------------|---------|------|
+| CONSTITUTION.md / README.md が存在しない | ファイル読み取り失敗 | `scripts/setup_workspace.sh` で再初期化を検討。PO に報告 |
+| 更新対象セクションが見つからない | セクション見出し検索失敗 | テンプレート構造が変更された可能性。現状の構造を確認し、PO に報告 |
+| task_type と現在のフェーズが不一致 | dashboard.md の Current Phase と照合 | `sm-receive-request` のフェーズ判定を再実行 |
+| PO への send-keys が届かない | PO ペインが busy | 更新は完了しているため、PO が idle になるまで待機（最大3回リトライ） |
+
 ## References
 
 詳細な更新手順は `references/spec-update-guide.md` を参照。
+フェーズ遷移条件は `../references/phase-gate.md` を参照。
 
 ## Notes
 

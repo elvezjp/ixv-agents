@@ -45,17 +45,27 @@
 
 ### AIエディタのインストール
 
+> **注意:** デスクトップアプリをインストールしただけでは CLI コマンド（`opencode` / `claude`）は使用できません。起動スクリプトには CLI が必要です。必ず以下の手順で CLI をインストールしてください。
+
 **[OpenCode](https://github.com/anomalyco/opencode)**（デフォルト）
 
-- デスクトップアプリ: [opencode.ai/download](https://opencode.ai/download) からダウンロード
-- コマンドインストール: `curl -fsSL https://opencode.ai/install | bash`
+- CLI インストール: `curl -fsSL https://opencode.ai/install | bash`
 - その他のインストール方法: [公式サイト](https://opencode.ai) を参照
 
 **[Claude Code](https://github.com/anthropics/claude-code)**
 
-- デスクトップアプリ: [claude.ai/download](https://claude.ai/download) からダウンロード
-- コマンドインストール: `curl -fsSL https://claude.ai/install.sh | bash`
-- その他のインストール方法: [公式ドキュメント](https://code.claude.com/docs/en/overview) を参照
+- CLI インストール: `npm install -g @anthropic-ai/claude-code`
+- その他のインストール方法: [公式ドキュメント](https://docs.anthropic.com/en/docs/claude-code) を参照
+
+**確認方法:**
+
+```bash
+# OpenCode の場合
+opencode --version
+
+# Claude Code の場合
+claude --version
+```
 
 ### ターミナルマルチプレクサのインストール
 
@@ -69,6 +79,16 @@
 - コマンドインストール: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
 - その他のインストール方法: [公式リポジトリ](https://github.com/marlocarlo/psmux) を参照
 - PowerShell 7以上が必要
+
+**確認方法:**
+
+```bash
+# macOS
+tmux -V
+
+# Windows (PowerShell)
+tmux --version
+```
 
 ## 使い方
 
@@ -270,6 +290,8 @@ workspace/
 - ロール範囲外のファイルへの書き込みは禁止されています
 - すべての変更は仕様参照とタスクIDで追跡可能です
 - ワークスペースはリポジトリルートから分離されています
+
+> **⚠ 注意:** 起動スクリプトはAIエディタに広範な権限を付与します（Claude Codeの `--dangerously-skip-permissions`、OpenCodeの全許可設定）。隔離された信頼できる環境でのみ実行してください。詳細と緩和策は [SECURITY.md](SECURITY.md) を参照してください。
 
 ## 背景
 
