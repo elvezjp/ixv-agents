@@ -78,8 +78,8 @@ if (-not (Test-Path $WorkspaceDir)) {
 }
 
 Log "Stopping existing session if present..."
-tmux kill-session -t ixv-agents 2>$null
-# Ignore error if session doesn't exist
+$StopScript = Join-Path $ScriptDir "stop.ps1"
+& $StopScript *>&1 | Out-Null
 
 # ===============================================================================
 # ixv-agents: 全エージェント（PO, SM, Dev1-3）を1セッション5ペインで構成
@@ -113,6 +113,8 @@ tmux split-window -h -t "ixv-agents:0.3"
 
 # PO
 tmux select-pane -t "ixv-agents:0.0" -T "PO"
+tmux send-keys -t "ixv-agents:0.0" "chcp 65001 > `$null"
+tmux send-keys -t "ixv-agents:0.0" Enter
 tmux send-keys -t "ixv-agents:0.0" "cd `"$WorkspaceDir`""
 tmux send-keys -t "ixv-agents:0.0" Enter
 tmux send-keys -t "ixv-agents:0.0" "function prompt { '(PO) ' + (Get-Location) + '> ' }"
@@ -122,6 +124,8 @@ tmux send-keys -t "ixv-agents:0.0" Enter
 
 # SM
 tmux select-pane -t "ixv-agents:0.1" -T "SM"
+tmux send-keys -t "ixv-agents:0.1" "chcp 65001 > `$null"
+tmux send-keys -t "ixv-agents:0.1" Enter
 tmux send-keys -t "ixv-agents:0.1" "cd `"$WorkspaceDir`""
 tmux send-keys -t "ixv-agents:0.1" Enter
 tmux send-keys -t "ixv-agents:0.1" "function prompt { '(SM) ' + (Get-Location) + '> ' }"
@@ -135,6 +139,8 @@ for ($i = 0; $i -le 2; $i++) {
     $DevNum = $i + 1
     $PaneNum = $DevPanes[$i]
     tmux select-pane -t "ixv-agents:0.$PaneNum" -T "Dev$DevNum"
+    tmux send-keys -t "ixv-agents:0.$PaneNum" "chcp 65001 > `$null"
+    tmux send-keys -t "ixv-agents:0.$PaneNum" Enter
     tmux send-keys -t "ixv-agents:0.$PaneNum" "cd `"$WorkspaceDir`""
     tmux send-keys -t "ixv-agents:0.$PaneNum" Enter
     tmux send-keys -t "ixv-agents:0.$PaneNum" "function prompt { '(Dev$DevNum) ' + (Get-Location) + '> ' }"
