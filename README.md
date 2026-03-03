@@ -45,17 +45,27 @@ Specification-driven AI development system that organizes multiple AI agents int
 
 ### Install AI Editor
 
+> **Note:** Installing the desktop app alone does not provide the CLI commands (`opencode` / `claude`). The boot scripts require CLI access. Be sure to install the CLI as described below.
+
 **[OpenCode](https://github.com/anomalyco/opencode)** (Default)
 
-- Desktop app: Download from [opencode.ai/download](https://opencode.ai/download)
-- Command install: `curl -fsSL https://opencode.ai/install | bash`
+- CLI install: `curl -fsSL https://opencode.ai/install | bash`
 - Other installation methods: See [official site](https://opencode.ai)
 
 **[Claude Code](https://github.com/anthropics/claude-code)**
 
-- Desktop app: Download from [claude.ai/download](https://claude.ai/download)
-- Command install: `curl -fsSL https://claude.ai/install.sh | bash`
-- Other installation methods: See [official documentation](https://code.claude.com/docs/en/overview)
+- CLI install: `npm install -g @anthropic-ai/claude-code`
+- Other installation methods: See [official documentation](https://docs.anthropic.com/en/docs/claude-code)
+
+**Verify installation:**
+
+```bash
+# For OpenCode
+opencode --version
+
+# For Claude Code
+claude --version
+```
 
 ### Install Terminal Multiplexer
 
@@ -69,6 +79,16 @@ Specification-driven AI development system that organizes multiple AI agents int
 - Command install: `irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex`
 - Other installation methods: See [official repository](https://github.com/marlocarlo/psmux)
 - PowerShell 7+ required
+
+**Verify installation:**
+
+```bash
+# macOS
+tmux -V
+
+# Windows (PowerShell)
+tmux --version
+```
 
 ## Usage
 
