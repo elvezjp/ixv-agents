@@ -1,3 +1,5 @@
+[English](./SECURITY.md) | [日本語](./SECURITY_ja.md)
+
 # Security Policy
 
 ## Supported Versions

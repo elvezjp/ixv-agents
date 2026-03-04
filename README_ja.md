@@ -33,9 +33,9 @@
 
 - [IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md) - エージェント起動後の開発の進め方
 - [Spec.md](Spec.md) - システムアーキテクチャ、ロール、ワークフロー、制約
-- [CHANGELOG.md](CHANGELOG.md) - バージョン履歴
-- [CONTRIBUTING.md](CONTRIBUTING.md) - コントリビューション方法
-- [SECURITY.md](SECURITY.md) - セキュリティポリシー
+- [CHANGELOG_ja.md](CHANGELOG_ja.md) - バージョン履歴
+- [CONTRIBUTING_ja.md](CONTRIBUTING_ja.md) - コントリビューション方法
+- [SECURITY_ja.md](SECURITY_ja.md) - セキュリティポリシー
 
 ## セットアップ
 
@@ -264,7 +264,7 @@ ixv-agents/
 
 ## セキュリティ
 
-セキュリティに関する詳細は [SECURITY.md](SECURITY.md) を参照してください。
+セキュリティに関する詳細は [SECURITY_ja.md](SECURITY_ja.md) を参照してください。
 
 - AIエージェントは定義されたロール境界内で動作します
 - ロール範囲外のファイルへの書き込みは禁止されています
@@ -275,7 +275,7 @@ ixv-agents/
 
 ## コントリビューション
 
-コントリビューションを歓迎します。詳細は [CONTRIBUTING.md](CONTRIBUTING.md) を参照してください。
+コントリビューションを歓迎します。詳細は [CONTRIBUTING_ja.md](CONTRIBUTING_ja.md) を参照してください。
 
 - バグ報告: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
 - 機能提案: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
@@ -283,7 +283,7 @@ ixv-agents/
 
 ## 変更履歴
 
-詳細は [CHANGELOG.md](CHANGELOG.md) を参照してください。
+詳細は [CHANGELOG_ja.md](CHANGELOG_ja.md) を参照してください。
 
 ## 開発の背景
 

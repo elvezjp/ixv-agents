@@ -1,3 +1,5 @@
+[English](./CONTRIBUTING.md) | [日本語](./CONTRIBUTING_ja.md)
+
 # Contributing to IXV-Agents
 
 Thank you for your interest in contributing to IXV-Agents! This document describes the guidelines for contributing to this project.
