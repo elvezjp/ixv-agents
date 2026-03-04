@@ -1,7 +1,0 @@
-project_name: ixv-agents
-version: 0.1.0
-
-# UI (read-only)
-ui_enabled: true
-ui_frontend: frontend
-ui_backend: backend

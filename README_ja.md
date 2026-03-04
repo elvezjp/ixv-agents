@@ -5,6 +5,8 @@
 [![Elvez](https://img.shields.io/badge/Elvez-Product-3F61A7?style=flat-square)](https://elvez.co.jp/)
 [![IXV Ecosystem](https://img.shields.io/badge/IXV-Ecosystem-3F61A7?style=flat-square)](https://elvez.co.jp/ixv/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Shell](https://img.shields.io/badge/Shell-Bash-blue?style=flat-square&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7+-blue?style=flat-square&logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
 [![Stars](https://img.shields.io/github/stars/elvezjp/ixv-agents?style=social)](https://github.com/elvezjp/ixv-agents/stargazers)
 
 仕様駆動型AI開発システム。複数のAIエージェントを固定されたロールベースのチームとして編成します。アジャイルのロールとイベントを仕様駆動開発と統合し、ガバナンス、トレーサビリティ、実用的なエンタープライズ利用を実現します。
@@ -29,9 +31,11 @@
 
 ## ドキュメント
 
+- [IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md) - エージェント起動後の開発の進め方
 - [Spec.md](Spec.md) - システムアーキテクチャ、ロール、ワークフロー、制約
-- [docs/20260129implementation-plan.md](docs/20260129implementation-plan.md) - 実装計画
-- [docs/20260201directory-restructure-plan.md](docs/20260201directory-restructure-plan.md) - ディレクトリ再構成計画
+- [CHANGELOG_ja.md](CHANGELOG_ja.md) - バージョン履歴
+- [CONTRIBUTING_ja.md](CONTRIBUTING_ja.md) - コントリビューション方法
+- [SECURITY_ja.md](SECURITY_ja.md) - セキュリティポリシー
 
 ## セットアップ
 
@@ -223,7 +227,7 @@ tmux attach-session -t ixv-agents
 
 (*) = 必要に応じて
 
-> 詳細は `templates/PROCESS.md` を参照してください。
+> 各工程の詳細な流れとユーザー操作については[IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md)を参照してください。
 
 ## ディレクトリ構成
 
@@ -239,7 +243,6 @@ ixv-agents/
 │   ├── stop.sh / .ps1             # エージェント停止
 │   ├── setup_workspace.sh / .ps1  # ワークスペース初期化
 │   └── tmux-help.txt              # ペイン内ヘルプテキスト
-├── OLD/                # レガシー資産（参照用・保守対象外）
 ├── backups/            # ワークスペースバックアップ [.gitignore]
 ├── workspace/          # AIエディタ作業ディレクトリ [.gitignore]
 ├── docs/               # ドキュメント
@@ -249,25 +252,9 @@ ixv-agents/
 
 ### workspace/ ディレクトリ
 
-`workspace/` はAIエディタが実際に作業を行うディレクトリです。
-リポジトリルートから分離されており、AIエディタがツールのREADMEやその他の無関係なファイルにアクセスすることを防ぎます。
+`workspace/` はAIエディタが実際に作業を行う隔離されたディレクトリです。エージェント間の通信は `queue/` 内のYAMLファイルで行われます。
 
-```
-workspace/
-├── README.md           # プロジェクト仕様（唯一の信頼できる情報源）
-├── CONSTITUTION.md     # プロジェクト憲章
-├── PROCESS.md          # プロセスと運用
-├── AGENTS.md           # AI行動規範
-├── roles -> ../roles   (シンボリックリンク)
-├── .claude/skills -> ../../skills   (シンボリックリンク)
-├── .opencode/skills -> ../../skills (シンボリックリンク)
-├── queue/              # エージェント間通信
-│   ├── dashboard.md    # プロジェクトステータスボード
-│   ├── po_to_sm.yaml   # PO -> SM
-│   ├── tasks/          # SM -> Dev
-│   └── reports/        # Dev -> SM
-└── (artifacts)         # 実装コード、テスト等
-```
+> 詳細は[IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md#32-ワークスペース)を参照してください。
 
 ## 運用原則
 
@@ -275,33 +262,40 @@ workspace/
 - **トレーサビリティ**: `spec_ref` / `request_id` / `task_id` で追跡
 - **ロール境界**: ロール範囲外のファイルへの書き込みは禁止
 
-## コントリビューション
-
-コントリビューションを歓迎します！
-
-- バグ報告は [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues) から
-- 改善のプルリクエストを提出してください
-- 既存のコードスタイルに従ってください
-
 ## セキュリティ
 
-**主なセキュリティに関する注意事項：**
+セキュリティに関する詳細は [SECURITY_ja.md](SECURITY_ja.md) を参照してください。
+
 - AIエージェントは定義されたロール境界内で動作します
 - ロール範囲外のファイルへの書き込みは禁止されています
 - すべての変更は仕様参照とタスクIDで追跡可能です
 - ワークスペースはリポジトリルートから分離されています
 
-> **⚠ 注意:** 起動スクリプトはAIエディタに広範な権限を付与します（Claude Codeの `--dangerously-skip-permissions`、OpenCodeの全許可設定）。隔離された信頼できる環境でのみ実行してください。詳細と緩和策は [SECURITY.md](SECURITY.md) を参照してください。
+> **⚠ 注意:** 起動スクリプトはAIエディタに広範な権限を付与します（Claude Codeの `--dangerously-skip-permissions`、OpenCodeの全許可設定）。隔離された信頼できる環境でのみ実行してください。
 
-## 背景
+## コントリビューション
 
-このプロジェクトは、株式会社Elvezが開発するAI開発支援ツールスイート **IXV** エコシステムの一部です。IXV-Agentsは、仕様駆動型AI開発のためのマルチエージェントオーケストレーションレイヤーを提供します。
+コントリビューションを歓迎します。詳細は [CONTRIBUTING_ja.md](CONTRIBUTING_ja.md) を参照してください。
+
+- バグ報告: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
+- 機能提案: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
+- プルリクエスト: [GitHub Pull Requests](https://github.com/elvezjp/ixv-agents/pulls)
+
+## 変更履歴
+
+詳細は [CHANGELOG_ja.md](CHANGELOG_ja.md) を参照してください。
+
+## 開発の背景
+
+本ツールは、日本語の開発文書・仕様書を対象とした開発支援AI **IXV（イクシブ）** の開発過程で生まれた小さな実用品です。
+
+IXVでは、システム開発における日本語の文書について、理解・構造化・活用という課題に取り組んでおり、本リポジトリでは、その一部を切り出して公開しています。
 
 ## ライセンス
 
 MIT License - 詳細は [LICENSE](LICENSE) を参照してください。
 
-## お問い合わせ
+## 問い合わせ先
 
-- **メール**: info@elvez.co.jp
-- **会社**: [株式会社Elvez](https://elvez.co.jp/)
+- **メールアドレス**: info@elvez.co.jp
+- **宛先**: [株式会社Elvez](https://elvez.co.jp/)

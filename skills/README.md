@@ -1,6 +1,33 @@
-# Skills フローマップ
+# Skills ディレクトリについて
 
-本ドキュメントは、IXV-Agents の全スキルと PROCESS.md の7工程の対応関係を俯瞰する。
+本ディレクトリには、IXV-Agents のエージェントが使用するスキル定義が格納されています。
+
+## スキルとは
+
+各スキルは [Claude Code のカスタムスラッシュコマンド](https://docs.anthropic.com/en/docs/claude-code/skills)に準拠しており、`SKILL.md` ファイルにスキルの名前・説明・実行手順を定義しています。
+
+```
+skills/
+├── po-request-yaml/        # PO用スキル
+│   ├── SKILL.md             # スキル定義（YAML Front Matter + 手順）
+│   └── references/          # スキル固有の参照資料
+├── sm-write-task-yaml/      # SM用スキル
+│   └── SKILL.md
+├── dev-receive-task/        # Dev用スキル
+│   └── SKILL.md
+├── references/              # スキル間で共有する参照資料
+│   ├── phase-gate.md
+│   └── task-yaml-schema.md
+└── README.md                # 本ファイル
+```
+
+## ワークスペースでの利用
+
+ワークスペース初期化時に、`workspace/.claude/skills` および `workspace/.opencode/skills` からシンボリックリンクが作成されます。これにより、各ペインで起動した AI エディタがスキルをスラッシュコマンドとして認識し、エージェントのワークフロー内で自動的に呼び出します。
+
+エージェントがスキルを使ってどのように開発を進めるかの全体像は、[IXV-Agents 仕様駆動開発ガイド](../docs/ixv-agents-sdd-guide.md)を参照してください。
+
+---
 
 ## 7工程とスキル対応表
 
@@ -19,7 +46,6 @@
 | スキル | 用途 |
 |--------|------|
 | `spec-code-reviewer-skill` | 仕様とコードのセマンティック整合性レビュー |
-| `coding-policy-ai-auditor` | コーディングポリシー監査 |
 
 ## データフロー
 
@@ -145,7 +171,7 @@ dev-receive-task → [実装] → dev-write-report → dev-notify-sm
 | `queue/reports/{task_id}.yaml` | Dev → SM | Dev (`dev-write-report`) | SM (`sm-scan-reports`) |
 | `queue/dashboard.md` | SM 管理 | SM | PO, Dev (読み取りのみ) |
 
-## スキル一覧（全13スキル）
+## スキル一覧（全12スキル）
 
 | スキル | ロール | 工程 | 概要 |
 |--------|--------|------|------|
@@ -161,7 +187,6 @@ dev-receive-task → [実装] → dev-write-report → dev-notify-sm
 | `dev-write-report` | Dev | 3,5 | 完了報告 YAML 生成 |
 | `dev-notify-sm` | Dev | 3,5 | SM への send-keys 完了通知 |
 | `spec-code-reviewer-skill` | 横断 | 全工程 | 仕様 vs コードのセマンティックレビュー |
-| `coding-policy-ai-auditor` | 横断 | 全工程 | コーディングポリシー監査 |
 
 ## 共有リファレンス
 
