@@ -3,7 +3,7 @@
 ## Overview
 
 このドキュメントは `queue/tasks/dev{N}.yaml` のスキーマ定義を記載する。
-Spec.md 2.3.3 に準拠。Devがタスクを受領する際の検証に使用する。
+SPEC.md 2.3.3 に準拠。Devがタスクを受領する際の検証に使用する。
 
 ## Field Definitions
 

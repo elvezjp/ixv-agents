@@ -29,7 +29,7 @@
 
 ### ドキュメント
 
-- システム仕様書（`Spec.md`）
+- システム仕様書（`SPEC.md`）
 - 英語版README（`README.md`）と日本語版README（`README_ja.md`）
 - コントリビューションガイドライン（CONTRIBUTING.md）とコードスタイル・PRガイドライン
 - セキュリティポリシー（SECURITY.md）と脆弱性報告・エージェント権限の詳細

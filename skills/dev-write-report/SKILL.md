@@ -1,7 +1,7 @@
 ---
 name: dev-write-report
 description: |
-  Spec.md 2.3.4 スキーマに準拠した queue/reports/{task_id}.yaml を生成する。
+  SPEC.md 2.3.4 スキーマに準拠した queue/reports/{task_id}.yaml を生成する。
   タスク完了後の報告書作成に使用する。
   Use when: 「報告書作成」「レポート作成」「報告ファイル書き出し」「タスク完了報告」と言われた時。
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 # Dev Write Report
 
-タスク完了後の結果を Spec.md 2.3.4 スキーマに準拠した YAML ファイルとして `queue/reports/{task_id}.yaml` に書き出す。
+タスク完了後の結果を SPEC.md 2.3.4 スキーマに準拠した YAML ファイルとして `queue/reports/{task_id}.yaml` に書き出す。
 
 ## When to Use
 
@@ -38,11 +38,11 @@ date "+%Y-%m-%dT%H:%M:%S"
 | `blocked` | ブロッカーにより作業を継続できない |
 | `needs_review` | 作業は完了したがレビューが必要 |
 
-**注意**: `failed` は有効な status ではない（Spec.md 2.3.4 準拠）。
+**注意**: `failed` は有効な status ではない（SPEC.md 2.3.4 準拠）。
 
 ### Step 3: 報告 YAML を生成
 
-Spec.md 2.3.4 スキーマに準拠した YAML を生成する：
+SPEC.md 2.3.4 スキーマに準拠した YAML を生成する：
 
 ```yaml
 schema_version: "1.0"

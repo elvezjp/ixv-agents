@@ -29,7 +29,7 @@ Initial public release.
 
 ### Documentation
 
-- System specification (`Spec.md`)
+- System specification (`SPEC.md`)
 - README in English (`README.md`) and Japanese (`README_ja.md`)
 - CONTRIBUTING.md with code style and PR guidelines
 - SECURITY.md with vulnerability reporting and agent permission details

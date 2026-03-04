@@ -3,7 +3,7 @@
 ## Overview
 
 このドキュメントは `queue/reports/{task_id}.yaml` のスキーマ定義を記載する。
-Spec.md 2.3.4 に準拠。Devが報告書を生成する際に使用する。
+SPEC.md 2.3.4 に準拠。Devが報告書を生成する際に使用する。
 
 ## Field Definitions
 

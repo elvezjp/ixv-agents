@@ -32,7 +32,7 @@
 ## ドキュメント
 
 - [IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md) - エージェント起動後の開発の進め方
-- [Spec.md](Spec.md) - システムアーキテクチャ、ロール、ワークフロー、制約
+- [SPEC.md](SPEC.md) - システムアーキテクチャ、ロール、ワークフロー、制約
 - [CHANGELOG_ja.md](CHANGELOG_ja.md) - バージョン履歴
 - [CONTRIBUTING_ja.md](CONTRIBUTING_ja.md) - コントリビューション方法
 - [SECURITY_ja.md](SECURITY_ja.md) - セキュリティポリシー
@@ -246,7 +246,7 @@ ixv-agents/
 ├── backups/            # ワークスペースバックアップ [.gitignore]
 ├── workspace/          # AIエディタ作業ディレクトリ [.gitignore]
 ├── docs/               # ドキュメント
-├── Spec.md             # システム仕様書
+├── SPEC.md             # システム仕様書
 └── README.md
 ```
 

@@ -88,7 +88,7 @@ These permissions are **required** for the multi-agent workflow (agents must ope
 
 - AI agents operate within defined role boundaries (PO, SM, Dev)
 - Writing to files outside an agent's role scope is prohibited
-- File ownership is enforced via the specification in `Spec.md`
+- File ownership is enforced via the specification in `SPEC.md`
 
 ### Script Security
 

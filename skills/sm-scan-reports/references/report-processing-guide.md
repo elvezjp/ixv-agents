@@ -3,9 +3,9 @@
 ## Overview
 
 Devからの報告（`queue/reports/*.yaml`）を処理するための詳細ガイド。
-Spec.md 2.3.4 に準拠。
+SPEC.md 2.3.4 に準拠。
 
-## Report YAML Schema (Spec.md 2.3.4)
+## Report YAML Schema (SPEC.md 2.3.4)
 
 | Field | Required | Type | Description |
 |-------|----------|------|-------------|

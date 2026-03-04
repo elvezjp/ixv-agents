@@ -3,7 +3,7 @@
 ## Overview
 
 このドキュメントは `queue/tasks/dev{N}.yaml` のスキーマ定義を記載する。
-Spec.md 2.3.3 に準拠。SM（作成側）と Dev（読み取り側）の双方が参照する。
+SPEC.md 2.3.3 に準拠。SM（作成側）と Dev（読み取り側）の双方が参照する。
 
 ## Field Definitions
 

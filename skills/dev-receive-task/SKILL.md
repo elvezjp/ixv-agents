@@ -1,7 +1,7 @@
 ---
 name: dev-receive-task
 description: |
-  queue/tasks/dev{N}.yaml を読み取り、Spec.md 2.3.3 スキーマに基づきタスクを確認する。
+  queue/tasks/dev{N}.yaml を読み取り、SPEC.md 2.3.3 スキーマに基づきタスクを確認する。
   Devが起こされた際の最初のステップとして使用する。
   Use when: 「SMから起こされた」「タスク確認」「tasks/dev確認」「タスク受領」と言われた時。
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 # Dev Receive Task
 
-`queue/tasks/dev{N}.yaml` を読み取り、Spec.md 2.3.3 スキーマに基づいてタスク内容を確認し、作業に最適なペルソナを設定する。
+`queue/tasks/dev{N}.yaml` を読み取り、SPEC.md 2.3.3 スキーマに基づいてタスク内容を確認し、作業に最適なペルソナを設定する。
 
 ## When to Use
 

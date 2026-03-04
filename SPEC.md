@@ -1,4 +1,4 @@
-# IXV-Agents Specification (Spec.md)
+# IXV-Agents Specification (SPEC.md)
 
 **Version**: 0.1.0
 **Last Updated**: 2026-03-04
@@ -324,7 +324,7 @@ ixv-agents/
 ├── workspace/          # AIエディタの作業ディレクトリ [.gitignore]
 │   └── (詳細は 4.1 参照)
 ├── docs/               # ドキュメント
-├── Spec.md             # 本仕様書
+├── SPEC.md             # 本仕様書
 └── README.md
 ```
 

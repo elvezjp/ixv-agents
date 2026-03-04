@@ -1,7 +1,7 @@
 ---
 name: sm-write-task-yaml
 description: |
-  Spec.md 2.3.3 スキーマに準拠した queue/tasks/dev{N}.yaml を生成する。
+  SPEC.md 2.3.3 スキーマに準拠した queue/tasks/dev{N}.yaml を生成する。
   タスク分解の結果をDev向けYAMLファイルとして書き出す。
   Use when: 「タスク分解」「タスク作成」「Devに割り当て」「YAML作成」「tasks書き出し」と言われた時。
 metadata:
@@ -12,7 +12,7 @@ metadata:
 
 # SM Write Task YAML
 
-タスク分解の結果を Spec.md 2.3.3 スキーマに準拠した YAML ファイルとして `queue/tasks/dev{N}.yaml` に書き出す。
+タスク分解の結果を SPEC.md 2.3.3 スキーマに準拠した YAML ファイルとして `queue/tasks/dev{N}.yaml` に書き出す。
 
 ## When to Use
 
@@ -83,7 +83,7 @@ tmux capture-pane -t ixv-agents:0.4 -p | tail -20
 
 ### Step 5: YAML を生成
 
-Spec.md 2.3.3 スキーマに準拠したYAMLを生成する。
+SPEC.md 2.3.3 スキーマに準拠したYAMLを生成する。
 
 ```yaml
 schema_version: "1.0"

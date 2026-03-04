@@ -28,10 +28,10 @@
 
 ```yaml
 # ファイル全体を参照
-spec_ref: specs/current_spec.md
+spec_ref: specs/current_SPEC.md
 
 # 特定セクションを参照
-spec_ref: specs/current_spec.md#section-2.2.3
+spec_ref: specs/current_SPEC.md#section-2.2.3
 ```
 
 ### request_id
@@ -98,7 +98,7 @@ constraints:
 schema_version: "1.0"
 created_at: "YYYY-MM-DDTHH:MM:SSZ"
 updated_at: "YYYY-MM-DDTHH:MM:SSZ"
-spec_ref: specs/current_spec.md
+spec_ref: specs/current_SPEC.md
 request_id: "REQ-YYYYMMDD-###"
 priority: "P0"
 summary: ""

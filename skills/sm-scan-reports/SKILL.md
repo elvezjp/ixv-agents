@@ -51,7 +51,7 @@ TEMPLATE.yaml を除く全ファイルが対象。
 | artifacts | 成果物ファイルパス |
 | issues | 問題点・ブロッカー |
 
-**Report Schema（Spec.md 2.3.4準拠）**:
+**Report Schema（SPEC.md 2.3.4準拠）**:
 ```yaml
 schema_version: "1.0"
 created_at: "YYYY-MM-DDTHH:MM:SSZ"

@@ -32,7 +32,7 @@ Specification-driven AI development system that organizes multiple AI agents int
 ## Documentation
 
 - [IXV-Agents SDD Guide](docs/ixv-agents-sdd-guide.md) - How to develop with agents after launch (Japanese)
-- [Spec.md](Spec.md) - System architecture, roles, workflow, and constraints
+- [SPEC.md](SPEC.md) - System architecture, roles, workflow, and constraints
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 - [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
 - [SECURITY.md](SECURITY.md) - Security policy
@@ -246,7 +246,7 @@ ixv-agents/
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]
 ├── docs/               # Documentation
-├── Spec.md             # System specification
+├── SPEC.md             # System specification
 └── README.md
 ```
 

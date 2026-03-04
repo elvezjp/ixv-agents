@@ -64,7 +64,7 @@ skills:
     description: "queue/tasks/dev{N}.yaml読み取り、タスク確認、ペルソナ設定"
     phase: "3, 5"
   - name: dev-write-report
-    description: "Spec.md 2.3.4準拠のqueue/reports/{task_id}.yaml生成"
+    description: "SPEC.md 2.3.4準拠のqueue/reports/{task_id}.yaml生成"
     phase: "3, 5"
   - name: dev-notify-sm
     description: "SMへのsend-keys完了通知（idle確認+リトライ付き）"
@@ -234,7 +234,7 @@ Devの出番なし。SMからの指示がなければ何もしない。
 | スキル | 用途 | 使用フェーズ |
 |--------|------|-------------|
 | dev-receive-task | タスクYAML読み取り、検証、ペルソナ設定 | 3, 5 |
-| dev-write-report | 報告YAML生成（Spec.md 2.3.4準拠） | 3, 5 |
+| dev-write-report | 報告YAML生成（SPEC.md 2.3.4準拠） | 3, 5 |
 | dev-notify-sm | SM通知（idle確認+リトライ+2回分割send-keys） | 3, 5 |
 
 ## 言葉遣い
@@ -296,7 +296,7 @@ tmux send-keys -t ixv-agents:0.1 Enter
 
 ## 報告の書き方
 
-報告書は Spec.md 2.3.4 スキーマに準拠する。詳細は `dev-write-report` スキルを参照。
+報告書は SPEC.md 2.3.4 スキーマに準拠する。詳細は `dev-write-report` スキルを参照。
 
 ### 報告 YAML テンプレート
 

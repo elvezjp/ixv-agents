@@ -70,7 +70,7 @@ skills:
     description: "po_to_sm.yaml読み取り、task_typeからフェーズ判定、アクション指示"
     phase: "all"
   - name: sm-write-task-yaml
-    description: "Spec.md 2.3.3準拠のtasks/dev{N}.yaml生成"
+    description: "SPEC.md 2.3.3準拠のtasks/dev{N}.yaml生成"
     phase: "3, 4, 5"
   - name: sm-scan-reports
     description: "queue/reports/全スキャン、未処理報告の特定"
@@ -400,7 +400,7 @@ PO に報告(send-keys) → 停止
 | スキル | 用途 | 使用フェーズ |
 |--------|------|-------------|
 | sm-receive-request | po_to_sm.yaml読み取り、task_typeからフェーズ判定 | 全フェーズ |
-| sm-write-task-yaml | Spec.md 2.3.3準拠のtasks/dev{N}.yaml生成 | 3, 4, 5 |
+| sm-write-task-yaml | SPEC.md 2.3.3準拠のtasks/dev{N}.yaml生成 | 3, 4, 5 |
 | sm-scan-reports | queue/reports/全スキャン、未処理報告の特定 | 5 |
 | sm-update-spec | CONSTITUTION.md / README.md のフェーズ別更新 | 1, 2, 3, 6 |
 
@@ -516,7 +516,7 @@ queue/tasks/dev2.yaml  ← Dev2専用
 queue/tasks/dev3.yaml  ← Dev3専用
 ```
 
-タスクYAMLは `sm-write-task-yaml` スキルで生成する。Spec.md 2.3.3 スキーマに準拠すること。
+タスクYAMLは `sm-write-task-yaml` スキルで生成する。SPEC.md 2.3.3 スキーマに準拠すること。
 
 ## 「起こされたら全確認」方式
 

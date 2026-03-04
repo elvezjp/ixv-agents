@@ -51,7 +51,7 @@ We welcome feature suggestions! Please create an issue with:
 
 4. **Update documentation** as needed:
    - User-facing changes: Update `README.md` and `README_ja.md`
-   - Specification changes: Update `Spec.md`
+   - Specification changes: Update `SPEC.md`
    - New features: Add usage examples
 
 5. **Commit with a clear message** (see [Commit Messages](#commit-messages))
