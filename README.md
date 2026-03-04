@@ -5,6 +5,8 @@
 [![Elvez](https://img.shields.io/badge/Elvez-Product-3F61A7?style=flat-square)](https://elvez.co.jp/)
 [![IXV Ecosystem](https://img.shields.io/badge/IXV-Ecosystem-3F61A7?style=flat-square)](https://elvez.co.jp/ixv/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow?style=flat-square)](https://opensource.org/licenses/MIT)
+[![Shell](https://img.shields.io/badge/Shell-Bash-blue?style=flat-square&logo=gnu-bash&logoColor=white)](https://www.gnu.org/software/bash/)
+[![PowerShell](https://img.shields.io/badge/PowerShell-7+-blue?style=flat-square&logo=powershell&logoColor=white)](https://github.com/PowerShell/PowerShell)
 [![Stars](https://img.shields.io/github/stars/elvezjp/ixv-agents?style=social)](https://github.com/elvezjp/ixv-agents/stargazers)
 
 Specification-driven AI development system that organizes multiple AI agents into a fixed, role-based team. Integrates agile roles and events with specification-driven development to ensure governance, traceability, and practical enterprise usage.
@@ -30,8 +32,9 @@ Specification-driven AI development system that organizes multiple AI agents int
 ## Documentation
 
 - [Spec.md](Spec.md) - System architecture, roles, workflow, and constraints
-- [docs/20260129implementation-plan.md](docs/20260129implementation-plan.md) - Implementation plan
-- [docs/20260201directory-restructure-plan.md](docs/20260201directory-restructure-plan.md) - Directory restructure plan
+- [CHANGELOG.md](CHANGELOG.md) - Version history
+- [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
+- [SECURITY.md](SECURITY.md) - Security policy
 
 ## Setup
 
@@ -239,7 +242,6 @@ ixv-agents/
 │   ├── stop.sh / .ps1             # Stop agents
 │   ├── setup_workspace.sh / .ps1  # Initialize workspace
 │   └── tmux-help.txt              # In-pane help text
-├── OLD/                # Legacy assets (reference only; not maintained)
 ├── backups/            # Workspace backups [.gitignore]
 ├── workspace/          # AI editor working directory [.gitignore]
 ├── docs/               # Documentation
@@ -275,27 +277,34 @@ workspace/
 - **Traceability**: Track via `spec_ref` / `request_id` / `task_id`
 - **Role Boundaries**: Writing to files outside role scope is prohibited
 
-## Contributing
-
-Contributions are welcome!
-
-- Report bugs via [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
-- Submit pull requests for improvements
-- Follow existing code style
-
 ## Security
 
-**Key security notes:**
+For details, see [SECURITY.md](SECURITY.md).
+
 - AI agents operate within defined role boundaries
 - Writing to files outside role scope is prohibited
 - All changes are traceable via spec references and task IDs
 - The workspace is isolated from the repository root
 
-> **⚠ Warning:** The boot scripts grant AI editors broad permissions for autonomous operation (`--dangerously-skip-permissions` for Claude Code, all-allow permission for OpenCode). Run only in isolated/trusted environments. See [SECURITY.md](SECURITY.md) for details and mitigations.
+> **⚠ Warning:** The boot scripts grant AI editors broad permissions for autonomous operation (`--dangerously-skip-permissions` for Claude Code, all-allow permission for OpenCode). Run only in isolated/trusted environments.
+
+## Contributing
+
+Contributions are welcome. For details, see [CONTRIBUTING.md](CONTRIBUTING.md).
+
+- Bug reports: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
+- Feature suggestions: [GitHub Issues](https://github.com/elvezjp/ixv-agents/issues)
+- Pull requests: [GitHub Pull Requests](https://github.com/elvezjp/ixv-agents/pulls)
+
+## Changelog
+
+For details, see [CHANGELOG.md](CHANGELOG.md).
 
 ## Background
 
-This project is part of the **IXV** ecosystem, an AI development support tool suite by Elvez, Inc. IXV-Agents provides the multi-agent orchestration layer for specification-driven AI development.
+This tool was created as a small utility during the development of **IXV (Ixiv)**, a development support AI for Japanese development documents and specifications.
+
+IXV addresses the challenges of understanding, structuring, and utilizing Japanese documents in system development. This repository publishes a portion of that work.
 
 ## License
 
