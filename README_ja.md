@@ -31,6 +31,7 @@
 
 ## ドキュメント
 
+- [IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md) - エージェント起動後の開発の進め方
 - [Spec.md](Spec.md) - システムアーキテクチャ、ロール、ワークフロー、制約
 - [CHANGELOG.md](CHANGELOG.md) - バージョン履歴
 - [CONTRIBUTING.md](CONTRIBUTING.md) - コントリビューション方法
@@ -226,7 +227,7 @@ tmux attach-session -t ixv-agents
 
 (*) = 必要に応じて
 
-> 詳細は `templates/PROCESS.md` を参照してください。
+> 各工程の詳細な流れとユーザー操作については[IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md)を参照してください。
 
 ## ディレクトリ構成
 
@@ -251,25 +252,9 @@ ixv-agents/
 
 ### workspace/ ディレクトリ
 
-`workspace/` はAIエディタが実際に作業を行うディレクトリです。
-リポジトリルートから分離されており、AIエディタがツールのREADMEやその他の無関係なファイルにアクセスすることを防ぎます。
+`workspace/` はAIエディタが実際に作業を行う隔離されたディレクトリです。エージェント間の通信は `queue/` 内のYAMLファイルで行われます。
 
-```
-workspace/
-├── README.md           # プロジェクト仕様（唯一の信頼できる情報源）
-├── CONSTITUTION.md     # プロジェクト憲章
-├── PROCESS.md          # プロセスと運用
-├── AGENTS.md           # AI行動規範
-├── roles -> ../roles   (シンボリックリンク)
-├── .claude/skills -> ../../skills   (シンボリックリンク)
-├── .opencode/skills -> ../../skills (シンボリックリンク)
-├── queue/              # エージェント間通信
-│   ├── dashboard.md    # プロジェクトステータスボード
-│   ├── po_to_sm.yaml   # PO -> SM
-│   ├── tasks/          # SM -> Dev
-│   └── reports/        # Dev -> SM
-└── (artifacts)         # 実装コード、テスト等
-```
+> 詳細は[IXV-Agents 仕様駆動開発ガイド](docs/ixv-agents-sdd-guide.md#32-ワークスペース)を参照してください。
 
 ## 運用原則
 

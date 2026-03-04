@@ -31,6 +31,7 @@ Specification-driven AI development system that organizes multiple AI agents int
 
 ## Documentation
 
+- [IXV-Agents SDD Guide](docs/ixv-agents-sdd-guide.md) - How to develop with agents after launch (Japanese)
 - [Spec.md](Spec.md) - System architecture, roles, workflow, and constraints
 - [CHANGELOG.md](CHANGELOG.md) - Version history
 - [CONTRIBUTING.md](CONTRIBUTING.md) - How to contribute
@@ -226,7 +227,7 @@ If an existing `workspace/` exists, it will be backed up to `backups/`, and a ne
 
 (*) = when needed
 
-> See `templates/PROCESS.md` for details.
+> See the [IXV-Agents SDD Guide](docs/ixv-agents-sdd-guide.md) for detailed workflow and user operations.
 
 ## Directory Structure
 
@@ -251,25 +252,9 @@ ixv-agents/
 
 ### workspace/ Directory
 
-`workspace/` is the directory where AI editors actually perform their work.
-It is isolated from the repository root, preventing AI editors from accessing tool READMEs and other unrelated files.
+`workspace/` is an isolated directory where AI editors perform their work. Inter-agent communication is handled via YAML files in `queue/`.
 
-```
-workspace/
-├── README.md           # Project spec (Single Source of Truth)
-├── CONSTITUTION.md     # Project constitution
-├── PROCESS.md          # Process and operations
-├── AGENTS.md           # AI conduct guidelines
-├── roles -> ../roles   (symlink)
-├── .claude/skills -> ../../skills   (symlink)
-├── .opencode/skills -> ../../skills (symlink)
-├── queue/              # Inter-agent communication
-│   ├── dashboard.md    # Project status board
-│   ├── po_to_sm.yaml   # PO -> SM
-│   ├── tasks/          # SM -> Dev
-│   └── reports/        # Dev -> SM
-└── (artifacts)         # Implementation code, tests, etc.
-```
+> See the [IXV-Agents SDD Guide](docs/ixv-agents-sdd-guide.md#32-ワークスペース) for details.
 
 ## Operational Principles
 
