@@ -1,0 +1,95 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Install pre-commit
+        run: pip install pre-commit
+      - name: Install pre-commit hooks
+        run: pre-commit install
+      - name: Run pre-commit on all files
+        run: pre-commit run --all-files
+
+  setup-test:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run setup_workspace.sh
+        run: bash scripts/setup_workspace.sh --no-backup
+      - name: Verify generated files
+        run: |
+          test -f workspace/README.md
+          test -f workspace/CONSTITUTION.md
+          test -f workspace/PROCESS.md
+          test -f workspace/AGENTS.md
+          test -f workspace/.gitignore
+          test -f workspace/queue/dashboard.md
+          test -f workspace/queue/po_to_sm.yaml
+          test -f workspace/queue/tasks/dev1.yaml
+          test -f workspace/queue/tasks/dev2.yaml
+          test -f workspace/queue/tasks/dev3.yaml
+          test -f workspace/queue/reports/TEMPLATE.yaml
+      - name: Verify symlinks
+        run: |
+          test -L workspace/roles
+          test -L workspace/.claude/skills
+          test -L workspace/.opencode/skills
+
+  setup-test-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Run setup_workspace.ps1
+        shell: pwsh
+        run: .\scripts\setup_workspace.ps1 -NoBackup
+      - name: Verify generated files
+        shell: pwsh
+        run: |
+          $files = @(
+            "workspace\README.md",
+            "workspace\CONSTITUTION.md",
+            "workspace\PROCESS.md",
+            "workspace\AGENTS.md",
+            "workspace\.gitignore",
+            "workspace\queue\dashboard.md",
+            "workspace\queue\po_to_sm.yaml",
+            "workspace\queue\tasks\dev1.yaml",
+            "workspace\queue\tasks\dev2.yaml",
+            "workspace\queue\tasks\dev3.yaml",
+            "workspace\queue\reports\TEMPLATE.yaml"
+          )
+          foreach ($f in $files) {
+            if (-not (Test-Path $f)) {
+              Write-Error "Missing: $f"
+              exit 1
+            }
+          }
+      - name: Verify junctions
+        shell: pwsh
+        run: |
+          $junctions = @(
+            "workspace\roles",
+            "workspace\.claude\skills",
+            "workspace\.opencode\skills"
+          )
+          foreach ($j in $junctions) {
+            $item = Get-Item $j -ErrorAction Stop
+            if ($item.LinkType -ne "Junction") {
+              Write-Error "Not a junction: $j"
+              exit 1
+            }
+          }
