@@ -37,4 +37,3 @@ Modify only via PO approval.
 ## 禁止事項
 - CONSTITUTION.mdの無断変更
 - README.mdを更新せずに実装を進めること
-
