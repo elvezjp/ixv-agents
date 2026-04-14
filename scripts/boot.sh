@@ -19,14 +19,12 @@ ROOT_DIR="$(cd "${SCRIPT_DIR}/.." && pwd)"
 WORKSPACE_DIR="${ROOT_DIR}/workspace"
 cd "$ROOT_DIR"
 
-CLI_NAME="opencode"
 CLI_CMD="OPENCODE_PERMISSION='{\"permission\":{\"*\":\"allow\"}}' opencode"
 MODEL=""
 
 while [[ $# -gt 0 ]]; do
   case $1 in
     --claude-code)
-      CLI_NAME="claude"
       CLI_CMD="claude --dangerously-skip-permissions"
       shift
       ;;
