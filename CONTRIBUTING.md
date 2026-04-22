@@ -98,7 +98,7 @@ Before submitting a PR, verify:
 ### Shell Scripts (.sh)
 
 - Use `set -euo pipefail` at the top
-- Indent with 4 spaces
+- Indent with 2 spaces (enforced by `shfmt` via pre-commit)
 - Quote all variables: `"${variable}"`
 - Validate user inputs before use
 

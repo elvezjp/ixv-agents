@@ -32,11 +32,11 @@ FORCE_KILL=false
 
 while [[ $# -gt 0 ]]; do
   case $1 in
-    -f|--force)
+    -f | --force)
       FORCE_KILL=true
       shift
       ;;
-    -h|--help)
+    -h | --help)
       echo "Usage: ./scripts/stop.sh [--force]"
       echo "  -f, --force  Force kill opencode/claude processes and sessions"
       echo ""
@@ -61,10 +61,10 @@ echo ""
 send_ctrl_c() {
   log "Sending Ctrl+C to all panes..."
 
-  if tmux has-session -t ixv-agents 2>/dev/null; then
+  if tmux has-session -t ixv-agents 2> /dev/null; then
     # PO (0.0), SM (0.1), Dev1 (0.2), Dev2 (0.3), Dev3 (0.4)
     for i in {0..4}; do
-      tmux send-keys -t "ixv-agents:0.$i" C-c 2>/dev/null || true
+      tmux send-keys -t "ixv-agents:0.$i" C-c 2> /dev/null || true
     done
   fi
 
@@ -74,7 +74,7 @@ send_ctrl_c() {
 
 # Kill sessions
 kill_sessions() {
-  if tmux has-session -t ixv-agents 2>/dev/null; then
+  if tmux has-session -t ixv-agents 2> /dev/null; then
     tmux kill-session -t ixv-agents
     log_success "ixv-agents session stopped"
   else
@@ -94,5 +94,5 @@ fi
 
 echo ""
 log "Remaining sessions:"
-tmux list-sessions 2>/dev/null || echo "  (no sessions)"
+tmux list-sessions 2> /dev/null || echo "  (no sessions)"
 echo ""

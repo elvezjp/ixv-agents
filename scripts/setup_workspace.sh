@@ -31,86 +31,86 @@ BOLD='\033[1m'
 
 # ログ関数
 log_info() {
-    echo -e "${BLUE}[INFO]${NC} $1"
+  echo -e "${BLUE}[INFO]${NC} $1"
 }
 
 log_success() {
-    echo -e "${GREEN}[OK]${NC} $1"
+  echo -e "${GREEN}[OK]${NC} $1"
 }
 
 log_warn() {
-    echo -e "${YELLOW}[WARN]${NC} $1"
+  echo -e "${YELLOW}[WARN]${NC} $1"
 }
 
 log_error() {
-    echo -e "${RED}[ERROR]${NC} $1"
+  echo -e "${RED}[ERROR]${NC} $1"
 }
 
 log_step() {
-    echo -e "\n${CYAN}${BOLD}━━━ $1 ━━━${NC}\n"
+  echo -e "\n${CYAN}${BOLD}━━━ $1 ━━━${NC}\n"
 }
 
 # sed 置換用エスケープ関数
 escape_sed_replacement() {
-    printf '%s\n' "$1" | sed 's:[&\\/]:\\&:g'
+  printf '%s\n' "$1" | sed 's:[&\\/]:\\&:g'
 }
 
 # テンプレートをコピーしてプレースホルダーを置換する関数
 apply_template() {
-    local src="$1"
-    local dst="$2"
-    local timestamp
-    local date
-    local assignee
-    timestamp=$(escape_sed_replacement "$3")
-    date=$(escape_sed_replacement "$4")
-    assignee=$(escape_sed_replacement "$5")
+  local src="$1"
+  local dst="$2"
+  local timestamp
+  local date
+  local assignee
+  timestamp=$(escape_sed_replacement "$3")
+  date=$(escape_sed_replacement "$4")
+  assignee=$(escape_sed_replacement "$5")
 
-    sed -e "s|{{TIMESTAMP}}|${timestamp}|g" \
-        -e "s|{{DATE}}|${date}|g" \
-        -e "s|{{ASSIGNEE}}|${assignee}|g" \
-        "$src" > "$dst"
+  sed -e "s|{{TIMESTAMP}}|${timestamp}|g" \
+    -e "s|{{DATE}}|${date}|g" \
+    -e "s|{{ASSIGNEE}}|${assignee}|g" \
+    "$src" > "$dst"
 }
 
 # オプション解析
 NO_BACKUP=false
 
 while [[ $# -gt 0 ]]; do
-    case $1 in
-        --no-backup)
-            NO_BACKUP=true
-            shift
-            ;;
-        -h|--help)
-            echo ""
-            echo "IXV-Agents ワークスペース初期化スクリプト"
-            echo ""
-            echo "使用方法: ./scripts/setup_workspace.sh [オプション]"
-            echo ""
-            echo "オプション:"
-            echo "  --no-backup    バックアップをスキップして初期化のみ実行"
-            echo "  -h, --help     このヘルプを表示"
-            echo ""
-            echo "動作内容:"
-            echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
-            echo "  2. workspace/ ディレクトリを初期化"
-            echo "  3. シンボリックリンクを作成（roles, skills）"
-            echo "  4. テンプレートからキューファイル・ダッシュボード・README.mdを初期化"
-            echo ""
-            exit 0
-            ;;
-        *)
-            echo "不明なオプション: $1"
-            echo "./scripts/setup_workspace.sh -h でヘルプを表示"
-            exit 1
-            ;;
-    esac
+  case $1 in
+    --no-backup)
+      NO_BACKUP=true
+      shift
+      ;;
+    -h | --help)
+      echo ""
+      echo "IXV-Agents ワークスペース初期化スクリプト"
+      echo ""
+      echo "使用方法: ./scripts/setup_workspace.sh [オプション]"
+      echo ""
+      echo "オプション:"
+      echo "  --no-backup    バックアップをスキップして初期化のみ実行"
+      echo "  -h, --help     このヘルプを表示"
+      echo ""
+      echo "動作内容:"
+      echo "  1. 前回記録をバックアップ（backups/backup_YYYYMMDD_HHMMSS/）"
+      echo "  2. workspace/ ディレクトリを初期化"
+      echo "  3. シンボリックリンクを作成（roles, skills）"
+      echo "  4. テンプレートからキューファイル・ダッシュボード・README.mdを初期化"
+      echo ""
+      exit 0
+      ;;
+    *)
+      echo "不明なオプション: $1"
+      echo "./scripts/setup_workspace.sh -h でヘルプを表示"
+      exit 1
+      ;;
+  esac
 done
 
 # テンプレートディレクトリの存在確認
 if [ ! -d "$TEMPLATES_DIR" ]; then
-    log_error "テンプレートディレクトリが見つかりません: $TEMPLATES_DIR"
-    exit 1
+  log_error "テンプレートディレクトリが見つかりません: $TEMPLATES_DIR"
+  exit 1
 fi
 
 echo ""
@@ -125,24 +125,24 @@ echo ""
 # ============================================================
 BACKUP_DIR=""
 if [ "$NO_BACKUP" = false ]; then
-    log_step "STEP 1: 前回記録のバックアップ"
+  log_step "STEP 1: 前回記録のバックアップ"
 
-    # workspaceディレクトリが存在する場合は全体をバックアップ
-    if [ -d "${WORKSPACE_DIR}" ]; then
-        mkdir -p "${BACKUP_BASE_DIR}"
-        BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
-        mv "${WORKSPACE_DIR}" "${BACKUP_DIR}"
-        log_success "バックアップ完了: $BACKUP_DIR"
-    else
-        log_info "workspaceが存在しません（スキップ）"
-    fi
+  # workspaceディレクトリが存在する場合は全体をバックアップ
+  if [ -d "${WORKSPACE_DIR}" ]; then
+    mkdir -p "${BACKUP_BASE_DIR}"
+    BACKUP_DIR="${BACKUP_BASE_DIR}/backup_$(date '+%Y%m%d_%H%M%S')"
+    mv "${WORKSPACE_DIR}" "${BACKUP_DIR}"
+    log_success "バックアップ完了: $BACKUP_DIR"
+  else
+    log_info "workspaceが存在しません（スキップ）"
+  fi
 else
-    log_step "STEP 1: バックアップをスキップ (--no-backup)"
-    # --no-backup の場合は既存のworkspaceを削除
-    if [ -d "${WORKSPACE_DIR}" ]; then
-        rm -rf "${WORKSPACE_DIR}"
-        log_info "既存のworkspaceを削除"
-    fi
+  log_step "STEP 1: バックアップをスキップ (--no-backup)"
+  # --no-backup の場合は既存のworkspaceを削除
+  if [ -d "${WORKSPACE_DIR}" ]; then
+    rm -rf "${WORKSPACE_DIR}"
+    log_info "既存のworkspaceを削除"
+  fi
 fi
 
 # ============================================================
@@ -165,26 +165,26 @@ log_step "STEP 3: シンボリックリンクの作成"
 
 # roles へのシンボリックリンク
 if [ ! -L "${WORKSPACE_DIR}/roles" ]; then
-    ln -sfn ../roles "${WORKSPACE_DIR}/roles"
-    log_info "workspace/roles -> ../roles を作成"
+  ln -sfn ../roles "${WORKSPACE_DIR}/roles"
+  log_info "workspace/roles -> ../roles を作成"
 else
-    log_info "workspace/roles は既に存在"
+  log_info "workspace/roles は既に存在"
 fi
 
 # .claude/skills へのシンボリックリンク
 if [ ! -L "${WORKSPACE_DIR}/.claude/skills" ]; then
-    ln -sfn ../../skills "${WORKSPACE_DIR}/.claude/skills"
-    log_info "workspace/.claude/skills -> ../../skills を作成"
+  ln -sfn ../../skills "${WORKSPACE_DIR}/.claude/skills"
+  log_info "workspace/.claude/skills -> ../../skills を作成"
 else
-    log_info "workspace/.claude/skills は既に存在"
+  log_info "workspace/.claude/skills は既に存在"
 fi
 
 # .opencode/skills へのシンボリックリンク
 if [ ! -L "${WORKSPACE_DIR}/.opencode/skills" ]; then
-    ln -sfn ../../skills "${WORKSPACE_DIR}/.opencode/skills"
-    log_info "workspace/.opencode/skills -> ../../skills を作成"
+  ln -sfn ../../skills "${WORKSPACE_DIR}/.opencode/skills"
+  log_info "workspace/.opencode/skills -> ../../skills を作成"
 else
-    log_info "workspace/.opencode/skills は既に存在"
+  log_info "workspace/.opencode/skills は既に存在"
 fi
 
 log_success "シンボリックリンク OK"
@@ -199,15 +199,15 @@ CURRENT_DATE=$(date "+%Y-%m-%d")
 
 # po_to_sm.yaml を初期化
 apply_template "${TEMPLATES_DIR}/queue/po_to_sm.yaml" \
-               "${WORKSPACE_DIR}/queue/po_to_sm.yaml" \
-               "$TIMESTAMP" "$CURRENT_DATE" ""
+  "${WORKSPACE_DIR}/queue/po_to_sm.yaml" \
+  "$TIMESTAMP" "$CURRENT_DATE" ""
 log_info "queue/po_to_sm.yaml を初期化"
 
 # Dev用タスクファイルを初期化 (dev1-dev3)
 for i in {1..3}; do
-    apply_template "${TEMPLATES_DIR}/queue/tasks/dev.yaml" \
-                   "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" \
-                   "$TIMESTAMP" "$CURRENT_DATE" "dev${i}"
+  apply_template "${TEMPLATES_DIR}/queue/tasks/dev.yaml" \
+    "${WORKSPACE_DIR}/queue/tasks/dev${i}.yaml" \
+    "$TIMESTAMP" "$CURRENT_DATE" "dev${i}"
 done
 log_info "queue/tasks/dev1-dev3.yaml を初期化"
 
@@ -215,16 +215,16 @@ log_info "queue/tasks/dev1-dev3.yaml を初期化"
 DELETED_COUNT=0
 shopt -s nullglob
 for f in "${WORKSPACE_DIR}"/queue/reports/*.yaml; do
-    if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
-        rm "$f"
-        DELETED_COUNT=$((DELETED_COUNT + 1))
-    fi
+  if [ -f "$f" ] && [[ "$f" != *"TEMPLATE"* ]]; then
+    rm "$f"
+    DELETED_COUNT=$((DELETED_COUNT + 1))
+  fi
 done
 shopt -u nullglob
 if [ $DELETED_COUNT -gt 0 ]; then
-    log_info "${DELETED_COUNT} 件のレポートファイルを削除"
+  log_info "${DELETED_COUNT} 件のレポートファイルを削除"
 else
-    log_info "削除対象のレポートファイルなし"
+  log_info "削除対象のレポートファイルなし"
 fi
 
 # TEMPLATEファイルをコピー
@@ -239,8 +239,8 @@ log_success "キューファイル初期化完了"
 log_step "STEP 5: ダッシュボードの初期化"
 
 apply_template "${TEMPLATES_DIR}/queue/dashboard.md" \
-               "${WORKSPACE_DIR}/queue/dashboard.md" \
-               "$TIMESTAMP" "$CURRENT_DATE" ""
+  "${WORKSPACE_DIR}/queue/dashboard.md" \
+  "$TIMESTAMP" "$CURRENT_DATE" ""
 
 log_success "queue/dashboard.md を初期化"
 
@@ -250,8 +250,8 @@ log_success "queue/dashboard.md を初期化"
 log_step "STEP 6: ワークスペースルートファイルの初期化"
 
 apply_template "${TEMPLATES_DIR}/README.md" \
-               "${WORKSPACE_DIR}/README.md" \
-               "$TIMESTAMP" "$CURRENT_DATE" ""
+  "${WORKSPACE_DIR}/README.md" \
+  "$TIMESTAMP" "$CURRENT_DATE" ""
 log_info "README.md（仕様書）を初期化"
 
 cp "${TEMPLATES_DIR}/CONSTITUTION.md" "${WORKSPACE_DIR}/CONSTITUTION.md"
@@ -295,8 +295,8 @@ echo "    - workspace/.claude/skills -> ../../skills"
 echo "    - workspace/.opencode/skills -> ../../skills"
 echo ""
 if [ "$NO_BACKUP" = false ] && [ -d "$BACKUP_DIR" ]; then
-    echo "  バックアップ先: $BACKUP_DIR"
-    echo ""
+  echo "  バックアップ先: $BACKUP_DIR"
+  echo ""
 fi
 echo "  次のステップ:"
 echo "    ./scripts/boot.sh    # エージェントを起動"

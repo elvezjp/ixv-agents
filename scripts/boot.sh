@@ -32,7 +32,7 @@ while [[ $# -gt 0 ]]; do
       MODEL="$2"
       shift 2
       ;;
-    -h|--help)
+    -h | --help)
       echo "Usage: ./scripts/boot.sh [--claude-code] [--model <model_name>]"
       echo "  --claude-code   Use Claude Code instead of OpenCode (default)"
       echo "  --model <name>  Specify model (e.g., sonnet, opus, anthropic/claude-sonnet-4-5)"
@@ -79,7 +79,7 @@ if [ ! -d "$WORKSPACE_DIR" ]; then
 fi
 
 log "Stopping existing session if present..."
-tmux kill-session -t ixv-agents 2>/dev/null || true
+tmux kill-session -t ixv-agents 2> /dev/null || true
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # ixv-agents: 全エージェント（PO, SM, Dev1-3）を1セッション5ペインで構成
@@ -141,13 +141,13 @@ done
 # トークン更新を完了させてから残りを起動する（Issue #20 対策）
 # ═══════════════════════════════════════════════════════════════════════════
 (
-  sleep 5  # attach が安定するまで待つ
+  sleep 5 # attach が安定するまで待つ
 
   # Step 1: 最初に PO を起動してトークンリフレッシュを完了させる
   tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
   tmux send-keys -t "ixv-agents:0.0" Enter
 
-  sleep 5  # トークンリフレッシュ完了を待つ
+  sleep 5 # トークンリフレッシュ完了を待つ
 
   # Step 2: 残りのエージェントを起動（トークンはリフレッシュ済み）
   tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
@@ -158,7 +158,7 @@ done
     tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
   done
 
-  sleep 5  # CLI 起動待ち
+  sleep 5 # CLI 起動待ち
 
   # PO
   tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
