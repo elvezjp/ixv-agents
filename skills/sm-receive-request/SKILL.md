@@ -72,18 +72,94 @@ PO に send-keys で確認:
 
 ### Step 2: task_type からフェーズを判定
 
-以下のルーティングテーブルに基づき、対応フェーズと次アクションを決定する。
+**SPEC.md §2.6 に基づくフェーズ判定**。`task_type` の種別に応じて以下のいずれかのルートで判定する。
+
+#### Step 2-A: 直接マッピング（SPEC.md §2.6.1）
+
+`task_type` が以下のいずれかの場合、対応フェーズに直接マッピングする。
 
 | task_type | Phase | Dashboard表記 | 次スキル/アクション |
 |-----------|-------|--------------|-------------------|
-| constitution_update | 1 | `工程1 Constitution — 原則決定` | sm-update-spec |
-| spec_update | 2 | `工程2 Specify — 企画・要件定義` | sm-update-spec |
-| plan | 3 | `工程3 Plan — 設計計画` | 複雑さ判断 → sm-write-task-yaml or docs/作成 → sm-update-spec |
-| execute | 4 | `工程4 Tasks — タスク分割` | sm-write-task-yaml |
-| verify | 6 | `工程6 Verify/Accept — 検証・受入` | 成果物検証 → PO通知 |
-| backlog_update | 6 | `工程6 Verify/Accept — 検証・受入` | sm-update-spec |
-| feature | - | フェーズ判定結果に依存 | POの意図を解釈してルーティング |
-| bugfix | - | 通常は `工程4 Tasks` | sm-write-task-yaml |
+| `constitution_update` | 1 | `工程1 Constitution — 原則決定` | sm-update-spec |
+| `spec_update` | 2 | `工程2 Specify — 企画・要件定義` | sm-update-spec |
+| `plan` | 3 | `工程3 Plan — 設計計画` | 複雑さ判断 → sm-write-task-yaml or docs/作成 → sm-update-spec |
+| `execute` | 4 | `工程4 Tasks — タスク分割` | sm-write-task-yaml |
+| `verify` | 6 | `工程6 Verify/Accept — 検証・受入` | 成果物検証 → PO通知 |
+| `backlog_update` | 6 | `工程6 Verify/Accept — 検証・受入` | sm-update-spec |
+
+#### Step 2-B: 決定木による判定（SPEC.md §2.6.2、`feature` / `bugfix` の場合）
+
+`task_type` が `feature` または `bugfix` の場合は、以下の決定木を **上から順に評価** し、最初にマッチした条件のフェーズを採用する（前段が未完了なら戻る）。
+
+```
+1. 要件が README.md に未記載か？
+   → grep で summary のキーワードを検索
+   → ヒットなし → Phase 2 (Specify) として spec_update 相当で処理
+
+2. 要件は記載済みだが、設計計画（docs/）が未完了か？
+   → ls docs/ で関連する計画書（要件のキーワードを含むファイル名）を確認
+   → 関連計画書なし → Phase 3 (Plan) として plan 相当で処理
+
+3. 設計済みだが、実装が未完了か？
+   → docs/ の計画書で言及される成果物ファイルが存在するか確認
+   → 成果物未作成 → Phase 4 (Tasks) として execute 相当で処理
+
+4. 実装済みだが、検証が未完了か？
+   → 該当タスクの reports に done レポートはあるが、acceptance_criteria の検証が未済
+   → Phase 6 (Verify) として verify 相当で処理
+```
+
+複数条件にマッチする場合は **より早いフェーズを優先** する。
+
+##### 確認手段（具体的なコマンド例）
+
+```bash
+# 1. 要件が README.md に記載されているか
+grep -i "{summary のキーワード}" workspace/README.md
+
+# 2. 関連計画書が docs/ にあるか
+ls workspace/docs/ | grep -i "{キーワード}"
+
+# 3. 成果物ファイルが存在するか
+ls workspace/{outputs から推測されるパス}
+
+# 4. done レポートが存在するか
+grep -l "status: done" queue/reports/*.yaml
+```
+
+##### Dashboard 表記
+
+| 判定結果 | Dashboard 表記 |
+|---|---|
+| Phase 2 と判定 | `工程2 Specify — 企画・要件定義` |
+| Phase 3 と判定 | `工程3 Plan — 設計計画` |
+| Phase 4 と判定 | `工程4 Tasks — タスク分割` |
+| Phase 6 と判定 | `工程6 Verify/Accept — 検証・受入` |
+
+##### feature/bugfix 判定の例
+
+```yaml
+# 例: po_to_sm.yaml
+task_type: feature
+summary: "ダークモード切り替え機能の追加"
+acceptance_criteria:
+  - "設定画面でダークモードに切り替えられる"
+```
+
+→ `grep -i "ダークモード" workspace/README.md` を実行
+   - ヒットなし → **Phase 2 (Specify)** と判定、`spec_update` 相当で処理
+   - ヒットあり → 次の条件へ
+
+```yaml
+# 例: po_to_sm.yaml
+task_type: bugfix
+summary: "タスク一覧が表示されないバグの修正"
+```
+
+→ 該当機能は通常 README.md に記載済み、docs/ にも設計済みのため、ステップ3に進む
+   → 成果物ファイルは存在するが動作不良 → **Phase 4 (Tasks)** と判定、`execute` 相当で処理
+
+判定後、Step 3 で `dashboard.md` の `## Current Phase` を更新する。
 
 ### Step 3: dashboard.md の Current Phase を更新
 
