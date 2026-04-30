@@ -1,7 +1,7 @@
 # IXV-Agents Specification (SPEC.md)
 
-**Version**: 0.1.0
-**Last Updated**: 2026-03-04
+**Version**: 0.2.0
+**Last Updated**: 2026-04-30
 
 ---
 
@@ -234,7 +234,9 @@ issues: []
 
 *注: 必須配列（`acceptance_criteria`, `definition_of_done`）は送信前に1件以上で埋める。*
 
-## 2.4. タスク状態遷移 (State)
+## 2.4. タスク状態遷移と検証ルール
+
+### 2.4.1. 状態遷移 (State)
 
 ```
 queued -> in_progress -> done
@@ -242,12 +244,84 @@ queued -> in_progress -> done
                     -> needs_review
 ```
 
-## 2.5. 排他/競合ルール
+### 2.4.2. 必須配列の空配列禁止
+
+§2.3 で定義された必須配列フィールドは、空配列のまま発行してはならない。スキーマ自体は変更せず、発行スキルが Step として強制する。
+
+| ファイル | フィールド | 検証者 | 違反時アクション |
+|---------|---------|-------|--------------|
+| `queue/po_to_sm.yaml` | `acceptance_criteria` | PO（発行前） | 発行を中断し、Human にヒアリング |
+| `queue/tasks/dev{N}.yaml` | `definition_of_done` | SM（発行前） | 発行を中断し、PO に確認（`po_to_sm.yaml` の `acceptance_criteria` を再読） |
+
+各項目は **検証可能な形式**（「〜が実装されている」「〜テストが通る」等）で記述すること。
+
+### 2.4.3. Definition of Done 突合
+
+Dev は `status: done` を報告する際、対応するタスクの `definition_of_done` の各項目に対し、`changes` または `artifacts` のいずれかが対応していることをセルフチェックする。未カバー項目があれば、
+
+1. 既存の `issues` フィールドに未対応理由を明記し、
+2. `status` を `needs_review` に格下げする。
+
+SM は `done` レポート受領時に同様の突合を行い、未カバー項目があれば既存の `dashboard.md` の `## Notes` に記載し、Dev に追加作業を指示する（dashboard 構成は変更しない）。
+
+### 2.4.4. 必須フィールド欠落時の挙動
+
+| 受領者 | 対象ファイル | 欠落検出時の挙動 |
+|--------|----------|-----|
+| SM | `po_to_sm.yaml` | PO に send-keys で確認、処理を保留 |
+| Dev | `tasks/dev{N}.yaml` | `status: blocked` で SM に報告 |
+| SM | `reports/{task_id}.yaml` | `dashboard.md` の `## Notes` に記録、Dev に再作成依頼 |
+
+## 2.5. 排他/競合ルールと依存関係グラフ
+
+### 2.5.1. 排他ルール
 
 - 同一 `task_id` に対する同時編集は禁止。
-- 進行中タスクの中断は `status: blocked` で報告し、SMの判断で再割当て。
+- 進行中タスクの中断は `status: blocked` で報告し、SM の判断で再割当て。
 
-## 2.6. ファイル所有権マトリクス (書き込み権限)
+### 2.5.2. 依存関係 DAG 必須
+
+タスク間の `dependencies` は **有向非巡回グラフ（DAG）** でなければならない。SM はタスク発行前に循環依存の有無を検証する（`queue/tasks/*.yaml` の `dependencies` を BFS で辿り、自タスク ID が現れたら循環）。
+
+### 2.5.3. 依存先の状態要件
+
+| 依存先 status | SM の対応（発行前） | Dev の対応（受領時） |
+|---|---|---|
+| `done` | 発行可 | 受領可 |
+| `in_progress` | 発行可（順次実行） / 発行延期も可 | 依存先完了まで待機（または `blocked` 報告） |
+| `blocked` | 発行不可（解決後に再評価） | `status: blocked` で再報告 |
+| `needs_review` | 発行不可（PO 判断後に再評価） | `status: blocked` で再報告 |
+| 不在（task_id が存在しない） | 発行不可 | `status: blocked` で報告 |
+
+### 2.5.4. 状態確認手段
+
+依存先タスクの状態は **既存の `queue/reports/{dep_task_id}.yaml` の `status` フィールド** で確認する。report ファイルが存在しない場合は「未着手 or in_progress」と判定する。新たなフィールドやファイルは追加しない。
+
+## 2.6. task_type → フェーズ判定規則
+
+### 2.6.1. 直接マッピング
+
+| task_type | Phase | 備考 |
+|---|---|---|
+| `constitution_update` | 1 | CONSTITUTION.md 更新 |
+| `spec_update` | 2 | README.md 更新 |
+| `plan` | 3 | 計画策定 |
+| `execute` | 4 | タスク分割・実行指示 |
+| `verify` | 6 | 検証 |
+| `backlog_update` | 6 | Backlog ステータス更新 |
+
+### 2.6.2. feature / bugfix の決定木
+
+`feature` / `bugfix` は汎用的な task_type であり、コンテキストに応じてフェーズを判定する。SM は受領時に以下の決定木を **上から順に評価** し、最初にマッチした条件のフェーズを採用する。
+
+1. 要件が `README.md` に未記載 → **Phase 2 (Specify)** = `spec_update` 相当
+2. 要件は記載済みだが設計（`docs/`）未完了 → **Phase 3 (Plan)** = `plan` 相当
+3. 設計済みだが実装未完了（成果物ファイル未作成） → **Phase 4 (Tasks)** = `execute` 相当
+4. 実装済みだが検証未完了 → **Phase 6 (Verify)** = `verify` 相当
+
+複数条件にマッチする場合は **より早いフェーズを優先** する（前段が未完了なら戻る）。判定後、SM は `dashboard.md` の `## Current Phase` を更新する（dashboard フォーマットは変更なし）。
+
+## 2.7. ファイル所有権マトリクス (書き込み権限)
 
 | Role | Write | Read |
 |------|-------|------|
