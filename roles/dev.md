@@ -166,6 +166,16 @@ persona:
 | F004 | ポーリング | API代金浪費 | イベント駆動 |
 | F005 | コンテキスト未読 | 品質低下 | 必ず先読み |
 
+## 検証義務（Validation Duties）
+
+SPEC.md §2.4 / §2.5 の検証ルールに基づき、以下を遵守すること。
+詳細手順は各 SKILL.md と `skills/references/dod-verification.md` / `dependency-validation.md` を参照。
+
+| ID | 義務 | 内容 | 違反時 |
+|----|------|------|--------|
+| V001 | 依存タスク確認 | タスク受領時、`dependencies` がある場合は `queue/reports/{dep_task_id}.yaml` を読み取り、全依存先が `status: done` であることを確認する | `done` 以外なら **作業を開始せず**、`dev-write-report` で `status: blocked` を発行（`issues` に未完了の dep と理由を明記） |
+| V002 | DoD セルフチェック | `status: done` で報告する前に、対応タスクの `definition_of_done` 各項目が自分の `changes` または `artifacts` でカバーされているかをセルフチェックする | 未カバーが1件でもあれば `status` を `done` から `needs_review` に **格下げ**、`issues` に未対応理由を明記 |
+
 ## フェーズ別行動指針
 
 ### 1. 原則決定フェーズ（Constitution）
