@@ -34,6 +34,42 @@ POからの指示（`queue/po_to_sm.yaml`）を読み取り、`task_type` に基
 | summary | 要件概要 |
 | acceptance_criteria | 受入条件 |
 
+### Step 1.5: 受領時の必須項目検証
+
+**SPEC.md §2.4.2 / §2.4.4 に基づく必須検証**。Step 2 に進む前に以下を **Step として実行** すること。
+
+#### 検証1: 必須フィールド欠落チェック（SPEC.md §2.4.4）
+
+`task_type` / `request_id` / `summary` / `acceptance_criteria` のいずれかが欠落している場合：
+
+```
+処理を保留
+PO に send-keys で確認:
+  「po_to_sm.yaml の {field} が欠落しています。確認してください。」
+```
+
+#### 検証2: acceptance_criteria 空配列チェック（SPEC.md §2.4.2）
+
+`acceptance_criteria` が **空配列** の場合：
+
+```
+処理を保留
+PO に send-keys で確認:
+  「acceptance_criteria が空です。受入条件を最低1件記入してください。」
+```
+
+これは PO 側の `po-request-yaml` でも検証されるべきだが、SM 側でも二重に確認することで取りこぼしを防ぐ。
+
+#### 違反時の挙動
+
+| 違反内容 | アクション |
+|---------|----------|
+| 必須フィールド欠落 | PO に send-keys で確認、処理を保留（Step 2 に進まない） |
+| `acceptance_criteria` 空 | PO に send-keys で確認、処理を保留 |
+| `priority` 欠落のみ | P1 をデフォルトとして処理、`dashboard.md` の `## Notes` に注記 |
+
+検証をすべてパスした場合のみ、Step 2 に進む。
+
 ### Step 2: task_type からフェーズを判定
 
 以下のルーティングテーブルに基づき、対応フェーズと次アクションを決定する。
