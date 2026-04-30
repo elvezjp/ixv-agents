@@ -40,6 +40,80 @@ date "+%Y-%m-%dT%H:%M:%S"
 
 **注意**: `failed` は有効な status ではない（SPEC.md 2.3.4 準拠）。
 
+### Step 2.5: Definition of Done セルフチェック（status: done を選ぶ場合）
+
+**SPEC.md §2.4.3 に基づく必須検証**。`status: done` を選択する前に以下を **Step として実行** すること。
+判定基準の詳細は `../references/dod-verification.md` を参照。
+
+#### 検証手順
+
+対応する `queue/tasks/dev{N}.yaml`（または最初に受領した task）の `definition_of_done` を読み返し、各項目について以下を確認する。
+
+```
+for each item in definition_of_done:
+    if (item に対応する記述が changes にある) OR
+       (item に対応するファイルが artifacts に列挙されている):
+        OK
+    else:
+        未カバー項目として記録
+```
+
+判定基準（`dod-verification.md` から要約）:
+
+| 基準 | 内容 |
+|------|------|
+| キーワード一致 | DoD 項目内のキーフレーズ（機能名・ファイル名・テスト名等）が changes/artifacts に現れている |
+| ファイルパス類推 | DoD が言及するファイルパスが artifacts に含まれている |
+| 明示マッピング | DoD と changes が同数で1対1対応している |
+
+#### 違反時の挙動
+
+未カバー項目が **1件でもある** 場合：
+
+1. **`status` を `done` から `needs_review` に格下げ**
+2. `issues` フィールドに未カバー理由を明記
+   - 例: `"DoD: ユニットテスト8件作成 が未対応（実装テスト4件のみ）"`
+3. `summary` にも「DoD 一部未対応」である旨を記載
+
+`status: done` で報告できるのは、**全 DoD 項目がカバーされている場合のみ**。
+
+#### 例
+
+**全カバー（done で OK）**:
+```yaml
+# task の definition_of_done
+- "/auth/login が POST を受け付ける"
+- "ユニットテストがパスする"
+
+# report
+status: done
+changes:
+  - "/auth/login エンドポイント実装（POST）"
+  - "ユニットテスト6件作成、全件パス"
+artifacts:
+  - "src/auth/api.ts"
+  - "tests/auth/api.test.ts"
+```
+
+**部分未カバー（needs_review に格下げ）**:
+```yaml
+# task の definition_of_done
+- "認証 API が実装されている"
+- "ユニットテスト8件作成"
+
+# report
+status: needs_review   # ← done から格下げ
+summary: "認証 API は実装完了。DoD 一部未対応のため要レビュー。"
+changes:
+  - "認証 API を実装"
+artifacts:
+  - "src/auth/api.ts"
+issues:
+  - "DoD: ユニットテスト8件作成 が未対応"
+```
+
+検証をパスした（または status を格下げした）場合のみ、Step 3 に進む。
+
 ### Step 3: 報告 YAML を生成
 
 SPEC.md 2.3.4 スキーマに準拠した YAML を生成する：
