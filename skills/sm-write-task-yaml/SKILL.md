@@ -108,7 +108,8 @@ dependencies:
 
 ### Step 5.5: タスク発行前の検証
 
-**SPEC.md §2.4.2 / §2.4.4 に基づく必須検証**。書き込み前に以下を **Step として実行** すること。
+**SPEC.md §2.4.2 / §2.4.4 / §2.5 に基づく必須検証**。書き込み前に以下を **Step として実行** すること。
+依存検証の詳細は `../references/dependency-validation.md` を参照。
 
 #### 検証1: definition_of_done 空配列禁止（SPEC.md §2.4.2）
 
@@ -134,16 +135,57 @@ if len(definition_of_done) == 0:
 | type | `dev` または `doc` |
 | summary | 空文字でない（140文字以内推奨） |
 
+#### 検証3: 依存タスクの検証（SPEC.md §2.5、`dependencies` がある場合のみ）
+
+`dependencies` が空でない場合、`../references/dependency-validation.md` の手順に従い以下を **3つ全て** 実行する。
+
+**3-1. 存在確認**: 各 `task_id` が `queue/tasks/*.yaml` または `queue/reports/*.yaml` に存在するか
+
+```bash
+# 全 task_id の一覧を取得
+grep -h '^task_id:' queue/tasks/*.yaml queue/reports/*.yaml | sort -u
+```
+
+**3-2. 状態確認**: `queue/reports/{dep_task_id}.yaml` の `status` を確認
+
+| 依存先 status | 判定 |
+|---|---|
+| `done` | 発行可 |
+| `in_progress`（report 不在含む） | 発行可（順次実行）/ 発行延期も可 |
+| `blocked` | **発行不可** |
+| `needs_review` | **発行不可** |
+| 不在（task_id 自体が存在しない） | **発行不可** |
+
+**3-3. 循環検出**: `queue/tasks/*.yaml` 全体の `dependencies` を BFS で辿り、自タスク ID が現れたら循環
+
+```
+function has_cycle(new_task_id, new_dependencies, all_tasks):
+  for each dep in new_dependencies:
+    visited = {}
+    queue = [dep]
+    while queue is not empty:
+      current = queue.pop_front()
+      if current in visited: continue
+      visited.add(current)
+      if current == new_task_id:
+        return true   # 循環検出
+      current_task = all_tasks.find(task_id == current)
+      if current_task is null: continue
+      for each child_dep in current_task.dependencies:
+        queue.push_back(child_dep)
+  return false
+```
+
 #### 違反時の挙動
 
 | 違反内容 | SM のアクション |
 |---------|-------------|
 | `definition_of_done` 空 | タスク発行を中断、PO に send-keys で確認 |
 | 必須フィールド欠落 | タスク発行を中断、Step 5 をやり直す |
+| 依存先が `blocked` / `needs_review` / 不在 | 発行を中断、`dashboard.md` の `## Blockers` に該当 task_id と理由を記載、PO に send-keys |
+| 循環依存検出 | 発行を中断、循環パス（例: `A → B → C → A`）を `## Blockers` に記載、PO に依存関係見直しを依頼 |
 
 検証をすべてパスした場合のみ、Step 6 に進む。
-
-> **Note**: 依存タスク検証（`dependencies` の存在確認・状態確認・循環検出）は別途 SPEC.md §2.5 に基づき本 Step に追加される（後続コミットで拡張）。
 
 ### Step 6: ファイルに書き込み
 
