@@ -13,6 +13,7 @@ Workflow validation layer release. Adds explicit validation steps for required f
 
 ### Added
 
+- `VERSION` file at repository root as the canonical Single Source of Truth for the release version
 - Workflow validation layer — explicit validation steps wired into the issuing skills (#31, #32, #33, #40):
   - Required-field / non-empty-array validation before issuing `po_to_sm.yaml` and `tasks/dev{N}.yaml`
   - Definition of Done cross-check on Dev self-report and SM receipt; auto-downgrade `done` → `needs_review` when DoD items are uncovered
