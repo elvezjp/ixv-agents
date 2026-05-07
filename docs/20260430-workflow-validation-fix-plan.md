@@ -4,7 +4,7 @@
 **起票者**: 田中秀樹（Issue #31 / #32 / #33 / #40 の起票）
 **トラッキング Issue**: [#57](https://github.com/elvezjp/20260130ixv-agents/issues/57)（4 issue 一括対応）
 **対象Issue**: [#31](https://github.com/elvezjp/20260130ixv-agents/issues/31), [#32](https://github.com/elvezjp/20260130ixv-agents/issues/32), [#33](https://github.com/elvezjp/20260130ixv-agents/issues/33), [#40](https://github.com/elvezjp/20260130ixv-agents/issues/40)
-**ステータス**: Draft（実装着手前のレビュー待ち）
+**ステータス**: 完了（実装・PR #58 反映済み、試験実施結果は [20260430-workflow-validation-test-results.md](20260430-workflow-validation-test-results.md) を参照）
 **実装方式**: 単一 PR で一括対応
 
 ---
