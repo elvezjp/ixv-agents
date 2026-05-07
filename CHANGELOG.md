@@ -50,6 +50,7 @@ Workflow validation layer release. Adds explicit validation steps for required f
 ### Known Limitations
 
 - Validation is enforced by the issuing skills (prompt-level). It is not a hard schema check at the YAML layer; agents that bypass the skills can still emit non-conformant YAML.
+- The abnormal-case validation scenarios for the workflow validation layer remain unverified as of this release; see `docs/20260430-workflow-validation-test-results.md` for the current status.
 - The `0.1.x` entry's stated count of "13 AI CLI skills" was inaccurate; the actual count is 12 (no skill was added or removed in `0.2.0`).
 
 ## [0.1.0] - 2026-03-04
