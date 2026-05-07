@@ -66,7 +66,46 @@ queue/tasks/dev3.yaml  ← Dev3はこれだけ
 2. **definition_of_done** を完了条件として明確に理解（これが合格基準）
 3. **inputs** を参照して関連ファイルや前提を確認
 4. **outputs** で期待される成果物を確認
-5. **dependencies** があれば、依存タスクが完了済みか確認
+
+### Step 4.5: 依存タスクの状態確認（dependencies がある場合のみ）
+
+**SPEC.md §2.5.3 / §2.5.4 に基づく必須検証**。`dependencies` が空でない場合、作業を開始する前に以下を **Step として実行** すること。
+詳細は `../references/dependency-validation.md` を参照。
+
+#### 検証手順
+
+各 `dep_task_id` について、`queue/reports/{dep_task_id}.yaml` を読み取り `status` を確認する。
+
+```bash
+# 例: TASK-20260201-001 の状態を確認
+cat queue/reports/TASK-20260201-001.yaml | grep '^status:'
+```
+
+レポートが **存在しない** 場合は「未着手 or in_progress」と判定する。
+
+#### 状態別の判定（SPEC.md §2.5.3 と同期）
+
+| 依存先 status | Dev の対応 |
+|---|---|
+| `done` | 受領可、Step 5 へ進む |
+| `in_progress`（report 不在含む） | 依存先完了まで待機、または `status: blocked` で報告 |
+| `blocked` | `status: blocked` で再報告 |
+| `needs_review` | `status: blocked` で再報告 |
+| 不在（task_id 自体が存在しない） | `status: blocked` で報告 |
+
+#### 違反時の挙動
+
+依存先のいずれかが `done` 以外（または不在）の場合：
+
+1. **作業を開始しない**
+2. `dev-write-report` で `status: blocked` を発行
+3. `issues` フィールドに依存先の状態と未解決理由を明記
+   - 例: `"依存先 TASK-20260201-001 が blocked 状態のため作業継続不可"`
+   - 例: `"依存先 TASK-20260201-002 のレポートが存在しない（未完了の可能性）"`
+4. `summary` に「依存先未完了のためブロック」と記載
+5. SM に send-keys で報告
+
+全依存先が `done` の場合のみ、Step 5 に進む。
 
 ### Step 5: ペルソナを設定
 

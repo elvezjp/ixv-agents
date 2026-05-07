@@ -75,14 +75,62 @@ issues:
 - **Agent Status**: 各Devの作業状況
 - **Blockers**: ブロッカー一覧
 
+### Step 3.5: Definition of Done 突合検証（status: done レポートのみ）
+
+**SPEC.md §2.4.3 に基づく必須検証**。`status: done` の報告について、対応タスクの `definition_of_done` を読み込み、レポートの `changes` / `artifacts` と突合する。
+判定基準の詳細は `../references/dod-verification.md` を参照。
+
+#### 検証手順
+
+`status: done` の各レポートについて：
+
+1. レポートの `task_id` から対応タスクを特定
+   - `queue/tasks/dev{N}.yaml` を走査、または既に処理済みなら過去の発行履歴を参照
+2. 対応タスクの `definition_of_done` を読み込み
+3. 各 DoD 項目について、レポートの `changes` または `artifacts` に対応する記述があるか確認
+
+判定基準（`dod-verification.md` から要約）:
+
+| 基準 | 内容 |
+|------|------|
+| キーワード一致 | DoD 項目内のキーフレーズが changes/artifacts に現れている |
+| ファイルパス類推 | DoD が言及するファイルパスが artifacts に含まれている |
+| 明示マッピング | DoD と changes が同数で1対1対応している |
+
+#### 違反時の挙動
+
+未カバー項目が **1件でもある** 場合：
+
+1. **dashboard.md の `## Notes` セクションに記載**（既存セクションを利用、フォーマット変更なし）
+   - 例: `- TASK-20260201-010: DoD "ユニットテスト8件作成" が未対応（実装テスト4件のみ確認）`
+2. Backlog Status の該当タスクを `done` にせず、**`needs_review` 相当の扱い** とする
+3. Dev に追加作業を send-keys で指示
+4. PO に状況を send-keys で報告
+
+レポート YAML 自体（`queue/reports/{task_id}.yaml`）は **書き換えない**（Dev が書いたものを尊重し、SM 側の判定は dashboard 側に記録する）。
+
+#### 例
+
+**未カバー検出時の dashboard.md 更新**:
+
+```markdown
+## Notes
+- TASK-20260201-010: Dev は status: done と報告したが、DoD「ユニットテスト8件作成」が未カバー
+  （実装テスト4件のみ）。Dev に残4件の作成を send-keys 済み。Backlog では needs_review 扱い。
+```
+
+検証をパスした `done` レポートのみ、Step 4 で「Backlog/Agent Status に done として反映」する。
+未カバーがあった `done` レポートは、Step 4 で「`needs_review` 扱い」として処理する。
+
 ### Step 4: 未反映報告をステータス別に分類
 
-| Report status | Dashboard 状態 | Action |
-|--------------|---------------|--------|
-| `done` | Backlog/Agent Status に未反映 | Dashboard 更新（成果セクション）→ PO通知 |
-| `blocked` | Blockers に未記載 | Blockers セクション追加 → 対応検討 |
-| `needs_review` | 未反映 | Dashboard 更新 → PO通知 |
-| `done` | 既に成果に記載済み | Skip（既処理） |
+| Report status | Step 3.5 判定 | Dashboard 状態 | Action |
+|--------------|-------------|---------------|--------|
+| `done` | DoD 全カバー | Backlog/Agent Status に未反映 | Dashboard 更新（成果セクション）→ PO通知 |
+| `done` | DoD 未カバーあり | Backlog/Agent Status に未反映 | `## Notes` に未カバー項目記載、Backlog は `needs_review` 扱い → Dev に追加作業 send-keys、PO通知 |
+| `blocked` | ― | Blockers に未記載 | Blockers セクション追加 → 対応検討 |
+| `needs_review` | ― | 未反映 | Dashboard 更新 → PO通知 |
+| `done` | DoD 全カバー | 既に成果に記載済み | Skip（既処理） |
 
 ### Step 5: 結果サマリを報告
 

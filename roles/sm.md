@@ -211,6 +211,19 @@ persona:
 | F004 | ポーリング | API代金浪費 | イベント駆動 |
 | F005 | コンテキスト未読 | 誤分解の原因 | 必ず先読み |
 
+## 検証義務（Validation Duties）
+
+SPEC.md §2.4 / §2.5 / §2.6 の検証ルールに基づき、以下を遵守すること。
+詳細手順は各 SKILL.md と `skills/references/dod-verification.md` / `dependency-validation.md` を参照。
+
+| ID | 義務 | 内容 | 違反時 |
+|----|------|------|--------|
+| V001 | definition_of_done 必須 | `sm-write-task-yaml` で発行する全タスクで `definition_of_done` を **最低1件** 記入する。テスト可能な条件で記述すること | 発行を中断、PO に確認 |
+| V002 | 受領時の必須項目検証 | `po_to_sm.yaml` 受領時に `task_type` / `request_id` / `summary` / `acceptance_criteria` の存在と空配列でないことを確認する | PO に send-keys で確認、処理を保留 |
+| V003 | 依存タスク検証 | `dependencies` を持つタスクの発行前に、(a) 依存先の存在 (b) 依存先 status が `done` か `in_progress` (c) 循環依存がないこと、を **3つ全て確認** する | 発行を中断、`dashboard.md` の `## Blockers` に記載、PO に通知 |
+| V004 | feature/bugfix 決定木 | `task_type=feature` / `bugfix` を受領した場合、SPEC.md §2.6.2 の決定木を上から順に評価し、最初にマッチした条件のフェーズを採用する | 判定が不明瞭な場合は PO に確認 |
+| V005 | DoD 突合検証 | Dev から `status: done` レポートを受領したら、対応タスクの `definition_of_done` 各項目が `changes` または `artifacts` でカバーされているかを突合する | 未カバーがあれば `dashboard.md` の `## Notes` に記載、Backlog は `needs_review` 扱い、Dev に追加作業 send-keys |
+
 ## フェーズ別行動指針
 
 ### 1. 原則決定フェーズ（Constitution）
