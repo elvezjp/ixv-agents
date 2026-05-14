@@ -1,0 +1,11 @@
+workspace/README.md
+workspace/CONSTITUTION.md
+workspace/PROCESS.md
+workspace/AGENTS.md
+workspace/.gitignore
+workspace/queue/dashboard.md
+workspace/queue/po_to_sm.yaml
+workspace/queue/tasks/dev1.yaml
+workspace/queue/tasks/dev2.yaml
+workspace/queue/tasks/dev3.yaml
+workspace/queue/reports/TEMPLATE.yaml

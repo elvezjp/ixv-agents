@@ -3,6 +3,10 @@
 #   .\scripts\boot.ps1                        # start psmux + agents (opencode)
 #   .\scripts\boot.ps1 -ClaudeCode            # use Claude Code instead
 #   .\scripts\boot.ps1 -Model <model_name>    # specify model
+#
+# Environment variables:
+#   IXV_DRY_RUN=1   セッションとペインを作成するのみで、CLI 起動・役割指示送信・
+#                   attach をスキップ。CI でのスモークテスト用。
 
 param(
     [switch]$ClaudeCode,
@@ -11,6 +15,8 @@ param(
 )
 
 $ErrorActionPreference = "Stop"
+
+$IxvDryRun = $env:IXV_DRY_RUN -eq "1"
 
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
@@ -166,7 +172,10 @@ if (Test-Path $HelpFile) {
 #
 # トークンリフレッシュの競合を防ぐため、最初の1エージェントを先に起動し
 # トークン更新を完了させてから残りを起動する（Issue #20 対策）
+#
+# IXV_DRY_RUN=1 の場合は CLI 起動・役割指示送信をスキップ（CI スモークテスト用）
 # ===============================================================================
+if (-not $IxvDryRun) {
 Start-Job -ScriptBlock {
     param($CliCmd, $WorkspaceDir)
 
@@ -205,6 +214,7 @@ Start-Job -ScriptBlock {
         tmux send-keys -t "ixv-agents:0.$PaneNum" Enter
     }
 } -ArgumentList $CliCmd, $WorkspaceDir | Out-Null
+}
 
 # ===============================================================================
 # 完了メッセージ（スクリプトを実行したターミナルに表示）
@@ -248,6 +258,11 @@ Write-Host "  |  プロセスが残った場合の強制停止:                 
 Write-Host "  |    .\scripts\stop.ps1 -Force                                 |"
 Write-Host "  +--------------------------------------------------------------+"
 Write-Host ""
+
+if ($IxvDryRun) {
+    Log "IXV_DRY_RUN=1: skipping attach. Session 'ixv-agents' is ready for inspection."
+    exit 0
+}
 
 Log "Attaching to ixv-agents session..."
 tmux attach-session -t ixv-agents
