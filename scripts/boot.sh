@@ -104,16 +104,17 @@ log "Creating ixv-agents session (5 panes)..."
 tmux new-session -d -s ixv-agents -n "agents" -x 200 -y 50
 
 # Step 1: 左右に分割（左50%, 右50%）
-tmux split-window -h -t "ixv-agents:0" -p 50
+# tmux 3.4+ では -p N は size missing エラーとなる場合があるため -l N% を使用
+tmux split-window -h -t "ixv-agents:0" -l 50%
 
 # Step 2: 左側を上下に分割（PO / SM）
-tmux split-window -v -t "ixv-agents:0.0" -p 50
+tmux split-window -v -t "ixv-agents:0.0" -l 50%
 
 # Step 3: 右側を横に3等分（Dev1 / Dev2 / Dev3）
 # ペイン2を分割 → 2(33%), 3(67%)
-tmux split-window -h -t "ixv-agents:0.2" -p 67
+tmux split-window -h -t "ixv-agents:0.2" -l 67%
 # ペイン3を分割 → 3(50%), 4(50%)
-tmux split-window -h -t "ixv-agents:0.3" -p 50
+tmux split-window -h -t "ixv-agents:0.3" -l 50%
 
 # Set titles and prompts
 # ペイン番号: 0=PO(左上), 1=SM(左下), 2=Dev1, 3=Dev2, 4=Dev3
