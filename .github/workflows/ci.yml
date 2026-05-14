@@ -87,15 +87,12 @@ jobs:
       matrix:
         include:
           - os: ubuntu-latest
-            shell: bash
             setup: bash scripts/setup_workspace.sh --no-backup
             boot: bash scripts/boot.sh
           - os: macos-latest
-            shell: bash
             setup: bash scripts/setup_workspace.sh --no-backup
             boot: bash scripts/boot.sh
           - os: windows-latest
-            shell: pwsh
             setup: .\scripts\setup_workspace.ps1 -NoBackup
             boot: .\scripts\boot.ps1
     runs-on: ${{ matrix.os }}
@@ -112,11 +109,9 @@ jobs:
         run: irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex
 
       - name: Setup workspace
-        shell: ${{ matrix.shell }}
         run: ${{ matrix.setup }}
 
       - name: Run boot (dry run)
-        shell: ${{ matrix.shell }}
         env:
           IXV_DRY_RUN: "1"
         run: ${{ matrix.boot }}
