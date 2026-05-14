@@ -7,6 +7,32 @@
 フォーマットは [Keep a Changelog](https://keepachangelog.com/ja/1.0.0/) に基づき、
 バージョン管理は [セマンティックバージョニング](https://semver.org/lang/ja/) に準拠しています。
 
+## [0.2.1] - 2026-05-14
+
+ワークフロー定義のドリフト検出と Phase 6（検証・受入）の判断フロー明示化リリース。`0.2.0` と後方互換（スキーマ変更なし）。既存ワークスペースは更新後のドキュメントを再読することで反映される。
+
+### 追加
+
+- `boot.{sh,ps1}` に `IXV_DRY_RUN=1` を追加 — セッション・ペイン作成のみで終了し、CLI 起動・役割指示送信・attach をスキップする。CI で boot 構成のドリフトを検出可能に（#54, PR #59）
+- GitHub Actions に `boot-dryrun` ジョブを追加 — Ubuntu / macOS / Windows で boot を dry-run 実行し、`tmux list-panes` 出力を期待値ファイルと diff 比較
+- 期待値ファイル `tests/fixtures/expected-{panes,files}.txt` を追加し、OS ごとの二重管理を解消
+- `SPEC.md` §5.6.1「PO 判断 → SM アクション対応表」を追加 — Phase 6 の状態機械を明示（#39, PR #60）
+
+### 変更
+
+- `SPEC.md` §5.6（検証・受入フェーズ）を **ACCEPT / REJECT / REVIEW_NEEDED** の 3 分岐状態機械として再定義（#39, PR #60）：
+  - REJECT 分岐の `task_type: plan` 発行による Phase 3 差し戻しを明文化
+  - REVIEW_NEEDED 分岐（`needs_review` 起因の追加確認）を新規定義し、§2.4.3 の DoD 突合フローと接続
+  - `backlog_update` 完了後の SM 状態を **idle**（次 `po_to_sm.yaml` 待ち）として規定
+- `roles/sm.md` Phase 6 を 3 分岐フローに書き換え、SPEC.md §5.6 と用語を整合
+- `skills/sm-update-spec/SKILL.md` の Phase 6 セクションに「ACCEPT 分岐でのみ起動」「完了後 idle 停止」を明記
+- macOS CI ランナーに tmux インストールステップを追加、Windows 環境の CRLF 差異を解消（PR #59）
+- tmux 3.4 との互換性対応、Windows ランナーの psmux PATH を修正（PR #59）
+
+### 修正
+
+- Issue #39（Phase 6 の分岐パスが不完全）の v0.2.0 残課題：`needs_review` の Phase 6 内分岐と `backlog_update` 後の SM 遷移先を明文化
+
 ## [0.2.0] - 2026-05-07
 
 ワークフロー検証層の整備リリース。既存の PO → SM → Dev ワークフローに対し、必須フィールド／Definition of Done／依存関係／タスク種別ごとのフェーズ判定の各検証ステップを明示的に組み込んだ。`0.1.0` と後方互換（スキーマ変更なし）。既存ワークスペースは `setup_workspace` を再実行することで更新後のスキル・ロール定義を取り込める。
@@ -102,5 +128,6 @@
 
 | バージョン | 概要 |
 |------------|------|
+| 0.2.1      | boot ドリフト検出（`IXV_DRY_RUN`）、Phase 6 の 3 分岐状態機械（ACCEPT/REJECT/REVIEW_NEEDED）を明示化 |
 | 0.2.0      | ワークフロー検証層（必須フィールド／DoD／依存関係／フェーズ判定）、SPEC.md の拡張、GitHub Actions CI |
 | 0.1.0      | 初回パブリックリリース: ロールベースマルチエージェントシステム、7プロセスワークフロー、クロスプラットフォームサポート |
