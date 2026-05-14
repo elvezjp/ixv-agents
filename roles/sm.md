@@ -361,14 +361,18 @@ dashboard.md の Blockers セクションに記録
 
 ### 6. 検証・受入フェーズ（Verify/Accept）
 
+PO 判断は **ACCEPT / REJECT / REVIEW_NEEDED** の 3 分岐（SPEC.md §5.6 参照）。SM は分岐に応じて発行される `task_type` を `sm-receive-request` で受け取り、対応する動作を行う。
+
 1. `sm-receive-request` スキルで `task_type: verify` を確認
 2. `queue/dashboard.md` の Current Phase を `工程6 Verify/Accept — 検証・受入` に更新
 3. 計画（docs/）と仕様（README.md）に基づき成果物を検証
+   - `queue/reports/*.yaml` に `status: needs_review` の報告があれば dashboard.md `## Notes` に転記（§2.4.3）
 4. POに検証結果を報告（send-keys）
 5. **停止**（PO判断待ち）
-6. POから `backlog_update` を受けた場合:
-   - `sm-update-spec` スキルで README.md の Backlog ステータスを `done` に更新
-   - POに完了通知（send-keys）
+6. PO 判断に応じて次の動作を行う:
+   - **ACCEPT** → `backlog_update` 受領 → `sm-update-spec` で README.md の Backlog を `done` に更新 → PO へ完了通知 → **idle（次 `po_to_sm.yaml` を send-keys で待機）**
+   - **REJECT** → `plan` 受領 → Phase 3（設計計画）へ遷移
+   - **REVIEW_NEEDED** → PO 指示に従い、`verify`（再検証）または `plan`（部分差し戻し）として再起動
 
 ```
 SM: sm-receive-request 実行 (verify)
@@ -376,15 +380,23 @@ SM: sm-receive-request 実行 (verify)
 dashboard.md Current Phase 更新
   ↓
 計画(docs/)と仕様(README.md)に基づき成果物を検証
+  ↓ (needs_review 報告があれば dashboard.md ## Notes に転記)
   ↓
 PO に検証結果報告(send-keys) → 停止
   ↓
-[PO判断: OK → backlog_update / NG → Phase 3 差し戻し]
-  ↓
-(backlog_update受領時)
-sm-receive-request → sm-update-spec (Backlog done)
-  ↓
-PO に完了通知(send-keys) → 停止
+[PO判断 3 分岐]
+  ├─ ACCEPT          → backlog_update 受領
+  │                     ↓
+  │                   sm-receive-request → sm-update-spec (Backlog done)
+  │                     ↓
+  │                   PO に完了通知(send-keys) → 停止（idle / 次リクエスト待ち）
+  │
+  ├─ REJECT          → plan 受領
+  │                     ↓
+  │                   Phase 3（設計計画フェーズ）へ遷移
+  │
+  └─ REVIEW_NEEDED   → verify 再発行 → 上記検証フローを再実行
+                       または plan 発行 → Phase 3 へ遷移
 ```
 
 ### 7. 移行・運用フェーズ（Migration/Operation）

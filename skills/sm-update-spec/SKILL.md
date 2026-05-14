@@ -92,6 +92,8 @@ metadata:
 
 #### Phase 6: README.md 更新（Backlog ステータス更新）
 
+**前提**: 本スキルは Phase 6 の **ACCEPT 分岐**（PO が `backlog_update` を発行した場合）で起動する。REJECT / REVIEW_NEEDED 分岐では起動しない（SPEC.md §5.6 参照）。
+
 **更新手順**:
 1. `po_to_sm.yaml` から対象の `request_id` を確認
 2. README.md の `## Backlog` テーブルで該当エントリの Status を `done` に更新
@@ -103,6 +105,8 @@ metadata:
 |----|----------|---------|--------|
 | REQ-20260201-001 | P1 | ダークモード対応 | done |
 ```
+
+**完了後の挙動**: PO に完了通知（send-keys）を送ったら **idle 状態**で停止し、次の `po_to_sm.yaml` を待つ。追加の task_type を自発的に発行してはならない。
 
 ### Step 3: 更新を実行
 

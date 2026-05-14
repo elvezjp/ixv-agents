@@ -7,6 +7,32 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.2.1] - 2026-05-14
+
+Workflow drift detection and Phase 6 (Verify/Accept) decision-flow clarification release. Backward compatible with `0.2.0` (no schema changes); existing workspaces benefit from re-reading the updated documentation.
+
+### Added
+
+- `IXV_DRY_RUN=1` mode added to `boot.{sh,ps1}` — creates the tmux session and panes, then exits without launching CLIs, sending role instructions, or attaching. Enables CI to detect drift in boot configuration (#54, PR #59)
+- `boot-dryrun` GitHub Actions job — runs boot in dry-run mode on Ubuntu / macOS / Windows and diffs `tmux list-panes` output against expectation files
+- Expectation files `tests/fixtures/expected-{panes,files}.txt` consolidating per-OS duplication into a single source
+- `SPEC.md` §5.6.1 "PO decision → SM action mapping table" — explicit Phase 6 state machine (#39, PR #60)
+
+### Changed
+
+- `SPEC.md` §5.6 (Verify/Accept phase) redefined as a three-branch state machine — **ACCEPT / REJECT / REVIEW_NEEDED** (#39, PR #60):
+  - REJECT branch with `task_type: plan` issuance for Phase 3 rollback is now explicit
+  - REVIEW_NEEDED branch (handling `needs_review` follow-ups) is newly defined and connected to the §2.4.3 DoD cross-check flow
+  - SM state after `backlog_update` completion is specified as **idle** (waiting for the next `po_to_sm.yaml`)
+- `roles/sm.md` Phase 6 rewritten with the three-branch flow, terminology aligned with SPEC.md §5.6
+- `skills/sm-update-spec/SKILL.md` Phase 6 section now states "invoked only on the ACCEPT branch" and "stop in idle state after completion"
+- macOS CI runner gained a tmux install step; Windows CRLF differences resolved (PR #59)
+- tmux 3.4 compatibility fix; psmux PATH corrected for Windows runners (PR #59)
+
+### Fixed
+
+- Issue #39 (incomplete Phase 6 branch paths) v0.2.0 follow-ups: `needs_review` handling inside Phase 6 and SM transition target after `backlog_update` are now explicit
+
 ## [0.2.0] - 2026-05-07
 
 Workflow validation layer release. Adds explicit validation steps for required fields, Definition of Done, dependencies, and task-phase routing on top of the existing PO → SM → Dev workflow. Backward compatible with `0.1.0` (no schema changes); existing workspaces benefit from re-running `setup_workspace` to pick up the updated skills and roles.
@@ -102,5 +128,6 @@ Initial public release.
 
 | Version | Summary |
 |---------|---------|
+| 0.2.1   | Boot drift detection (`IXV_DRY_RUN`), Phase 6 three-branch state machine (ACCEPT/REJECT/REVIEW_NEEDED) clarified |
 | 0.2.0   | Workflow validation layer (required-field / DoD / dependency / phase-routing checks), SPEC.md expansion, GitHub Actions CI |
 | 0.1.0   | Initial public release with role-based multi-agent system, 7-process workflow, cross-platform support |
