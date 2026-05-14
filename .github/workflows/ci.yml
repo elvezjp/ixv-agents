@@ -103,6 +103,10 @@ jobs:
         if: matrix.os == 'ubuntu-latest'
         run: sudo apt-get update && sudo apt-get install -y tmux
 
+      - name: Install tmux (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install tmux
+
       - name: Install psmux (Windows)
         if: matrix.os == 'windows-latest'
         shell: pwsh
@@ -124,9 +128,10 @@ jobs:
       - name: Snapshot pane structure
         shell: bash
         run: |
-          tmux list-panes -t ixv-agents -F '#{pane_index}|#{pane_title}' | sort > panes-actual.txt
+          tmux list-panes -t ixv-agents -F '#{pane_index}|#{pane_title}' | sort | tr -d '\r' > panes-actual.txt
           cat panes-actual.txt
-          diff tests/fixtures/expected-panes.txt panes-actual.txt
+          tr -d '\r' < tests/fixtures/expected-panes.txt > panes-expected.txt
+          diff panes-expected.txt panes-actual.txt
 
       - name: Cleanup tmux session
         if: always()

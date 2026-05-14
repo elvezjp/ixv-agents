@@ -4,3 +4,4 @@
 *.md text eol=lf
 *.yaml text eol=lf
 *.yml text eol=lf
+tests/fixtures/*.txt text eol=lf
