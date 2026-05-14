@@ -4,8 +4,14 @@
 #   ./scripts/boot.sh                        # start tmux + agents (opencode)
 #   ./scripts/boot.sh --claude-code          # use Claude Code instead
 #   ./scripts/boot.sh --model <model_name>   # specify model
+#
+# Environment variables:
+#   IXV_DRY_RUN=1   セッションとペインを作成するのみで、CLI 起動・役割指示送信・
+#                   attach をスキップ。CI でのスモークテスト用。
 
 set -euo pipefail
+
+IXV_DRY_RUN="${IXV_DRY_RUN:-}"
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 
@@ -98,16 +104,17 @@ log "Creating ixv-agents session (5 panes)..."
 tmux new-session -d -s ixv-agents -n "agents" -x 200 -y 50
 
 # Step 1: 左右に分割（左50%, 右50%）
-tmux split-window -h -t "ixv-agents:0" -p 50
+# tmux 3.4+ では -p N は size missing エラーとなる場合があるため -l N% を使用
+tmux split-window -h -t "ixv-agents:0" -l 50%
 
 # Step 2: 左側を上下に分割（PO / SM）
-tmux split-window -v -t "ixv-agents:0.0" -p 50
+tmux split-window -v -t "ixv-agents:0.0" -l 50%
 
 # Step 3: 右側を横に3等分（Dev1 / Dev2 / Dev3）
 # ペイン2を分割 → 2(33%), 3(67%)
-tmux split-window -h -t "ixv-agents:0.2" -p 67
+tmux split-window -h -t "ixv-agents:0.2" -l 67%
 # ペイン3を分割 → 3(50%), 4(50%)
-tmux split-window -h -t "ixv-agents:0.3" -p 50
+tmux split-window -h -t "ixv-agents:0.3" -l 50%
 
 # Set titles and prompts
 # ペイン番号: 0=PO(左上), 1=SM(左下), 2=Dev1, 3=Dev2, 4=Dev3
@@ -139,43 +146,47 @@ done
 #
 # トークンリフレッシュの競合を防ぐため、最初の1エージェントを先に起動し
 # トークン更新を完了させてから残りを起動する（Issue #20 対策）
+#
+# IXV_DRY_RUN=1 の場合は CLI 起動・役割指示送信をスキップ（CI スモークテスト用）
 # ═══════════════════════════════════════════════════════════════════════════
-(
-  sleep 5 # attach が安定するまで待つ
+if [ -z "$IXV_DRY_RUN" ]; then
+  (
+    sleep 5 # attach が安定するまで待つ
 
-  # Step 1: 最初に PO を起動してトークンリフレッシュを完了させる
-  tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
-  tmux send-keys -t "ixv-agents:0.0" Enter
+    # Step 1: 最初に PO を起動してトークンリフレッシュを完了させる
+    tmux send-keys -t "ixv-agents:0.0" "$CLI_CMD"
+    tmux send-keys -t "ixv-agents:0.0" Enter
 
-  sleep 5 # トークンリフレッシュ完了を待つ
+    sleep 5 # トークンリフレッシュ完了を待つ
 
-  # Step 2: 残りのエージェントを起動（トークンはリフレッシュ済み）
-  tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
-  tmux send-keys -t "ixv-agents:0.1" Enter
+    # Step 2: 残りのエージェントを起動（トークンはリフレッシュ済み）
+    tmux send-keys -t "ixv-agents:0.1" "$CLI_CMD"
+    tmux send-keys -t "ixv-agents:0.1" Enter
 
-  for PANE_NUM in 2 3 4; do
-    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
-    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
-  done
+    for PANE_NUM in 2 3 4; do
+      tmux send-keys -t "ixv-agents:0.$PANE_NUM" "$CLI_CMD"
+      tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+    done
 
-  sleep 5 # CLI 起動待ち
+    sleep 5 # CLI 起動待ち
 
-  # PO
-  tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-agents:0.0" Enter
+    # PO
+    tmux send-keys -t "ixv-agents:0.0" "roles/po.md を読んで役割を理解してください。"
+    tmux send-keys -t "ixv-agents:0.0" Enter
 
-  # SM
-  tmux send-keys -t "ixv-agents:0.1" "roles/sm.md を読んで役割を理解してください。"
-  tmux send-keys -t "ixv-agents:0.1" Enter
+    # SM
+    tmux send-keys -t "ixv-agents:0.1" "roles/sm.md を読んで役割を理解してください。"
+    tmux send-keys -t "ixv-agents:0.1" Enter
 
-  # Dev1-Dev3
-  for i in 0 1 2; do
-    DEV_NUM=$((i + 1))
-    PANE_NUM=$((i + 2))
-    tmux send-keys -t "ixv-agents:0.$PANE_NUM" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
-    tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
-  done
-) &
+    # Dev1-Dev3
+    for i in 0 1 2; do
+      DEV_NUM=$((i + 1))
+      PANE_NUM=$((i + 2))
+      tmux send-keys -t "ixv-agents:0.$PANE_NUM" "roles/dev.md を読んで役割を理解してください。あなたは Dev$DEV_NUM です。"
+      tmux send-keys -t "ixv-agents:0.$PANE_NUM" Enter
+    done
+  ) &
+fi
 
 # ═══════════════════════════════════════════════════════════════════════════════
 # 完了メッセージ（スクリプトを実行したターミナルに表示）
@@ -219,6 +230,11 @@ echo "  │  プロセスが残った場合の強制停止:                     
 echo "  │    ./scripts/stop.sh --force                                 │"
 echo "  └──────────────────────────────────────────────────────────────┘"
 echo ""
+
+if [ -n "$IXV_DRY_RUN" ]; then
+  log "IXV_DRY_RUN=1: skipping attach. Session 'ixv-agents' is ready for inspection."
+  exit 0
+fi
 
 log "Attaching to ixv-agents session..."
 exec tmux attach-session -t ixv-agents

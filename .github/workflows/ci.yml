@@ -32,17 +32,14 @@ jobs:
         run: bash scripts/setup_workspace.sh --no-backup
       - name: Verify generated files
         run: |
-          test -f workspace/README.md
-          test -f workspace/CONSTITUTION.md
-          test -f workspace/PROCESS.md
-          test -f workspace/AGENTS.md
-          test -f workspace/.gitignore
-          test -f workspace/queue/dashboard.md
-          test -f workspace/queue/po_to_sm.yaml
-          test -f workspace/queue/tasks/dev1.yaml
-          test -f workspace/queue/tasks/dev2.yaml
-          test -f workspace/queue/tasks/dev3.yaml
-          test -f workspace/queue/reports/TEMPLATE.yaml
+          while IFS= read -r f; do
+            [ -z "$f" ] && continue
+            case "$f" in \#*) continue ;; esac
+            if [ ! -e "$f" ]; then
+              echo "Missing: $f" >&2
+              exit 1
+            fi
+          done < tests/fixtures/expected-files.txt
       - name: Verify symlinks
         run: |
           test -L workspace/roles
@@ -59,22 +56,12 @@ jobs:
       - name: Verify generated files
         shell: pwsh
         run: |
-          $files = @(
-            "workspace\README.md",
-            "workspace\CONSTITUTION.md",
-            "workspace\PROCESS.md",
-            "workspace\AGENTS.md",
-            "workspace\.gitignore",
-            "workspace\queue\dashboard.md",
-            "workspace\queue\po_to_sm.yaml",
-            "workspace\queue\tasks\dev1.yaml",
-            "workspace\queue\tasks\dev2.yaml",
-            "workspace\queue\tasks\dev3.yaml",
-            "workspace\queue\reports\TEMPLATE.yaml"
-          )
-          foreach ($f in $files) {
-            if (-not (Test-Path $f)) {
-              Write-Error "Missing: $f"
+          Get-Content tests/fixtures/expected-files.txt | ForEach-Object {
+            $f = $_.Trim()
+            if ($f -eq "" -or $f.StartsWith("#")) { return }
+            $path = $f -replace "/", "\"
+            if (-not (Test-Path $path)) {
+              Write-Error "Missing: $path"
               exit 1
             }
           }
@@ -93,3 +80,60 @@ jobs:
               exit 1
             }
           }
+
+  boot-dryrun:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            setup: bash scripts/setup_workspace.sh --no-backup
+            boot: bash scripts/boot.sh
+          - os: macos-latest
+            setup: bash scripts/setup_workspace.sh --no-backup
+            boot: bash scripts/boot.sh
+          - os: windows-latest
+            setup: .\scripts\setup_workspace.ps1 -NoBackup
+            boot: .\scripts\boot.ps1
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tmux (Ubuntu)
+        if: matrix.os == 'ubuntu-latest'
+        run: sudo apt-get update && sudo apt-get install -y tmux
+
+      - name: Install tmux (macOS)
+        if: matrix.os == 'macos-latest'
+        run: brew install tmux
+
+      - name: Install psmux (Windows)
+        if: matrix.os == 'windows-latest'
+        shell: pwsh
+        run: |
+          irm https://raw.githubusercontent.com/marlocarlo/psmux/master/scripts/install.ps1 | iex
+          # psmux installer adds to User PATH via SetEnvironmentVariable, which does
+          # not propagate to subsequent steps. Add the install dir to $GITHUB_PATH.
+          "$env:LOCALAPPDATA\psmux" | Out-File -FilePath $env:GITHUB_PATH -Encoding utf8 -Append
+
+      - name: Setup workspace
+        run: ${{ matrix.setup }}
+
+      - name: Run boot (dry run)
+        env:
+          IXV_DRY_RUN: "1"
+        run: ${{ matrix.boot }}
+        timeout-minutes: 2
+
+      - name: Snapshot pane structure
+        shell: bash
+        run: |
+          tmux list-panes -t ixv-agents -F '#{pane_index}|#{pane_title}' | sort | tr -d '\r' > panes-actual.txt
+          cat panes-actual.txt
+          tr -d '\r' < tests/fixtures/expected-panes.txt > panes-expected.txt
+          diff panes-expected.txt panes-actual.txt
+
+      - name: Cleanup tmux session
+        if: always()
+        shell: bash
+        run: tmux kill-session -t ixv-agents 2>/dev/null || true
