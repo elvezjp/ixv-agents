@@ -103,6 +103,16 @@ These permissions are **required** for the multi-agent workflow (agents must ope
 - YAML-based communication provides an audit trail
 - Dashboard tracks agent status and task progress
 
+### Dependabot Alert Policy
+
+**Malware tab**: Always remediate, regardless of where the alert originates.
+
+**Vulnerable**: Follow the table below.
+
+| Target | Action |
+|--------|--------|
+| Latest version | **Remediate** (dependency update / PR). If only a dependency package version needs updating, the tool version is not bumped |
+
 ## Security Best Practices
 
 1. **Use the latest version**: Always run the latest release of IXV-Agents
